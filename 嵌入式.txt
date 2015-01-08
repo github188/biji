@@ -33162,7 +33162,7 @@ List<Person> list=jsonToolUnpack.getPersonList("perkey1", jsonStr);
 //4.完成对Map类集合json字符串的解析
 		List<Map<String, Object>> str=jsonToolUnpack.getMapList("perkey1", jsonStr);	
 
-5)简单有两个节点的数据
+3)简单有两个节点的数据
 (1)写数据
 String data[]=new String[]{"hello","world","msdn"};
 JSONObject all=new JSONObject();//建立最外层的节点对象
@@ -33249,7 +33249,7 @@ private List<Map<String, Object>> delJSON(String data)throws Exception
 	return all;
 }
 
-3)复杂数据
+4)复杂数据
 (1)写数据
 public class MainActivity extends Activity {
 	private String nameData[]=new String[]{"zhang3","li4","wang5"};
@@ -33328,6 +33328,9 @@ public class MainActivity extends Activity {
 	}
 
 }
+
+8.GSON:google提供的，解析JSON协议的开发包
+下载gson.jar包，把他考到工程的libs目录下
 
 (2)读数据
 //读数据
@@ -34042,5 +34045,5 @@ public class MainActivity extends Activity {
         } 
 	
 }
-2.地图的所有变更可以看百度文档
+2.地图的所有变更可以看百度文档(查看百度地图APP开发日志)
 
