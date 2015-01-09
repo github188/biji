@@ -33329,9 +33329,6 @@ public class MainActivity extends Activity {
 
 }
 
-8.GSON:google提供的，解析JSON协议的开发包
-下载gson.jar包，把他考到工程的libs目录下
-
 (2)读数据
 //读数据
 //一个JSON格式的字符串
@@ -33376,6 +33373,192 @@ private Map<String, Object> delJSON(String data)throws Exception
 	allmap.put("memberdata", alldata);
 	return allmap;
 }
+
+8.GSON:google提供的，解析JSON协议的开发包
+下载gson.jar包，把他考到工程的libs目录下
+1)发送
+jsonTools文件
+public class jsonTools {
+	public jsonTools()
+	{}
+	//封装成json的方法，value是解析的集合的类型
+	public static String jsonStr(Object value)
+	{
+		Gson gson=new Gson();
+		String string=gson.toJson(value);
+		
+		return string;
+	}
+}
+Persong.java文件
+package com.example.json;
+
+import javax.security.auth.PrivateCredentialPermission;
+
+public class Person {
+	private int id;
+	private String name;
+	private String address;
+	public Person() {
+		// TODO Auto-generated constructor stub
+	}
+	public Person(int id, String name, String address) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.address = address;
+	}
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	@Override
+	public String toString() {
+		return id + ", " + name + ", " + address
+				;
+	}
+	
+}
+
+jsonServer文件
+public class jsonServer {
+	public jsonServer(){}
+	//1.person类
+	public Person getperson()
+	{
+		Person person=new Person(1001,"zhang3","beijing");
+		return person;
+	}
+	//2.Person类的集合
+	public List<Person> getpersonlist()
+	{
+		List<Person> list=new ArrayList<Person>();
+		Person person1=new Person(1001,"zhang3","beijing");
+		Person person2=new Person(1002,"li4","shanghai");
+		list.add(person1);
+		list.add(person2);
+		return list;
+	}
+	//3.基础String类的集合
+	public List<String> getstrlist()
+	{
+		List<String> list=new ArrayList<String>();
+		list.add("beijing");
+		list.add("shanghai");
+		return list;
+	}
+	//4.传Map对象<String,Object>的数据
+	public List<Map<String, Object>> getMaplist()
+	{
+		List<Map<String, Object>> list=new ArrayList<Map<String,Object>>();
+		Map<String, Object> map1=new HashMap<String, Object>();
+			map1.put("id1", 10001);
+			map1.put("name1", "zhang3");
+			map1.put("address1", "beijing");
+		Map<String, Object> map2=new HashMap<String, Object>();
+			map1.put("id2", 10002);
+			map1.put("name2", "li4");
+			map1.put("address2", "shanghai");
+		list.add(map1);
+		list.add(map2);
+		return list;
+	}
+}
+
+MainActivity文件
+//1.调用person类
+//Person person=json.getperson();//返回一个实际对象
+//String msg=jsonTools.jsonStr(person);
+//2.调用Person类的集合
+//String msg=jsonTools.jsonStr(json.getpersonlist());
+//3.调用基础String类的集合
+//String msg=jsonTools.jsonStr(json.getstrlist());
+//4.传Map对象<String,Object>的数据
+//String msg=jsonTools.jsonStr(json.getMaplist());
+//txtjson=(TextView) findViewById(R.id.txtjson);
+//txtjson.setText(msg);
+
+2)解析
+jsonToolUnpack文件
+import com.google.gson.reflect.*;
+//GSON方法
+//1.完成对person对象json字符串的解析
+public static <T>T getPersongson(String jsonStr,Class<T> cls)
+{
+		
+	T t=null;
+	try {
+		Gson gson=new Gson();
+		t=gson.fromJson(jsonStr, cls);
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	return t;
+}
+//2.完成对person对象的集合json字符串的解析
+public static <T>List<T> getPersonListgson(String jsonStr,Class<T> cls)
+{
+		
+	List<T> list=new ArrayList<T>();
+	try {
+		Gson gson=new Gson();
+		//从jsonStr封装到list集合中，通过getType从key中取出所有类型
+		list=gson.fromJson(jsonStr,new TypeToken<List<T>>(){}.getType());
+	} catch (Exception e) {
+		// TODO: handle exception
+	}
+	return list;
+}
+//3.完成对String类集合json字符串的解析
+public static List<String> getStrListgson(String jsonStr)
+{
+	List<String> list=new ArrayList<String>();
+	try {
+		Gson gson=new Gson();
+		list=gson.fromJson(jsonStr,new TypeToken<List<String>>(){}.getType());
+	} catch (Exception e) {
+		// TODO: handle exception
+	}
+	return list;
+}
+//4.解析Map对象<String,Object>的数据集合
+public static List<Map<String, Object>> getMapListgson(String jsonStr)
+{
+	List<Map<String, Object>> list=new ArrayList<Map<String,Object>>();
+	try {
+		Gson gson=new Gson();
+		list=gson.fromJson(jsonStr, new TypeToken<List<Map<String, Object>>>(){}.getType());
+	} catch (Exception e) {
+		// TODO: handle exception
+	}
+	return list;
+}
+
+MainActivity文件
+//Gson
+//1.完成对person对象json字符串的解析，Person.class是反射得到Person的类型		
+Person person=jsonToolUnpack.getPersongson(jsonStr,Person.class);
+//2.完成对person对象的集合json字符串的解析
+List<Person> list=jsonToolUnpack.getPersonListgson(jsonStr, Person.class);
+//3.完成对String类集合json字符串的解析
+List<String> str=jsonToolUnpack.getStrListgson(jsonStr);
+//4.完成对Map类集合json字符串的解析
+List<Map<String, Object>> str2=jsonToolUnpack.getMapListgson(jsonStr);
 
 *Http访问网络：Http在TCP之上，
 客户端输入网址-Http->DNS->连接上服务端的固定IP地址，和端口
