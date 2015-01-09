@@ -33377,6 +33377,102 @@ private Map<String, Object> delJSON(String data)throws Exception
 	return allmap;
 }
 
+*Http访问网络：Http在TCP之上，
+客户端输入网址-Http->DNS->连接上服务端的固定IP地址，和端口
+服务端--Html(网页),XML数据(效率比较低，不用了),JSON数据(一般用这个)-->客户端
+
+1.通过JSON连接后台tomcat服务端
+例如：骏鹏服务器端连接
+设备签到：
+客户端
+URL:  /api/vmcCheckin
+请求方式：POST
+请求参数：
+param对象    json类型
+Param对象内容
+vmc_no          String
+vmc_auth_code   String
+客户端发起接口请求，url地址必须携带token，token是设备签到时返回的唯一标识符，如有参数，参数放在param里并转换成json格式，如：param={“productNo”:”jyt_002”,.......}，用post方式请求服务端
+
+注意1：他的参数param对象才是json格式{“productNo”:”jyt_002”,.......}
+       而param=  并不是json封装
+注意2：json的键值对vmc_no，vmc_auth_code无需按顺序
+注意3：客户端发数据给服务端，他的参数也是一个键值对。
+       key就是param，value就是json封装的{“productNo”:”jyt_002”,.......}
+	   因此不能输入param=，要输入param，他的=号在上传的时候会自动添加
+
+程序：
+//需要创建线程来做
+// 为按钮添加单击事件监听器
+		button.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				
+
+				// 创建一个新线程，用于从网络上获取文件
+				new Thread(new Runnable() {
+					public void run() {
+						send();
+						Message m = handler.obtainMessage(); // 获取一个Message
+						handler.sendMessage(m); // 发送消息
+					}
+				}).start(); // 开启线程
+
+			}
+		});
+		handler = new Handler() {
+			@Override
+			public void handleMessage(Message msg) {
+				if (result != null) {
+					resultTV.setText(result); // 显示获得的结果
+					content.setText(""); // 清空内容编辑框
+					nickname.setText(""); // 清空昵称编辑框
+				}
+				super.handleMessage(msg);
+			}
+		};
+		
+		
+public void send() 
+{
+	String target = "http://117.27.89.53:10001/yv/api/vmcCheckin";	//要提交的目标地址
+	HttpClient httpclient = new DefaultHttpClient();	//创建HttpClient对象
+	HttpPost httppost = new HttpPost(target);	//创建HttpPost对象
+	//添加到类集中，其中key,value类型为String
+	Map<String,String> parammap = new TreeMap<String,String>() ;
+	parammap.put("vmc_no","ev0001");
+	parammap.put("vmc_auth_code","0001");		
+	Log.i("{JSON1}=",parammap.toString());
+	//打印结果是{JSON1}=(7469): {vmc_auth_code=0001, vmc_no=ev0001}
+	//将map类集转为json格式
+	Gson gson=new Gson();
+	String param=gson.toJson(parammap);		
+	Log.i("{JSON2}=",param.toString());
+	//打印结果是{JSON2}=(7469): {"vmc_auth_code":"0001","vmc_no":"ev0001"}
+	//添加params
+	List<NameValuePair> params = new ArrayList<NameValuePair>();
+	params.add(new BasicNameValuePair("param", param));
+	Log.i("{JSON3}=",params.toString());
+	//打印结果是[param={"vmc_auth_code":"0001","vmc_no":"ev0001"}]
+	
+	try {
+		httppost.setEntity(new UrlEncodedFormEntity(params, "utf-8")); //设置编码方式
+		HttpResponse httpResponse = httpclient.execute(httppost);	//执行HttpClient请求
+		if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK){	//如果请求成功
+			result += EntityUtils.toString(httpResponse.getEntity());	//获取返回的字符串
+			
+		}else{
+			result = "请求失败！";
+		}
+	} catch (UnsupportedEncodingException e1) {
+		e1.printStackTrace();	//输出异常信息
+	} catch (ClientProtocolException e) {
+		e.printStackTrace();	//输出异常信息
+	} catch (IOException e) {
+		e.printStackTrace();	//输出异常信息
+	}
+	
+}
 
 *ContentProvider组件:不同程序之间需要数据交换，就需要将文本数据或者数据库数据保存到这个
 组件中。例如打电话的应用调用电话本的应用
