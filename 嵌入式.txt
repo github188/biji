@@ -32386,7 +32386,233 @@ public void onClick(View v)
    Main.this.text.setTextSize(size);    
 }
 
+*多线程
+1.子线程更改UI的东西，是需要通过sendmessage发给主线程来处理的
+2.Looper:在Activity中，如果在create的界面就创建的线程,
+或者主Activity implements Runnable.程序会自动启动好Looper对象。
+但是在用户自定义的类中，就需要自己手动来启动Looper,然后才能处理线程
 
+例如：主线程发消息给子线程，然后子线程回消息给主线程
+public class MainActivity extends Activity {
+	Button but=null;
+	TextView info=null;
+	public static final int SETMAIN=1;//what标记,设置主线程
+	public static final int SETCHILD=2;//what标记,设置子线程
+	private Handler mainhand=null,childhand=null;
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		//启动用户自己定义的类
+		Thread thread=new Thread(new childthread(),"child Thread");
+		thread.start();
+		mainhand=new Handler()
+		{
+
+			@Override
+			public void handleMessage(Message msg) {
+				// TODO Auto-generated method stub				
+				switch (msg.what)
+				{
+					case SETMAIN://子线程接收主线程消息
+						info.setText(msg.obj.toString());
+						break;
+				}				
+			}
+			
+		};		
+		info=(TextView)findViewById(R.id.info);
+		but=(Button)findViewById(R.id.but);
+		but.setOnClickListener(new OnClickListener() {			
+			@Override
+			public void onClick(View v) {
+				if(childhand!=null)
+				{
+					// 将信息发送到子线程中
+					Message childmsg=childhand.obtainMessage();
+					childmsg.what=SETCHILD;
+					childmsg.obj=mainhand.getLooper().getThread().getName()+"-->Hello World";
+					childhand.sendMessage(childmsg);
+				}
+				
+			}
+		});
+	}
+	
+	class childthread implements Runnable
+	{
+		
+		@Override
+		public void run() {
+			Looper.prepare();//用户自己定义的类，创建线程需要自己准备loop
+			childhand=new Handler()
+			{
+
+				@Override
+				public void handleMessage(Message msg) {
+					switch (msg.what)
+					{
+					case SETCHILD://子线程接收主线程消息
+							Log.i("mychild",msg.obj.toString());
+							Message tomain=mainhand.obtainMessage();
+							tomain.what=SETMAIN;
+							tomain.obj=childhand.getLooper().getThread().getName()+"-->Hello World2";
+							mainhand.sendMessage(tomain);
+						break;
+
+					default:
+						break;
+					}
+				}
+				
+			};
+			Looper.loop();//用户自己定义的类，创建线程需要自己准备loop
+		}
+		
+	}
+	
+}
+
+3.异步处理AsyncTask:Handler的线程之间的处理是阻塞的，但是异步处理是非阻塞的
+而且他整合了handler,和message的东西，操作很简单
+例如：文本和进度条显示执行进度
+protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		bar=(ProgressBar)findViewById(R.id.bar);
+		info=(TextView)findViewById(R.id.info);
+		childupdate child=new childupdate();
+		child.execute(100);//休眠100ms
+	}
+//子类处理后台进度的类型是int,更新之后的数值是int,最后结果返回string 
+private class childupdate extends AsyncTask<Integer, Integer, String>
+{
+
+	@Override
+	//每次的进度处理，这里可以直接控制控件
+	protected String doInBackground(Integer... params) {
+		for(int i=0;i<100;i++)
+		{
+			MainActivity.this.bar.setProgress(i);//设置进度
+			this.publishProgress(i);//更新，调用更新操作，onProgressUpdate进行处理
+			try {
+				Thread.sleep(params[0]);//延迟的时间由外部决定
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return "执行完毕";
+	}
+
+	@Override
+	//执行完毕之后的操作
+	protected void onPostExecute(String result) {
+		MainActivity.this.info.setText(result);
+	}
+
+	@Override
+	protected void onProgressUpdate(Integer... values) {
+		MainActivity.this.info.setText("进度完成:"+String.valueOf(values[0]));
+	}
+	
+}
+
+例2：显示本机文件夹的列表，他是个耗时的过程，所以要用非阻塞
+public class MainActivity extends Activity {
+	private List<Map<String, Object>> allfile=new ArrayList<Map<String,Object>>();
+	private SimpleAdapter simple=null;
+	private ListView filelist=null;
+	private listfilethread ft=null;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		filelist=(ListView) findViewById(R.id.list);
+		filelist.setOnItemClickListener(new onItem());
+		//从根目录下开始列出
+		File filepathFile=new File(java.io.File.separator);	
+		ft=new listfilethread();
+		ft.execute(filepathFile);
+	}
+
+	private class onItem implements OnItemClickListener
+	{
+
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position,
+				long id) {
+			// 单击点开目录
+			File currFile=(File)MainActivity.this.allfile.get(position).get("name");
+			if(currFile.isDirectory())//是目录
+			{
+				MainActivity.this.allfile=new ArrayList<Map<String,Object>>();
+				MainActivity.this.ft=new listfilethread();
+				MainActivity.this.ft.execute(currFile);
+			}
+			
+		}
+		
+	}
+	
+	private class listfilethread extends AsyncTask<File, File, String>
+	{
+
+		@Override
+		protected String doInBackground(File... params) {
+			// 如果不是根目录
+			if(!params[0].getPath().equals(java.io.File.separator))
+			{
+				//表示可以返回
+				Map<String, Object> fileItemMap=new HashMap<String, Object>();
+				fileItemMap.put("img", R.drawable.foldopen);//可以返回
+				fileItemMap.put("name", params[0].getParentFile());
+				MainActivity.this.allfile.add(fileItemMap);
+			}
+			//如果是文件夹
+			if(params[0].isDirectory())
+			{
+				File tempFile[]=params[0].listFiles();
+				if(tempFile!=null)
+				{
+					for(int x=0;x<tempFile.length;x++)
+					{
+						this.publishProgress(tempFile[x]);
+					}
+				}
+			}
+			return "finish";
+		}
+
+		@Override
+		protected void onProgressUpdate(File... values) {
+			Map<String, Object> fileItem=new HashMap<String, Object>();
+			if(values[0].isDirectory())//是目录
+			{
+				fileItem.put("img", R.drawable.foldclose);
+			}
+			else //是文件
+			{
+				fileItem.put("img", R.drawable.file);
+				
+			}
+			fileItem.put("name", values[0]);
+			MainActivity.this.allfile.add(fileItem);
+			MainActivity.this.simple=new SimpleAdapter
+			(
+					MainActivity.this, 
+					MainActivity.this.allfile, 
+					R.layout.list, new String[]{"img","name"}, 
+					new int[]{R.id.img,R.id.name}
+			);
+			MainActivity.this.filelist.setAdapter(MainActivity.this.simple);
+		}
+		
+	}
+}
+
+ 
 *数据存储
 1.SharedPreferences:类似属性文件Properties,作为资源文件保存配置信息
 1)新建SharedPreferences工程，进行数据的保存操作
@@ -33847,6 +34073,232 @@ intent.setAction(Intent.ACTION_GET_CONTENT);
 intent.setType("image/*");
 MainActivity.this.startActivity(Intent.createChooser(intent, "选择图片浏览工具"));
 
+
+*Service服务
+Service服务是一个没有界面的Activity程序，当需要做一些很消耗时间的操作时，Activity就转给Service，让他在后台完成。执行某些需要跨进程访问的操作也可以使用
+1.创建简单服务
+timeservice文件
+public class timeservice extends Service {
+
+	public timeservice() {
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void onCreate() {
+		// TODO Auto-generated method stub
+		Log.i("currenttime","service start");
+	}
+
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub
+		Log.i("currenttime","service stop");
+	}
+
+	@Override
+	//接收intent,实现服务
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		// TODO Auto-generated method stub
+		Time time=new Time();
+		time.setToNow();
+		String currenttime=time.format("%Y-%m-%d %H:%M:%S");
+		Log.i("currenttime",currenttime);
+		return Service.START_CONTINUATION_MASK;//继续执行
+	}
+	
+	
+
+}
+
+MainActivity文件
+btn=(Button)findViewById(R.id.btn);
+		btn.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				startService(new Intent(MainActivity.this,timeservice.class));
+				//startService(new Intent(MainActivity.this, CurrentTimeService.class));// 启动服务
+			}
+		});
+		btnstop=(Button)findViewById(R.id.btnstop);
+		btnstop.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				stopService(new Intent(MainActivity.this,timeservice.class));
+				//startService(new Intent(MainActivity.this, CurrentTimeService.class));// 启动服务
+			}
+		});
+		
+2.需要服务绑定Activity，用来服务与Activity之间的调用和返回(服务常绑定会出错，没有关系)
+public class timeservice extends Service {
+	private IBinder myBinder=new Binder()
+	{
+		@Override
+		public String getInterfaceDescriptor() {
+			// TODO Auto-generated method stub
+			return "MytimeService";
+		}
+		
+	};
+	public timeservice() {
+		// TODO Auto-generated constructor stub
+	}
+	
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO Auto-generated method stub
+		Log.i("currenttime","service onBind");
+		return this.myBinder;
+	}
+	
+	
+	@Override
+	public void onRebind(Intent intent) {
+		Log.i("currenttime","service onReBind");
+		super.onRebind(intent);
+	}
+
+	@Override
+	public boolean onUnbind(Intent intent) {
+		Log.i("currenttime","service onUnBind");
+		return super.onUnbind(intent);
+	}
+
+	@Override
+	public void onCreate() {
+		// TODO Auto-generated method stub
+		Log.i("currenttime","service start");
+	}
+
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub
+		Log.i("currenttime","service stop");
+	}
+
+	@Override
+	//接收intent,实现服务
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		// TODO Auto-generated method stub
+		Time time=new Time();
+		time.setToNow();
+		String currenttime=time.format("%Y-%m-%d %H:%M:%S");
+		Log.i("currenttime",currenttime);
+		return Service.START_CONTINUATION_MASK;//继续执行
+	}
+	
+	
+
+}
+
+MainActivity文件调用服务
+public class MainActivity extends Activity {
+	Button btn=null,btnstop=null,btnbind=null,btnunbund=null;
+	private ServiceConnection conn=new ServiceConnection()
+	{
+
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			// TODO Auto-generated method stub
+			try {
+				Log.i("currenttime","service onBindSUC="+service.getInterfaceDescriptor());
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			// TODO Auto-generated method stub
+			Log.i("currenttime","service onBindFail");
+		}
+		
+	};
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		btn=(Button)findViewById(R.id.btn);
+		btn.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				startService(new Intent(MainActivity.this,timeservice.class));
+				//startService(new Intent(MainActivity.this, CurrentTimeService.class));// 启动服务
+			}
+		});
+		btnstop=(Button)findViewById(R.id.btnstop);
+		btnstop.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				stopService(new Intent(MainActivity.this,timeservice.class));
+				//startService(new Intent(MainActivity.this, CurrentTimeService.class));// 启动服务
+			}
+		});
+		btnbind=(Button)findViewById(R.id.btnbind);
+		btnbind.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Intent intent=new Intent(MainActivity.this,timeservice.class);
+				bindService(intent, conn, Context.BIND_AUTO_CREATE);
+			}
+		});
+		btnunbund=(Button)findViewById(R.id.btnunbund);
+		btnunbund.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				unbindService(conn);
+			}
+		});
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+		getMenuInflater().inflate(R.menu.main, menu);
+		return true;
+	}
+
+}
+
+1)点击start服务，打印
+01-12 17:00:24.714: INFO/currenttime(18109): service start
+01-12 17:00:24.720: INFO/currenttime(18109): 2015-01-12 17:00:24
+
+2)然后点击bind，绑定Activity与service,打印
+01-12 17:01:26.395: INFO/currenttime(18109): service onBind
+01-12 17:01:26.399: INFO/currenttime(18109): service onBindSUC=MytimeService
+打印的MytimeService，说明服务返回回调信息给Activity
+
+3)不打开服务而直接绑定，会打印
+01-12 17:00:24.714: INFO/currenttime(18109): service start
+01-12 17:01:26.395: INFO/currenttime(18109): service onBind
+01-12 17:01:26.399: INFO/currenttime(18109): service 
+说明会自动打开服务和绑定
+
+4）不停止，直接退出，会自动解绑定和自动关闭服务
+01-12 17:00:24.714: INFO/currenttime(18109): service unbind
+01-12 17:01:26.395: INFO/currenttime(18109): service destroy
+
+		
 
 *摄像头拍照：
 SurfaceView提供了一个高速的刷新空间，作视频播放使用
