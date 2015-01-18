@@ -32391,6 +32391,8 @@ public void onClick(View v)
 2.Looper:在Activity中，如果在create的界面就创建的线程,
 或者主Activity implements Runnable.程序会自动启动好Looper对象。
 但是在用户自定义的类中，就需要自己手动来启动Looper,然后才能处理线程
+线程在默认情况下在run()方法中的内容执行完之后就退出了。
+调用Looper类的 prepare() 方法可以为当前线程准备一个消息里面要做的事，调用loop() 方法使之开始处理这个信息循环，直到循环结束。
 
 例如：主线程发消息给子线程，然后子线程回消息给主线程
 public class MainActivity extends Activity {
@@ -32470,6 +32472,177 @@ public class MainActivity extends Activity {
 			Looper.loop();//用户自己定义的类，创建线程需要自己准备loop
 		}
 		
+	}
+	
+}
+
+例如：新建一个线程childthread，这个线程用来监听信息。然后在这个线程里新建
+孙子线程gradson,把Handler邮箱发送给他，让gradson每4s钟就作一次post操作，
+MainAcitivy操作，只是用来生成childthread线程
+protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		Thread thread=new Thread(new childthread(),"child Thread");
+		thread.start();		
+	}
+	
+childthread作pend操作
+childthread线程
+public class childthread implements Runnable {
+	Handler childhand=null;//hand邮箱
+	@Override
+	public void run() {
+		Looper.prepare();//准备Loop循环
+		// TODO Auto-generated method stub
+		Log.i("mychild","childThread Run");
+		
+		//实例化hand邮箱，并且进行pend
+		childhand=new Handler()
+		{
+
+			@Override
+			public void handleMessage(Message msg) {
+				// TODO Auto-generated method stub
+				switch (msg.what)
+				{
+					case 1://子线程接收主线程消息
+						Log.i("mychild",msg.obj.toString());
+						break;
+				}	
+			}
+			
+		};
+		//创建gradson线程，把实例化之后的hand邮箱发给他，启动线程
+		Thread thread=new Thread(new gradson(childhand),"gradson");
+		thread.start();
+		Looper.loop();//运行Loop循环
+	}
+
+}
+
+gradson线程
+public class gradson extends Thread {
+
+	Handler hand;
+	//构造函数，得到hand邮箱
+	public gradson(Handler hand) {		
+		// TODO Auto-generated constructor stub
+		this.hand=hand;
+	}
+
+	@Override
+	public void run() {
+		int i=1;
+		// TODO Auto-generated method stub
+		Looper.prepare();//准备Loop循环
+		//每隔4s，作一下post邮箱
+		while(i>0)
+		{
+			//Log.i("mychild","gradson Run");
+			//将信息封装，以下两条都可以用
+			//Message childmsg=  Message.obtain(); 
+			Message childmsg=  hand.obtainMessage(); 
+			childmsg.what=1;
+			childmsg.obj="-->Hello childthread";
+			
+			//作post操作
+			hand.sendMessage(childmsg);
+			try {
+				Thread.sleep(4000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		Looper.loop();//运行Loop循环
+	}
+	
+}
+
+
+例如：新建一个类childclass，这个类用来监听信息。然后在这个类里新建
+孙子线程gradson,把Handler邮箱发送给他，让gradson每4s钟就作一次post操作，
+在Activity里就可以调用这个类，作线程的操作
+MainAcitivy操作，只是用来生成实例化childclass类，并且通过操作类来操作
+gradson线程
+protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		but=(Button)findViewById(R.id.but);
+		but.setOnClickListener(new OnClickListener() {			
+			@Override
+			public void onClick(View v) {
+				childclass cls=new childclass();
+				cls.startcom();//操作类，来间接操作线程
+			}
+		});	
+	}
+	
+childclass作pend操作
+childclass类
+public class childclass 
+{
+	Handler childhand=new Handler()
+	{
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+			switch (msg.what)
+			{
+				case 1://子线程接收主线程消息
+					Log.i("mychild",msg.obj.toString());
+					break;
+			}	
+		}
+		
+	};
+	public childclass() {
+		Log.i("mychild","childclass create");
+	}
+	public void startcom()
+	{
+		//把Handle传给gradson线程，并且启动gradson线程
+		Thread thread=new Thread(new gradson(childhand),"gradson");
+		thread.start();
+	}
+	
+}
+
+gradson线程与上面的例子一样
+public class gradson extends Thread {
+
+	Handler hand;
+	//构造函数，得到hand邮箱
+	public gradson(Handler hand) {		
+		// TODO Auto-generated constructor stub
+		this.hand=hand;
+	}
+
+	@Override
+	public void run() {
+		int i=1;
+		// TODO Auto-generated method stub
+		Looper.prepare();//准备Loop循环
+		//每隔4s，作一下post邮箱
+		while(i>0)
+		{
+			//Log.i("mychild","gradson Run");
+			//将信息封装，以下两条都可以用
+			//Message childmsg=  Message.obtain(); 
+			Message childmsg=  hand.obtainMessage(); 
+			childmsg.what=1;
+			childmsg.obj="-->Hello childthread";
+			
+			//作post操作
+			hand.sendMessage(childmsg);
+			try {
+				Thread.sleep(4000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		Looper.loop();//运行Loop循环
 	}
 	
 }
