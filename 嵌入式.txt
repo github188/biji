@@ -23673,7 +23673,7 @@ public class person
 (2)如上多个构造方法互相调用，那至少要有一个没有this方法
 
 6.static关键字
-1)定义属性：
+1)定义属性：变成了全局变量
 //类名称
 class person
 {
@@ -23743,7 +23743,7 @@ person.city = "福建";
 (2)最好要使用类来修改person.city = "福建";
 (3)他可以在没有实例化对象之前，就由类修改
 
-1)定义方法
+2)定义方法：变成了全局方法
 静态方法public static void setCity(String s)
 //类名称
 class person
@@ -25806,6 +25806,276 @@ public class observer
    }
 }
 
+10.回调以及事件注册机制
+软件模块之间总是存在着一定的接口，从调用方式上，可以把他们分为三类：同步调用、回调和异步调用。
+同步调用：一种阻塞式调用，调用方要等待对方执行完毕才返回，它是一种单向调用；
+回 调：一种双向调用模式，也就是说，被调用方在接口被调用时也会调用对方的接口；
+异步调用：一种类似消息或事件的机制，不过它的调用方向刚好相反，接口的服务在收到某种讯息或发生某种事件时，会主动通知客户方（即调用客户方的接口）。
+
+1)回调
+有一天小王遇到一个很难的问题，问题是“1 + 1 = ?”，就打电话问小李，小李一下子也不知道，就跟小王说，等我办完手上的事情，就去想想答案，小王也不会傻傻的拿着电话去等小李的答案吧，于是小王就对小李说，我还要去逛街，你知道了答案就打我电话告诉我，于是挂了电话，自己办自己的事情，过了一个小时，小李打了小王的电话，告诉他答案是2
+但是有一个问题，小李类与老王类都是同一个线程，因此小李不能做太耗时的操作，小李要创建一个独立线程来做耗时操作
+第一步
+package com.example.huidiao;
+/** 
+ * 此接口为联系的方式，不论是电话号码还是联系地址，作为 
+ * 老板老王都必须要实现此接口 
+ * @author Administrator 
+ * 
+ */  
+public interface CallBackInterface {
+	public void execute(int value);  
+}
+
+第二步，底层小李的员工类
+/** 
+ * 员工类小李，必须要记住，这是一个底层类，底层是不了解上层服务的 
+ * @author Administrator 
+ * 
+ */  
+public class Employee {
+	private CallBackInterface callBack=null;
+	//老板老王告诉小李联系电话，也就是注册
+	public void setCallBack(CallBackInterface callBack){  
+        this.callBack = callBack;  
+    }  
+	//老板提出1+2等于几的问题，调用这个方法，让小李计算
+	public void doSome(int k,int j) throws InterruptedException
+	{  
+		int value;	
+        //1.开始干活了  
+        for(int i=0;i<100;i++){  
+            Log.i("EV_JNI","第【" + i + "】事情干完了！"); 
+            //Thread.sleep(1000);小李类与老王类都是同一个线程，因此小李不能做太耗时的操作，小李要创建一个独立线程来做耗时操作
+        }  
+        value=k+j;
+          
+        //2.告诉老板老板老王干完了  
+        callBack.execute(value);  
+    }  
+}
+
+第三步，老板老王类
+/** 
+ * 老板老王是作为上层应用身份出现的，下层应用（员工）小李是不知道 
+ * 有哪些方法，因此他想被下层应用（员工）调用必须实现此接口 
+ * @author Administrator 
+ * 
+ */  
+public class Boss implements CallBackInterface {  
+	  
+	@Override  
+	public void execute(int value) {  
+		//System.out.println("收到了！！" + System.currentTimeMillis());  
+		txt.setText("value="+value);  
+	}  
+}  
+
+第四步，使用
+btn.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				Employee emp = new Employee();  
+				//将回调对象老板（上层对象）传入，注册  
+		        emp.setCallBack(new Boss());  
+		        //老板问小李1+2等于多少
+		        try {
+					emp.doSome(1,2);					
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}  
+			}
+		});
+
+		
+		
+2)实际使用回调
+有主UI很忙，他没有时间盯着出货机构干活，然后他告诉底层货道，当干完出货这些事情后，告诉他出货的结果。
+需要使用到回调机制
+第一步、底层出货机构的类
+    public class Caller {  
+        private MyCallInterface callInterface;  
+          
+        public Caller() {  
+        }  
+          
+        public void setCallFunc(MyCallInterface callInterface) {  
+            this.callInterface = callInterface;  
+        }  
+          
+        public void call() {  
+            callInterface.printName();  
+        }  
+    }  
+	
+第二步、出货机构与上层UI的接口
+    public interface MyCallInterface {  
+        public void  printName(String json);  
+    }  
+	
+第三步、上层UI类
+    public class Test {  
+        public static void main(String[] args) {  
+            Caller caller = new Caller();  //实例化底层出货机构的类
+//注册监听事件，实际是把Client类都当成一个参数handler,传handler给底层call类			
+            caller.setCallFunc(new Client());  
+            caller.call();  //通知底层出货类，进行出货操作
+        }  
+    }  	
+	
+监听类，当出货完成事件触发时，底层出货类会向UI层传递json包
+    public class Client implements MyCallInterface {  
+      
+        @Override  
+        public void printName(String json) {  
+            System.out.println("This is the client printName method"+json);  
+        }  
+    } 
+
+第四步、出货完成时，底层出货类向UI层传递json包	
+public void EV_callBack(String json_msg)
+	{
+		//这里是JSON包 该处是通过handler发送消息的方式发送到主线程处理结果的，开发者可以选择自己的方式进行处理。
+		//但是千万不要在此函数里做过多的处理。以免jni调用出错 或者 拖慢速度	
+		if(this.callInterface != null)//说明已经注册了
+		{
+				this.callInterface.printName(json_msg);
+		}
+	}
+
+	
+	
+3）事件注册：他是回调的升级作法，好处是可以在不同的activity里面注册不同的监听器，以及注册多个监听器。
+我们普通的控件就是使用事件注册机制
+以"开门"和"关门"为例,为对象"门"实现自定义的事件处理;
+STEP1:定义底层事件类DoorEvent,它继承EventObject类;
+import java.util.EventObject;
+public class DoorEvent extends EventObject
+{
+  private String doorState = ""; //表示门的状态,取值"开"和"关";
+  public DoorEvent(Object source, String doorState)
+  {
+    super(source);
+    this.doorState = doorState;
+  }
+  public void setDoorState(String doorState)
+  {
+    this.doorState = doorState;
+  }
+  public String getDoorState()
+  {
+    return this.doorState;
+  }
+}
+STEP2:模拟实现事件源类底层DoorManager,用于触发事件和广播通知事件;它使用一个Collection类型的对象类存储所有注册进来的事件监听器对象;
+import java.util.*;
+public class DoorManager
+{
+  private Collection listeners; //存储所有注册进来的事件监听器对象;
+  public void addDoorListener(DoorListener listener) //把一个事件监听器对象注册进来到链表去;
+  {
+    if(this.listeners == null)
+    {
+      this.listeners = new HashSet();
+    }
+    this.listeners.add(listener);
+  }
+  public void removeDoorListener(DoorListener listener) //移除一个已经注册的链表的事件监听器对象;
+  {
+    if(this.listeners != null)
+    {
+      this.listeners.remove(listener);
+    }
+  }
+  protected void fireDoorOpened()  //触发开门事件
+  {
+    if(this.listeners != null)
+    {
+      DoorEvent event = new DoorEvent(this, "open");//实例化底层Door类
+      notifyListeners(event);
+    }
+  }
+  protected void fireDoorClose()  //触发关门事件
+  {
+    if(this.listeners != null)
+    {
+      DoorEvent event = new DoorEvent(this, "close");
+      notifyListeners(event);
+    }
+  }
+  private void notifyListeners(DoorEvent event)
+  {
+	//把注册的两条listener类都实例化，然后出发调用doorEvent接口，用来通知上层UI系统：事件发生了，
+	  你调用相应的监听处理函数吧。这个作用相当于例子1)回调里面的
+	  //2.告诉老板老板老王干完了  callBack.execute(value);  
+    Iterator iter = this.listeners.iterator();
+    while(iter.hasNext())
+    {
+      DoorListener listener = (DoorListener)iter.next();
+      listener.doorEvent(event);
+    }
+  }
+}
+STEP3:定义上层事件监听器接口DoorListener,它继承接口EventListener;
+import java.util.EventListener;
+public interface DoorListener extends EventListener
+{
+  public void doorEvent(DoorEvent event);
+}
+STEP4:定义上层事件监听器类DoorListener1和DoorListener2,它们两都分别实现接口DoorListener;
+public class DoorListener1 implements DoorListener
+{
+  public void doorEvent(DoorEvent event)
+  {
+    if(event.getDoorState() != null && event.getDoorState().equals("open"))
+    {
+      System.out.println("门1打开");
+    }
+    else
+    {
+      System.out.println("门1关闭");
+    }
+  }
+}
+public class DoorListener2 implements DoorListener
+{
+  public void doorEvent(DoorEvent event)
+  {
+    if(event.getDoorState() != null && event.getDoorState().equals("open"))
+    {
+      System.out.println("门2打开,同时打开走廊里面的灯");
+    }
+    else
+    {
+      System.out.println("门2关闭,同时关闭走廊里面的灯");
+    }
+  }
+}
+
+至此,事件处理模型中涉及到的事件对象类、事件监听器类、事件源类,这三个参与者都已经实现;很明显,这是Observer(观察者)模式的一个具体应用;最后就是应用,只写个测试程序即可:
+public class DoorTest
+{
+  public static void main(String []args)
+  {
+    DoorManager manager = new DoorManager();
+    manager.addDoorListener(new DoorListener1()); //给"门1"增加事件监听器;
+    manager.addDoorListener(new DoorListener2()); //给"门2"增加事件监听器;
+    manager.fireDoorOpened(); //开门;
+    System.out.println("我已经进来了");
+    manager.fireDoorClose();  //关门;
+  }
+}	
+
+运行DoorMain
+
+门1打开 
+门2打开，同时打开走廊的灯
+我已经进来了
+门1关闭
+门2关闭，同时关闭走廊的灯
 
 *IO文件操作
 java.io.*;
@@ -25897,6 +26167,60 @@ public class io
      }
   } 
 }
+
+7)手机中添加日志文件
+<!--往sdcard中写入数据的权限 -->
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"></uses-permission>
+	 <!--在sdcard中创建/删除文件的权限 -->
+	<uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS"></uses-permission>
+
+/**
+ * 追加文件：使用FileWriter
+ */
+public static void AppendLogFile(String content) 
+{
+	final String SDCARD_DIR=File.separator+"sdcard"+File.separator+"logs";
+	final String NOSDCARD_DIR=File.separator+"logs";
+	String  sDir =null;
+	File fileName=null;
+	SimpleDateFormat tempDate = new SimpleDateFormat("yyyy-MM-dd" + " "  
+			+ "hh:mm:ss:SSS"); //精确到毫秒 
+	String datetime = tempDate.format(new java.util.Date()).toString();  
+	String cont=datetime+content+"\n";
+	
+	try {
+		  //首先判断sdcard是否插入
+		  String status = Environment.getExternalStorageState();
+		  if (status.equals(Environment.MEDIA_MOUNTED)) 
+		  {
+			 sDir = SDCARD_DIR;;
+		  } 
+		  else
+		  {
+			  sDir = NOSDCARD_DIR;
+		  }
+		  File dirName = new File(sDir);
+		 //如果目录不存在，则创建目录
+		 if (!dirName.exists()) 
+		 {  
+			//按照指定的路径创建文件夹  
+			dirName.mkdirs(); 
+		 }
+		 
+		 fileName=new File(sDir+File.separator+"log.txt");         	
+		//如果不存在，则创建文件
+		if(!fileName.exists())
+		{  
+		  fileName.createNewFile(); 
+		}  
+		//打开一个写文件器，构造函数中的第二个参数true表示以追加形式写文件
+		FileWriter writer = new FileWriter(fileName, true);
+		writer.write(cont);
+		writer.close();
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+}	
 
 2.读取文件功能RandomAccessFile
 文件打开模式r,w,rw
