@@ -28521,8 +28521,18 @@ CREATE TABLE user
 	password 	VARCHAR(32)	NOT NULL ,
 	age		INT		NOT NULL ,
 	sex		VARCHAR(2)	DEFAULT '男' ,
-	birthday	DATE 
+	birthday	DATETIME,
+    classTime DATETIME NOT NULL DEFAULT getdate()               //针对sql
+    classTime TIMESTAMP default (datetime('now', 'localtime')) 	//针对sqlite
 ) ;
+
+TIMESTAMP：在创建新记录和修改现有记录的时候都对这个数据列刷新。
+显示格式：YYYY-MM-DD HH:MM:SS
+时间范围:[ '1970-01-01 00:00:00'到'2037-12-31 23:59:59']
+
+DATE：显示格式：YYYY-MM-DD
+DATETIME：显示格式：YYYY-MM-DD HH:MM:SS
+
 
 INSERT INTO user(name,password,age,sex,birthday) VALUES ('李兴华','www.mldn.cn',30,'男','2008-08-27') ;
 INSERT INTO user(name,password,age,sex,birthday) VALUES ('李康','www.mldnjava.cn',23,'女','2005-08-27') ;
@@ -30493,6 +30503,8 @@ this.mydate.updateDate(2014, 1, 23);
 //**********
 //布局管理器
 //**********
+wrap_content：组件的大小以能装入其内容即可； 
+fill_parent：组件会显示得和其父组件一样大，并填充剩余的空间（在 API Level 8中命名为 match_parent）。
 *线性布局管理器（重要）：android.widget.LinearLayout
 <LinearLayout //线性布局管理器
  android:orientation = "vertical"//所有组件垂直排列
@@ -30539,20 +30551,23 @@ android.widget.FrameLayout.LayoutParams;
     tools:context=".MainActivity" >
     
     <TableRow >                         //添加一行
-        <TextView        
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="@string/hello_world" />
-        <TextView
-	        android:id="@+id/mytext"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="@string/mytext_info" /> 
-	   <Button
-	        android:id="@+id/mybtn"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="@string/mybtn_info" />  
+	    //表格布局的子对象不能指定 layout_width 属性.宽度永远是 MATCH_PARENT,所以要内嵌一个布局
+        <LinearLayout 
+                android:layout_width="wrap_content"
+            	android:layout_height="wrap_content"> 
+            	<TextView 		    
+					android:layout_width="wrap_content"
+					android:layout_height="wrap_content"
+					android:text="类别ID:"/>
+		        
+		         <EditText
+		            android:id="@+id/edtclassid"
+			        android:layout_width="wrap_content" 
+			        android:layout_height="wrap_content"
+			        android:textSize="40sp"
+		            android:textStyle="bold"		        
+			        android:text="" />
+            </LinearLayout> 
     </TableRow>
     <View                              //添加一个分割线，2个像素
         android:layout_height="2px"
@@ -31658,6 +31673,118 @@ Toast myToast = Toast.makeText(Main.this, "Toast信息提示框", Toast.LENGTH_LONG);
 myToast.setGravity(Gravity.CENTER, 60, 30);
 myToast.show();
 
+*ImageView图片显示控件
+例子1：android加载自己文件夹的图片，使用R类
+
+ 
+
+main.xml文件
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    >
+<ImageView
+     android:id="@+id/iv1"
+     android:layout_width="fill_parent"
+     android:layout_height="wrap_content"
+     android:src="@drawable/longshuai"      <!-- longshuai.png为图片的名称，记在资源文件里头，不用文件名后缀-->
+   />
+</LinearLayout>
+
+注意：强调一下，资源文件的图片命名规则比较严格，由[a-z]和数字和“_”组成，而且不能数字开头，我就常犯傻，命名老是数字或者大写字母开头，这种错误——囧。。
+我们要把longshuai.png导入到res中，最简单的方式就是直接找到这个文件夹，复制进去
+之后右键更新，我们就可以在res中看到自己的图片了
+不用写代码。。直接用自动生成的代码。。
+
+     public void onCreate(Bundle savedInstanceState)
+
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+
+      }
+
+2、加载本地图片（其实主要是SdCard中图片）
+xml文件同上面的是一样的，并不需要修改
+
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+       
+        ImageView image1 = (ImageView) findViewById(R.id.iv1);  //获得ImageView对象
+         /*为什么图片一定要转化为 Bitmap格式的！！ */
+        Bitmap bitmap = getLoacalBitmap("/sdcard/tubiao.jpg"); //从本地取图片(在cdcard中获取)  //
+        image1 .setImageBitmap(bitmap); //设置Bitmap
+      }
+
+ 
+
+    /**
+    * 加载本地图片
+    * @param url
+    * @return
+    */
+    public static Bitmap getLoacalBitmap(String url) {
+         try {
+              FileInputStream fis = new FileInputStream(url);
+              return BitmapFactory.decodeStream(fis);  ///把流转化为Bitmap图片        
+
+           } catch (FileNotFoundException e) {
+              e.printStackTrace();
+              return null;
+         }
+    }
+
+3获取网络上的图片
+mian.xml文件和1中一样，并不需要修改！
+ 
+代码：
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+       
+        ImageView image1 = (ImageView) findViewById(R.id.iv1);
+        Bitmap bitmap =getHttpBitmap("http://images.missyuan.com/attachments/day_071123/20071123_b2bfefe1ec56e2df6582vCGIZG81gbyM.png");  
+                       //从网上取图片
+        image1 .setImageBitmap(bitmap); //设置Bitmap
+}
+ 
+    /**
+    * 从服务器取图片
+    * @param url
+    * @return
+    */
+    public static Bitmap getHttpBitmap(String url) {
+         URL myFileUrl = null;
+         Bitmap bitmap = null;
+         try {
+              myFileUrl = new URL(url);
+         } catch (MalformedURLException e) {
+              e.printStackTrace();
+         }
+         try {
+              HttpURLConnection conn = (HttpURLConnection) myFileUrl.openConnection();
+              conn.setConnectTimeout(0);
+              conn.setDoInput(true);
+              conn.connect();
+              InputStream is = conn.getInputStream();
+              bitmap = BitmapFactory.decodeStream(is);
+              is.close();
+         } catch (IOException e) {
+              e.printStackTrace();
+         }
+         return bitmap;
+    }
+ 
+ 
+注意：由于需要使用网络，所以 AndroidManfest.xml 文件需要添加使用网络权限！！！
+    <uses-permission android:name="android.permission.INTERNET" />
+
+	
+
 *图片切换ImageSwitcher,用户点击按钮一张张切换图片，而且可以增加动画效果:
 android.widget.ImageSwitcher
 ViewFactory类
@@ -31777,6 +31904,200 @@ private class OnClickListenerpic implements OnClickListener
 		//加载离开动画效果
 		this.mytxt.setOutAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_out));
 
+*BaseAdapter的使用 
+适配器的作用主要是用来给诸如(Spinner、ListView、GridView)来填充数据的。而(Spinner、ListView、GridView)都有自己的适配器(记起来麻烦)。但是BaseAdapter（一招鲜）对他们来说却是通用的
+下面我来说一下BaseAdapter的主要用法，就是我们定义一个类(如：MyAdapter)而这个类继承BaseAdapter.因为它是implements了ListAdapter和SpinnerAdapter的接口，所以要实现里面的方法，代码如下(未作任何改动的）：
+
+private class MyAdapter extends BaseAdapter {
+    @Override
+    public int getCount() {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+ 
+    @Override
+    public Object getItem(int arg0) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+ 
+    @Override
+    public long getItemId(int position) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+ 
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+}
+
+例如：
+第一步：新建一个main.xml,加载几个控件
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Welcome to Mr Wei's Blog" />
+    <Spinner
+        android:id="@+id/spinner"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
+    <ListView
+        android:id="@+id/listview"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
+    <GridView
+        android:id="@+id/gridview"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        />
+</LinearLayout>
+
+第三步：修该BaseAdapterDemo.java代码如下
+
+
+package com.tutor.baseadapter;
+ 
+import android.app.Activity;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
+import android.widget.GridView;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
+ 
+public class BaseAdapterDemo extends Activity {
+ 
+    private Spinner mSpinner;
+    private ListView mListView;
+    private GridView mGridView;
+    private MyAdapter mMyAdapter;
+ 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+        setupViews();
+    }
+ 
+    public void setupViews() {
+        mMyAdapter = new MyAdapter();
+        mSpinner = (Spinner) findViewById(R.id.spinner);
+        mSpinner.setAdapter(mMyAdapter);
+        mListView = (ListView) findViewById(R.id.listview);
+        mListView.setAdapter(mMyAdapter);
+        mGridView = (GridView) findViewById(R.id.gridview);
+        mGridView.setAdapter(mMyAdapter);
+        mGridView.setNumColumns(2);
+ 
+    }
+ 
+    // 定义自己的适配器,注意getCount和getView方法
+    private class MyAdapter extends BaseAdapter {
+        @Override
+        public int getCount() {
+            // 这里我就返回10了，也就是一共有10项数据项
+            return 10;
+        }
+ 
+        @Override
+        public Object getItem(int arg0) {
+            return arg0;
+        }
+ 
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+ 
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            // position就是位置从0开始，convertView是Spinner,ListView中每一项要显示的view
+            // 通常return 的view也就是convertView
+            // parent就是父窗体了，也就是Spinner,ListView,GridView了.
+            TextView mTextView = new TextView(getApplicationContext());
+            mTextView.setText("BaseAdapterDemo");
+            mTextView.setTextColor(Color.RED);
+            return mTextView;
+        }
+ 
+    }
+
+们平常看的应用列表什么的，不是单单的一个TextView就可以了事的，所以我们可以在Layout里事先定义好布局。这里我新建了一个名叫baseadapter_provider.xml文件，代码如下：
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/icon"
+        />
+    <TextView
+        android:id="@+id/textview"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="BaseAdapter"
+        />
+</LinearLayout>
+
+将getView()方法修改如下：
+	
+@Override
+public View getView(int position, View convertView, ViewGroup parent) {
+    // position就是位置从0开始，convertView是Spinner,ListView中每一项要显示的view
+    // 通常return 的view也就是convertView
+    // parent就是父窗体了，也就是Spinner,ListView,GridView了.
+    // TextView mTextView = new TextView(getApplicationContext());
+    // mTextView.setText("BaseAdapterDemo");
+    // mTextView.setTextColor(Color.RED);
+    // return mTextView;
+     
+    //LayoutInflater不会的参照我的 Android 高手进阶教程(五)
+    convertView = LayoutInflater.from(getApplicationContext()).inflate
+    convertView = LayoutInflater.from(getApplicationContext()).inflate
+    (R.layout.baseadapter_provider,null);
+     
+    TextView mTextView = (TextView)convertView.findViewById(R.id.textview);
+    mTextView.setText("BaseAdapterDemo" + position);
+    mTextView.setTextColor(Color.RED);
+    return convertView;
+}
+
+*LayoutInflater 
+在实际工作中，事先写好的布局文件往往不能满足我们的需求，有时会根据情况在代码中自定义控件，这就需要用到LayoutInflater。
+LayoutInflater在Android中是“扩展”的意思，作用类似于findViewById()，不同的是LayoutInflater是用来获得布局文件对象的，而
+
+findViewById()是用来获得具体控件的。LayoutInflater经常在BaseAdapter的getView方法中用到，用来获取整个View并返回。
+LayoutInflater的用法有三种：
+
+第一种方法：
+    LayoutInflater inflater = LayoutInflater.from(this);  
+    View layout = inflater.inflate(R.layout.main, null);  
+
+第二种方法：
+    LayoutInflater inflater = getLayoutInflater();  
+    View layout = inflater.inflate(R.layout.main, null);  
+
+第三种方法：
+    LayoutInflater inflater = (LayoutInflater) getSystemService(LAYOUT_INFLATER_SERVICE);  
+    View layout = inflater.inflate(R.layout.main, null); 	
 
 *拖拉图片组件Gallery:android.widget.Gallery
 activity_main.xml
@@ -31991,7 +32312,7 @@ public class MainActivity extends TabActivity {
     <LinearLayout 
         android:id="@+id/tab_edit"
 	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
+	    android:layout_height="fill_parent"		
 	    android:orientation="vertical" >
 	    <EditText 
 	        android:id="@+id/edit"
@@ -32009,7 +32330,7 @@ public class MainActivity extends TabActivity {
 	<LinearLayout 
         android:id="@+id/tab_clk"
 	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
+	    android:layout_height="fill_parent"		
 	    android:orientation="vertical" >
 	    <AnalogClock 
 	        android:id="@+id/clkan"
@@ -32025,7 +32346,7 @@ public class MainActivity extends TabActivity {
 	<LinearLayout 
         android:id="@+id/tab_rgp"
 	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"
+	    android:layout_height="fill_parent"		
 	    android:orientation="vertical" >
 	    <RadioGroup 
 	        android:id="@+id/myrgp"
