@@ -1,0 +1,665 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><script id="uyan_script" charset="utf-8" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/style5.js"></script><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/analytics.js" async=""></script><script id="uyan_script" charset="utf-8" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/a"></script>
+<meta http-equiv="Content-Type" content="text/html; charset=gbk">
+<meta http-equiv="x-ua-compatible" content="ie=7">
+
+<title>App工程结构搭建：几种常见Android代码架构分析 - 51CTO.COM</title>
+<meta name="description" content="本文算是一篇漫谈，谈一谈关于android开发中工程初始化的时候如何在初期我们就能搭建一个好的架构。本文先分析几个当今比较流行的android软件包，最后我们汲取其中觉得优秀的部分，搭建我们自己的通用android工程模板。">
+<meta name="keywords" content="Android工程,代码结构">
+<!-- base href="http://mobile.51cto.com/abased-386212.htm" -->
+<link href="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/grid.css" rel="stylesheet" type="text/css">
+<link type="text/css" rel="stylesheet" href="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/art_master_top.css">
+<link href="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/css3.css" rel="stylesheet" type="text/css">
+<script language="javaScript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/base_art.js"></script>
+<script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/index_1_down.js"></script>
+<style type="text/css">
+.bds_tools a{ padding:0; margin:0;}
+</style>
+<style type="text/css"></style><style type="text/css">#uyan_cmt_box{width: 100% !important;}#uyan_star{display: none !important;}#uyan_cmty_btn{display: block !important;}#uyan_login_btn{display: block !important;}#uyan_usp{display: none !important;}.uyan_st_slog{right: 162px !important;}#uyan_ddword{display: none !important;}#uyan_info_sync{display: none !important;}</style><link type="text/css" rel="stylesheet" href="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/bdsstyle.css"><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/b5m.js" charset="utf-8" id="b5mmain" type="text/javascript"></script><script async="" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/sm.js" charset="utf-8"></script><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/logger.js"></script></head>
+<body><iframe style="display: none;" frameborder="0"></iframe><div style="display: block;" id="bdshare_s"><iframe id="bdsIfr" style="position:absolute;display:none;z-index:9999;" frameborder="0"></iframe><div style="display: none;" id="bdshare_l"><div id="bdshare_l_c"><h6>分享到</h6><ul><li><a href="#" class="bds_mshare mshare">一键分享</a></li><li><a href="#" class="bds_qzone qqkj">QQ空间</a></li><li><a href="#" class="bds_tsina xlwb">新浪微博</a></li><li><a href="#" class="bds_bdysc bdysc">百度云收藏</a></li><li><a href="#" class="bds_renren rrw">人人网</a></li><li><a href="#" class="bds_tqq txwb">腾讯微博</a></li><li><a href="#" class="bds_bdxc bdxc">百度相册</a></li><li><a href="#" class="bds_kaixin001 kxw">开心网</a></li><li><a href="#" class="bds_tqf txpy">腾讯朋友</a></li><li><a href="#" class="bds_tieba bdtb">百度贴吧</a></li><li><a href="#" class="bds_douban db">豆瓣网</a></li><li><a href="#" class="bds_tsohu shwb">搜狐微博</a></li><li><a href="#" class="bds_bdhome bdhome">百度新首页</a></li><li><a href="#" class="bds_sqq sqq">QQ好友</a></li><li><a href="#" class="bds_thx thx">和讯微博</a></li><li><a href="#" class="bds_more">更多...</a></li></ul><p><a href="#" class="goWebsite">百度分享</a></p></div></div></div>
+<!-- 导航 开始-->
+<script id="allmobilize" charset="utf-8" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/allmobilize.js"></script><meta http-equiv="Cache-Control" content="no-siteapp"><link rel="alternate" media="handheld" href="#">
+<div id="home_top">    <div class="top_nav">        <div class="left" style="width:400px"><div class="logo_51cto" title="51CTO.COM - 技术成就梦想 -  中国领先的IT技术网站"></div><a href="http://www.51cto.com/">首页</a><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/top_bg_xian.gif" style="padding-top: 2px;" align="absmiddle" width="16" height="25"><a onmouseover="show(1,this);" onmouseout="popupClose();" href="http://www.51cto.com/col/35/" target="_blank">技术频道<img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/nav_ico1.gif" style="padding-left: 4px;" align="absmiddle"></a><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/top_bg_xian.gif" align="absmiddle" width="16" height="25"><a onmouseover="show(2,this);" onmouseout="popupClose();" href="http://www.51cto.com/" target="_blank">51CTO旗下网站<img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/nav_ico1.gif" style="padding-left: 4px;" align="absmiddle"></a><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/top_bg_xian.gif" align="absmiddle" width="16" height="25"><a href="http://www.51cto.com/about/map.htm" target="_blank">地图</a> <a href="http://www.51cto.com/about/rss.html" target="_blank"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/143749870.gif" style="vertical-align:middle; margin-bottom: 5px; margin-left:5px;"></a>       </div>        <div class="right">            <div class="more"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/top_shequ.gif" align="absmiddle" width="27" height="16">社区：<a href="http://edu.51cto.com/" target="_blank" style="color:#CC0000">学院</a><a href="http://down.51cto.com/" target="_blank">下载</a><a href="http://bbs.51cto.com/" target="_blank">论坛</a><a href="http://blog.51cto.com/" target="_blank">博客</a><a onmouseover="show(3,this)" onmouseout="popupClose()" href="javascript:viod(0);">更多<img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/nav_ico1.gif" style="padding-left: 4px;" align="absmiddle"></a>            </div>            <span id="login_status"><div class="login" style="padding-top:8px; text-align:right;"><a href="http://edu.51cto.com/top" style="background:none"><img style="margin-top:-3px" id="dia" title="今天你领学分了吗？" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/dia.gif" align="absmiddle" width="20"></a><a href="http://home.51cto.com/?reback=http%253A%252F%252Fmobile.51cto.com%252Fabased-386212.htm" target="_self">登录</a><a href="http://ucenter.51cto.com/reg_01.php?reback=http%253A%252F%252Fmobile.51cto.com%252Fabased-386212.htm" target="_self">注册</a></div></span>                </div>    </div></div>
+<div class="subMenu1" id="s1" onmouseover="popupNoClose();" onmouseout="popupClose();">
+<ul>
+<li><a href="http://network.51cto.com/" target="_blank">网络</a></li>
+<li><a href="http://netsecurity.51cto.com/" target="_blank">安全</a></li>
+<li><a href="http://developer.51cto.com/" target="_blank">开发</a></li>
+<li><a href="http://database.51cto.com/" target="_blank">数据库</a></li>
+<li><a href="http://server.51cto.com/" target="_blank">服务器</a></li>
+<li><a href="http://os.51cto.com/" target="_blank">系统</a></li>
+<li><a href="http://virtual.51cto.com/" target="_blank">虚拟化</a></li>
+<li><a href="http://cloud.51cto.com/" target="_blank">云计算</a></li>
+<li><a href="http://developer.51cto.com/embed/" target="_blank">嵌入式</a></li>
+<li><a href="http://mobile.51cto.com/" target="_blank">移动开发</a></li>
+</ul>
+</div> 
+<div class="subMenu2" id="s2" onmouseover="popupNoClose()" onmouseout="popupClose()">
+<ul>
+<li><a href="http://www.51cto.com/" target="_blank" title="中国领先的IT技术网站">51CTO.COM</a></li>
+<li><a href="http://www.cioage.com/" target="_blank" title="中国首个专门服务于CIO的专业网站">CIOage.com</a></li>
+<li><a href="http://www.watchstor.com/" target="_blank" title="领先的中文存储网络媒体">WatchStor.com</a></li>
+<li><a href="http://www.hc3i.cn/" target="_blank" title="中国首家专注于数字医疗及医疗信息化的专业网站">HC3i.cn</a></li>
+</ul>
+</div>
+<script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/jquery-1.js"></script>
+<script>
+$(function(){
+	$(".bann").height(265);	 
+	$(".bann").css("background-color","white");
+	$(".hot").css("top","450px");
+	//$(".fixfloat").css("height","640px");
+	$(".g_13").find(".focus").css("height","640px");
+});
+var edunum=2;
+$(function(){
+	$("#change").click(function(){
+		$("#edu > ul").css("display","none");
+		var eduid='edu'+edunum;
+		$("#" + eduid).css("display","block");	
+		if(edunum<4){
+			edunum++;	
+		}else{
+			edunum=1;	
+		}							
+	});  
+});
+</script>
+
+<script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/head_art_more1.js"></script><div class="subMenu3" id="s3" onmouseover="popupNoClose()" onmouseout="popupClose()" style="z-index:9999;position: absolute;">
+<ul>
+<li><a href="http://home.51cto.com/" target="_blank">家园</a></li>
+<li><a href="http://edu.51cto.com/" target="_blank">学院</a></li>
+<li><a href="http://blog.51cto.com/" target="_blank">博客</a></li>
+<li><a href="http://bbs.51cto.com/" target="_blank">论坛</a></li>
+<li><a href="http://down.51cto.com/" target="_blank">下载</a></li>
+<li><a href="http://selftest.51cto.com/" target="_blank">自测</a></li>
+<li><a href="http://doctor.51cto.com/" target="_blank">门诊</a></li>
+<li><a href="http://blog.51cto.com/newsletter/" target="_blank">周刊</a></li>
+<li><a href="http://book.51cto.com/" target="_blank">读书</a></li>
+<li><a href="http://g.51cto.com/" target="_blank">技术圈</a></li>
+</ul>
+</div>
+
+<!-- 登陆信息 -->
+<!-- 导航 结束--> 
+ <div class="g_39 mb10">
+	<div id="tonglanad" class="fl"><script language="JavaScript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ad_002.js"></script><script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ad_002.htm"></script><iframe noresize="" scrolling="No" marginheight="0" marginwidth="0" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/14.htm" align="left" width="760" frameborder="0" height="90"></iframe></div>
+	<div id="list4" class="fr">
+		<ul>
+			<li id="wordlinkad1"><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wordlink1.js"></script><script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ajs.php"></script><a href="http://gg3.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=1271__zoneid=254__cb=77f5f75a8a__oadest=http%3A%2F%2Fwot.51cto.com%2F2015operation%2F" target="_blank"><font color="blue">WOT2015 运维开发人员必看</font></a><div id="beacon_77f5f75a8a" style="position: absolute; left: 0px; top: 0px; visibility: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/lg_002.gif" alt="" style="width: 0px; height: 0px;" width="0" height="0"></div>
+</li>
+			<li id="wordlinkad2"><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wordlink2.js"></script><script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ajs_004.php"></script><a href="http://gg2.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=591__zoneid=255__cb=7c9cd300ed__oadest=http%3A%2F%2Fnetwork.51cto.com%2Fnetwork%2FEquinix%2F2014%2Findex.html" target="_blank"><font color="blue">Equinix引领主机托管未来
+</font></a><div id="beacon_7c9cd300ed" style="position: absolute; left: 0px; top: 0px; visibility: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/lg.gif" alt="" style="width: 0px; height: 0px;" width="0" height="0"></div>
+</li>
+			<li id="wordlinkad3"><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wordlink3.js"></script><script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ajs_003.php"></script><a href="http://gg3.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=1261__zoneid=256__cb=dc2c1db474__oadest=http%3A%2F%2Fdown.51cto.com%2Fdata%2F1979596" target="_blank"><font color="red">有奖下载:F5全方位的安全服务</font></a><div id="beacon_dc2c1db474" style="position: absolute; left: 0px; top: 0px; visibility: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/lg_004.gif" alt="" style="width: 0px; height: 0px;" width="0" height="0"></div>
+</li>
+			<li id="wordlinkad4"><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wordlink4.js"></script><script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ajs_002.php"></script><a href="http://gg1.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=1192__zoneid=257__cb=30e363e345__oadest=http%3A%2F%2Fnetwork.51cto.com%2Fnetwork%2Fdptechnology%2FADX%2Findex.html" target="_blank"><font color="blue">迪普科技 最懂您业务的应用交付</font></a><div id="beacon_30e363e345" style="position: absolute; left: 0px; top: 0px; visibility: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/lg_003.gif" alt="" style="width: 0px; height: 0px;" width="0" height="0"></div>
+</li>
+		</ul>
+	</div>
+<br class="dle">
+</div>
+
+<div class="g_39 menu">
+<div class="subNav_logo"><a href="http://mobile.51cto.com/" title="移动开发"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/143329156.gif"></a></div>
+<div class="subNav_l"><a href="http://mobile.51cto.com/">首页</a> | <a href="http://mobile.51cto.com/android/">Android</a> | <a href="http://mobile.51cto.com/iphone/">iOS</a> | <a href="http://mobile.51cto.com/windows-phone/">Windows Phone</a> | <a href="http://mobile.51cto.com/blackberry/">BlackBerry</a> | <a href="http://mobile.51cto.com/webos/">webOS</a> | <a href="http://mobile.51cto.com/symbian/">Symbian</a> | <a href="http://mobile.51cto.com/bada/">bada</a> | <a href="http://mobile.51cto.com/ophone/">OPhone</a> | <a href="http://mobile.51cto.com/others/" target="_blank">其他</a></div>  
+<div class="search fr">
+<dl>
+<form name="searchform" action="http://www.51cto.com/php/search.php" target="_blank" method="post" style="margin:0px; padding:0px;">
+<dt class="fl"><input name="keyword" class="searchInput f14 input" value="请输入关键字" onfocus="doempty(this, '请输入关键字');" onblur="doempty(this, '请输入关键字');" type="text"></dt>
+<dd class="fl"><input src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/search.gif" type="image"></dd></form>
+</dl>
+</div>
+<br class="dle">
+</div>
+<div class="g_39 b3-s-4273B3 rel">
+<!--width : 26*25 - 15 = 635px-->
+<div class="g_26 fl m_l">
+<div class="brief bgF8F8F8">
+<p class="crumb ">您所在的位置：<a href="http://mobile.51cto.com/"><b>移动开发</b></a> &gt; <a href="http://mobile.51cto.com/android/"><b>Android</b></a> &gt; <a href="http://mobile.51cto.com/abased/"><b>Android基础</b></a> &gt;  <b>App工程结构搭建：几种常见Android代码架构分析</b> </p>
+<h1>App工程结构搭建：几种常见Android代码架构分析</h1>
+<div class="msg">
+<div>2013-03-22 17:12  佚名  eoe <span class="f12-a"><a href="#commment" target="_self"></a></span> 字号：<span class="f14-b"><a href="javascript:setfont(12);" target="_self">T</a></span> | <span class="f16-b"><a href="javascript:setfont(16);" target="_self">T</a></span></div>
+<div class="artHd" id="books" style="padding:5px 25px;display:none;"><script language="JavaScript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/getBookData.htm"></script></div>
+<div class="fav"><a href="javascript:favorBox('open');" title="一键收藏，随时查看，分享好友！" target="_self"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/Fav.gif" alt="一键收藏，随时查看，分享好友！" border="0"></a></div>
+</div>
+<div class="brieftext">
+<p class="f14 green">本文算是一篇漫谈，谈一谈关于android开发中工程初始化的时候如何在初期我们就能搭建一个好的架构。本文先分析几个当今比较流行的android软件包，最后我们汲取其中觉得优秀的部分，搭建我们自己的通用android工程模板。</p>
+<p class="ad">AD：<script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/keywords_ad_new.js"></script><a href="http://wot.51cto.com/2015operation/" target="_blank" style="text-decoration: none;color:red">WOT2015 互联网运维与开发者大会 热销抢票</a>
+</p>
+</div>
+</div>
+<div class="tag bgF8F8F8" id="indexlist" style="display:none;">
+<ul id="indexliststr">
+</ul>
+<br class="dle">
+</div>
+<div class="content bgF8F8F8 f14">
+<div id="content">
+<p></p><p>关于Android架构，因为手机的限制，目前我觉得也确实没什么大谈特谈的，但是从开发的角度，看到整齐的代码，优美的分层总是一种舒服的享受的。</p>
+<p>从艺术的角度看，其实我们是在追求一种美。</p>
+<p>本文先分析几个当今比较流行的android软件包，最后我们汲取其中觉得优秀的部分，搭建我们自己的通用android工程模板。</p>
+<p><strong>1. 微盘</strong></p>
+<p>微盘的架构比较简单，我把最基本，最主干的画了出来：</p>
+<p style="text-align: center;"><img class="fit-image" onload="javascript:if(this.width>498)this.width=498;" onmousewheel="javascript:return big(this)" title="2011062522381915.png" alt="2011062522381915.png" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/1724290.png" width="480" height="300"></p>
+<p>第一层：com.sina.VDisk：com.sina(公司域名)+app(应用程序名称) 。</p>
+<p>第二层：各模块名称（主模块VDiskClient和实体模块entities）</p>
+<p>第三层：各模块下具体子包，实现类。</p>
+<p>从图中我们能得出上述分析中一个最简单最经典的结构，一般在应用程序包下放一些全局的包或者类，如果有多个大的模块，可以分成多个包，其中包括一个主模块。</p>
+<p>在主模块中定义基类，比如BaseActivity等，如果主模块下还有子模块，可以在主模块下建立子模块相应的包。说明一点，有的时候如果只有一个主模块，我们完全可以省略掉模块这一层，就是BaseActivity.java及其子模块直接提至第二层。</p>
+<p>在实体模块中，本应该定义且只定义相应的实体类，供全局调用(然而实际情况可能不是这样，后面会说到)。在微盘应用中，几乎所有的实体类是以 
+xxx+info命名的，这种命名也是我赞成的一种命名，从语义上我觉得xxxModel.java这种命名更生动更真实，xxxModel给我一种太机
+ 
+械太死板的感觉，这点完全是个人观点，具体操作中以个人习惯为主。还有一点，在具体的xxxInfo,java中有很多实体类中是没有get/set的方
+ 
+法，而是直接使用public的字段名。这一点，我是推荐这种方式的，特别是在移动开发中，get/set方法很多时候是完全没有必要的，而且是有性能消
+ 耗的。当然如果需要对字段设置一定的控制，get/set方法也是可以酌情使用的。</p>
+<p><strong>2. 久忆日记     </strong></p>
+<p>相比于微盘的工程结构，久忆日记的结构稍微复杂了一些。如下图：</p>
+<p style="text-align: center;"><img class="fit-image" onload="javascript:if(this.width>498)this.width=498;" onmousewheel="javascript:return big(this)" title="2011062523523174.png" alt="2011062523523174.png" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/1724291.png" width="481" height="342"></p>
+<p>1).第一层和前面微盘一样的.</p>
+<p>2).第二层则没有模块分类,直接把需要的具体实现类都放在下面，主要日记的一些日记相关的Activity。</p>
+<p>3).第二层的实体包命令为model包，里面不仅存放了实体类xxx.java，而且存放了更高一级的实体类的相关类，比如 
+xxxManager.java,xxxFactory.java.关于这一点，我们可以参考一下android.jar中结构，我们发 
+现，Activity.java和ActivityManager.java，View.java和 
+ViewManager.java，Bitmap.java和BitmapFactory.java等等N多类似的一对类都在同一个包下，我个人觉得实体
+ 
+包下存放实体类相应的Manager和Factoty类也是正确的，是我们应该采纳的一种结构。这里就打破了前面微盘中说的实体包下存放且只存放实体类的
+ 说法了。在现实中，从灵活和合理的角度，久忆日记的这种实体包中存放对象内容更加实用。</p>
+<p>4).第二层中增加了前面微盘中没有涉及到的config，constant和common包。第一，其中config中存储一些系统配置，比如名
+称，应 用参数等系统级的常量或者静态变量，当然，如果你有其他大模块的配置，比如如果拥有复杂的用户管理模块的话，完全可以增加一个 
+UserConfig.java中存储用户的一些配置信息等等。第二，constant包，此包下存放的都是public static  
+final常量，定义状态，类型等等。出于性能考虑，android开发中我不推荐使用枚举。common包中定义一个公用库，这里因为应用单一，无法很
+ 好的说明common包内容结构。</p>
+<p>5).common包要涉及后面多个软件比较后我们再得出结论。</p>
+<p>通过久忆日记的分析，借鉴到了不少的东西，使我们的架构更丰满更强大了。</p>
+<p><strong>3. 网易新闻</strong></p>
+<p>网易新闻确实做的不错，从应用的角度看，是我最欣赏的应用之一。它的工程结构是怎么样的呢？</p>
+<p style="text-align: center;"><img class="fit-image" onload="javascript:if(this.width>498)this.width=498;" onmousewheel="javascript:return big(this)" title="2011062601393332.png" alt="2011062601393332.png" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/1724292.png" width="480" height="467"></p>
+<p>网易新闻的工程结构和前面2各app又有很多的不同，它并没有按照模块来分，而是主要按照组件的类型来分的，然后把此类型所有的类全部放在其下。那么这种把所有activity全部放在activity包下的分法的确在android开发中比较普遍。</p>
+<p>1).第一层被分成了两层，可以看出来，这里肯定是采用了公用包jar，如此说来，我们开发公用包的时候也应该按照"公司域名+公用模块名称"组合方式来命名比较好。</p>
+<p>2).第三层(绿色层)中activity和service包下都是存放所有的activity组件和service组件，其实这里面包含了一种代
+码习 
+惯。往往activity相关的类如监听器，线程，适配器等非常多的类，这些不好直接丢在activity包下，而是直接写在相应的activity中以
+ 匿名或者内部类形式定义，否则activity包和service包看上去会比较杂乱。</p>
+<p>因为android的app很可能不是很大，activity或者service包也不会杂乱，所以网易新闻的这种方式也是很有参考借鉴价值的。</p>
+<p><strong>4. 小米应用</strong></p>
+<p>小米应用包括3个应用，小米分享，小米阅读，小米标签，从实际代码开发来看，我感觉不是同一个团队，或者同一组人开发的。 这种情况下，他们的架构又使如何？</p>
+<p style="text-align: center;"><img class="fit-image" onload="javascript:if(this.width>498)this.width=498;" onmousewheel="javascript:return big(this)" title="2011062610021614.png" alt="2011062610021614.png" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/1724293.png" width="480" height="380"></p>
+<p style="text-align: center;"><img class="fit-image" onload="javascript:if(this.width>498)this.width=498;" onmousewheel="javascript:return big(this)" title="2011062610022797.png" alt="2011062610022797.png" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/1724294.png" width="480" height="269"></p>
+<p>上面的结构以及结构内部的细节其实很多地方我都是不大苟同的，但是能做出来好东西就是值得大家学习的，所以我只把其中我认为最值得学习的一点拿出来说。</p>
+<p>首先，widget，provider这些特殊模块分类建立单独的模块包即可，这里久不多说什么。</p>
+<p>第二，通过观察，我们发现小米分享中每个应用都有common包，不仅有应用程序级别的common包，而且有应用程序内级别的common包。我
+想说的 
+是，android开发中随着项目开发的积累，确能提取到很多公用的方法、类、功能模块。各个项目之间如此，各个项目内部也是如此，所以针对项目类被各个
+ 模块调用的方法，类也可以提取出相应的公用库。</p>
+<p>那么这里有个问题，公用common包的内部包可能涉及到很多的内容，是否要分包分级呢，又如何分包分级？我觉得，这个因情况而已，一般来说移动开
+发，为 
+了减少包的大小，我们会控制common包的膨胀，往往common包仅仅包括一些最简洁最经典的东西，东西又很少的话就无需分包，但是如果贵公司开发成
+ 百上千，每个项目都用到行为分析，意见反馈等公用模块，分一下包会更清楚一点。总而言之，分不分包无关紧要，尽量让你的代码结构清晰，思路了然就好。</p>
+<p><strong>5. 聚各家之长，集大家之成</strong></p>
+<p>上面粗略的分析之后，我们应该对android程序的架构有一个感觉，清晰而杂乱。我也没有去了看更多其他应用的结构，暂时就总结一下，得出一个我们自己的通用的工程结构。</p>
+<p>假如公司名为tianxia，目前公司准备开发读书应用，交友应用，生活服务应用。</p>
+<p>第一时间我们应该得出下面这种整个的架构(具体的app开发当然要分开)：</p>
+<p style="text-align: center;"><img class="fit-image" onload="javascript:if(this.width>498)this.width=498;" onmousewheel="javascript:return big(this)" title="2011062610544467.png" alt="2011062610544467.png" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/1724295.png" width="479" height="226"></p>
+<p>公司下开发3个应用reader，friend，life，其中common包为这三个应用共用，config，oauth为可选，view存放一
+些最通 用的自定义view，比如对话框，定制的列表等，如果你觉得有些view可能不会通用，最好把它放在应用程序类的common包下。</p>
+<p>如果各位看过Android学习系列(6)--App模块化及工程扩展的话，对于这种多应用模式，应该存在android库共用情况，来解决资源替换，工程复用的问题。所以我又修改如下：</p>
+<p style="text-align: center;"><img class="fit-image" onload="javascript:if(this.width>498)this.width=498;" onmousewheel="javascript:return big(this)" title="2011062612094744.png" alt="2011062612094744.png" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/1724296.png" width="479" height="146"></p>
+<p>其中BaseApplication做一些所有app都会用到的基础初始化或者配置。之后其他应用的application应该都继承此BaseApplication。</p>
+<p>base是一个android库，也是一个完整的android工程，而common只是一个jar文件，当然你也可以根据需要作为android库来开发。其他主工程reader，friend，life应该引用base工程。</p>
+<p>ad包存放公司自定义的一些软广告。</p>
+<p>feedback包下存储一些用户反馈等通用功能模块。</p>
+<p>其实，很多情况下，upgrade模块也可以添加到base工程下，制定统一的软件升级机制。</p>
+<p>接下来我们以reader为例子，来详细完成它的工程结构的设计。</p>
+<p style="text-align: center;"><img class="fit-image" onload="javascript:if(this.width>498)this.width=498;" onmousewheel="javascript:return big(this)" title="2011062612384522.png" alt="2011062612384522.png" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/1724297.png" width="479" height="171"></p>
+<p>其中，config包下的AppConfig.java存放应用程序的根配置，比如版本，目录配置等等。</p>
+<p>module包下分为各个模块，blog为博客模块，bbs为论坛模块，person为整站个人信息模块，widget表示一种特殊功能模块。</p>
+<p>common包下存放一些工具类，本应用程序的一些自定义View等等。</p>
+<p>再结合之前所讲的内容，我们把整个串起来，完善一个reader的最后的架构如下(两外两个freind和life亦是类似如此)：</p>
+<p style="text-align: center;"><img class="fit-image" onload="javascript:if(this.width>498)this.width=498;" onmousewheel="javascript:return big(this)" title="2011062614353019.png" alt="2011062614353019.png" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/1724298.png" width="479" height="203"></p>
+<p>注意：1).功能模块和类型模块均可以划分，如果没有需要的话，模块的划分都可以省略。</p>
+<p>2).activity和service这类组件划分，如果没有需要的话，组件的划分都可以省略。</p>
+<p>3).所有的划分，如果没有需要的话，所有的划分都可以省略。</p>
+<p>但是，但是，这种分类，我个人还是觉得层次清晰，架构明朗，值得参考的，当然其中很多细节我也没有仔考虑，如有不妥，还请发现者指出。</p>
+<p>【编辑推荐】</p>
+<div>
+<ol>
+    <li><a target="_blank" href="http://mobile.51cto.com/mobile-180526.htm">Android代码结构深入剖析</a></li>
+    <li><a target="_blank" href="http://mobile.51cto.com/aprogram-376093.htm">Android编译完成后的代码结构</a></li>
+    <li><a target="_blank" href="http://mobile.51cto.com/abased-377206.htm">Android工程目录结构介绍</a></li>
+    <li><a target="_blank" href="http://mobile.51cto.com/abased-377325.htm">Android工程的目录结构详解</a></li>
+</ol>
+</div>
+<div align="right">【责任编辑：<a href="mailto:xuchuan@51cto.com" class="ln">Pockey</a> TEL：（010）68476606】</div><br> 
+<p class="blank10"></p> 
+ 
+ 
+
+<p class="blank10"></p>
+<div class="f12"> <span class="fl">原文：<a href="http://mobile.51cto.com/abased-386212.htm" class="blue"><b>App工程结构搭建：几种常见Android代码架构分析</b></a></span> <span class="fr"><a href="http://mobile.51cto.com/">返回移动开发首页</a></span> </div>
+<p class="blank1"></p>
+</div>
+<hr style="border-top: #555555 1px solid; height: 1px; border-right: medium none; border-bottom: medium none; border-left: medium none">
+<div style="width: 600px; background: #ffffff"><img alt="" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wKioL1R8Lnyw8xIAAABdLowZTVg940.jpg" width="350" border="0" height="140"></div>
+<hr style="border-top: #555555 1px solid; height: 1px; border-right: medium none; border-bottom: medium none; border-left: medium none">
+<iframe src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/bulkfollow.htm" scrolling="no" width="600" frameborder="0" height="239"></iframe>
+<div class="tips">
+<div style="float:left;">
+<span style="float:left; margin-top:4px;">分享到：</span>
+<!-- Baidu Button BEGIN -->
+    <div id="bdshare" class="bdshare_t bds_tools get-codes-bdshare" style="margin-right:5px; float:left;">
+        <a href="#" title="分享到QQ空间" class="bds_qzone"></a>
+        <a href="#" title="分享到新浪微博" class="bds_tsina"></a>
+        <a href="#" title="分享到腾讯微博" class="bds_tqq"></a>
+        <a href="#" title="分享到人人网" class="bds_renren"></a>
+        <a href="#" title="分享到网易微博" class="bds_t163"></a>
+        <span class="bds_more"></span>
+		<a title="累计分享11次" href="#" class="shareCount">11</a>
+
+</div>
+<!--<div class="fl"> 
+    </div>
+--><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/bds_s_v2.js" type="text/javascript" id="bdshare_js" data="type=tools&amp;uid=585532"></script>
+
+<script type="text/javascript">
+	var bds_config = {'snsKey':{'tsina':'2378297317'}};
+	document.getElementById("bdshell_js").src = "http://bdimg.share.baidu.com/static/js/shell_v2.js?t=" + new Date().getHours();
+</script>
+<!-- Baidu Button END -->
+
+
+
+</div><div class="fr blue"><a href="javascript:AddFavorite(document.location.href,document.title);" target="_self">收藏</a>|<a href="javascript:window.print();" target="_self">打印</a>|<a id="msnqqcopy" title="分享本资源给好友" target="_self">复制</a></div>
+</div>
+</div>
+<!--内容 end-->
+<div class="topbiaoqing">
+<div class="biaoqing fixfloat pad">
+<ul>
+<li><a href="javascript:getcountscom(386212,1)" target="_self"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/bq1.jpg"></a>
+<div><a href="javascript:getcountscom(386212,1)" target="_self">给力</a></div>
+<span id="386212_1">(0票)</span></li>
+<li><a href="javascript:getcountscom(386212,2)" target="_self"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/bq2.jpg"></a>
+<div><a href="javascript:getcountscom(386212,2)" target="_self">动心</a></div>
+<span id="386212_2">(0票)</span></li>
+<li><a href="javascript:getcountscom(386212,3)" target="_self"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/bq3.jpg"></a>
+<div><a href="javascript:getcountscom(386212,3)" target="_self">废话</a></div>
+<span id="386212_3">(0票)</span></li>
+<li><a href="javascript:getcountscom(386212,4)" target="_self"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/bq4.jpg"></a>
+<div><a href="javascript:getcountscom(386212,4)" target="_self">专业</a></div>
+<span id="386212_4">(0票)</span></li>
+<li><a href="javascript:getcountscom(386212,5)" target="_self"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/bq5.jpg"></a>
+<div><a href="javascript:getcountscom(386212,5)" target="_self">标题党</a></div>
+<span id="386212_5">(0票)</span></li>
+<li><a href="javascript:getcountscom(386212,6)" target="_self"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/bq6.jpg"></a>
+<div><a href="javascript:getcountscom(386212,6)" target="_self">路过</a></div>
+<span id="386212_6">(0票)</span></li>
+</ul>
+</div>
+<script language="javascript"> 
+getcountscom(386212,11);
+
+</script>
+</div>
+<p class="blank10"></p>
+<!--reltag end-->
+
+<p class="blank10"></p>
+<div class="uyan">
+<div id="uyan_frame"><div id="uyan_cmt_box" style="width: 100%; font-family: 'Microsoft YaHei',arial,tahoma,宋体,sans-serif; position: relative; float: left;"><div id="uyan_top" style="height: 30px; font-size: 12px; font-weight: bold;"><div id="uyan_like" style="float: left; padding-right: 13px; padding-top: 2px; width: 88px;"><a id="uyan_vu" onclick="UYAN.voteUD('uu');" style="background: url('http://v2.uyan.cc/code/images/like.png') no-repeat scroll 19px 5px #999; border-radius: 3px 3px 3px 3px; color: #F2F2F2; cursor: pointer; float: left; font-weight: normal; height: 16px; padding: 3px; width: 48px;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/upDig.png" style="float: left; padding: 2px 5px 0 2px; border: 0 none;"></a><a id="uyan_vd" onclick="UYAN.voteUD('du');" style="background-color: #999; border-radius: 3px 3px 3px 3px; color: #F2F2F2; cursor: pointer; float: left; font-weight: normal; height: 16px; margin-left: 5px; padding: 3px; width: 16px;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/downDig.png" style="float: left; padding: 3px 0 0 2px;"></a><div style="clear: both;"></div></div><div id="uyan_count" style="font-size: 12px; color: #888888; float: left; font-weight: normal; padding: 5px 5px 0 0;">共有<span id="uyan_vun">3</span>人喜欢&nbsp;&nbsp;共<span id="uyan_acn">2</span>条评论</div><a id="uyan_login_btn" onclick="UYAN.login();" style="background-color: #999; border-radius: 3px 3px 3px 3px; color: #EEEEEE; cursor: pointer; float: right; font-size: 13px; font-weight: bold; height: 20px; margin-left: 5px; margin-top: 2px; height: 16px; line-height: 17px; padding: 3px 15px; text-shadow: 0 1px 0 #646464;">登录</a><a id="uyan_cmty_btn" onclick="UYAN.cmty();" style="background-color: #999; border-radius: 3px 3px 3px 3px; color: #EEEEEE; cursor: pointer; float: right; font-size: 13px; font-weight: bold; height: 20px; margin-left: 5px; margin-top: 2px; height: 16px; line-height: 17px; padding: 3px 15px; text-shadow: 0 1px 0 #646464;">社区</a><div style="clear: both;"></div></div><div id="uyan_usp" style="margin-bottom: 10px;"><div style="font-size: 13px; height: 26px; overflow: hidden;"><a id="uyan_uname_txt_t" style="color: #5874af; cursor: pointer; display: block; float: left; font-weight: bold; margin: 6px 0 0 0; text-decoration: none; font-size: 16px; line-height: 17px;" href="javascript:;"></a><div style="background: url('http://v2.uyan.cc/code/images/medalIcon.png') no-repeat scroll 0 2px transparent; float: left; height: 20px; margin: 6px 0 0 10px; padding-left: 15px; line-height: 18px;"><div id="uyan_utname_edit" style="display: none;"><div style="color: #333333; float: left; padding-right: 4px;">头衔:</div><input id="uyan_utname" style="color: #777777; float: left; height: 12px; padding: 1px 3px; width: 100px;" type="text"><a onclick="UYAN.setUtname();" style="background-color: #8BAD50; border: 1px solid #799E3C; border-radius: 3px 3px 3px 3px; color: #FFFFFF; cursor: pointer; float: left; margin-left: 3px; padding: 0 10px; text-align: center; text-decoration: none;">确定</a><a onclick="UYAN.changeUtname();" style="color: #AAAAAA; cursor: pointer; float: left; margin-left: 6px;">取消</a></div><div id="uyan_utname_txt"><div id="uyan_utname_show" style="color: #444444; float: left; padding-right: 5px;"></div><a onclick="UYAN.changeUtname();" style="color: #5874af; cursor: pointer; float: left; text-decoration: none;">编辑头衔</a></div></div><div style="background: url('http://v2.uyan.cc/code/images/emailIcon.png') no-repeat scroll 0 0 transparent; float: left; height: 20px; margin: 6px 0 0 10px; padding-left: 19px; line-height: 18px;"><div id="uyan_femail_edit" style="display: none;"><div style="color: #333333; float: left; padding-right: 4px;">邮箱:</div><input id="uyan_femail" style="color: #777777; float: left; height: 12px; padding: 1px 3px; width: 100px;" type="text"><a onclick="UYAN.setFemail();" style="background-color: #8BAD50; border: 1px solid #799E3C; border-radius: 3px 3px 3px 3px; color: #FFFFFF; cursor: pointer; float: left; margin-left: 3px; padding: 0 10px; text-align: center; text-decoration: none;">确定</a><a onclick="UYAN.changeFemail();" style="color: #AAAAAA; cursor: pointer; float: left; margin-left: 6px;">取消</a></div><div id="uyan_femail_txt"><div id="uyan_femail_show" style="color: #444444; float: left; padding-right: 5px;"></div><a onclick="UYAN.changeFemail();" style="color: #5874af; cursor: pointer; float: left; text-decoration: none;">跟踪回复</a></div></div><div style="clear: both;"></div></div><div style="padding: 4px 0;"><div id="uyan_uacn" style="font-size: 12px; float: left; padding: 0 10px 0 0;">0条评论</div><div id="uyan_uvon" style="font-size: 12px; float: left; padding: 0 10px 0 0;">0次被喜欢</div><div style="clear: both;"></div></div><div style="clear: both;"></div></div><div id="uyan_star" style="height: 22px; padding: 0 0 0 60px; overflow: hidden;"><div style="float: left;"><a id="uyan_vs_1" onclick="UYAN.voteStar(1);" onmouseover="UYAN.cagStar(1);" onmouseout="UYAN.cagStar(0);" style="background: url('http://v2.uyan.cc/code/images/star_un.png') no-repeat scroll 0 0 transparent; cursor: pointer; float: left; height: 16px; padding-right: 5px; width: 16px;"></a><a id="uyan_vs_2" onclick="UYAN.voteStar(2);" onmouseover="UYAN.cagStar(2);" onmouseout="UYAN.cagStar(0);" style="background: url('http://v2.uyan.cc/code/images/star_un.png') no-repeat scroll 0 0 transparent; cursor: pointer; float: left; height: 16px; padding-right: 5px; width: 16px;"></a><a id="uyan_vs_3" onclick="UYAN.voteStar(3);" onmouseover="UYAN.cagStar(3);" onmouseout="UYAN.cagStar(0);" style="background: url('http://v2.uyan.cc/code/images/star_un.png') no-repeat scroll 0 0 transparent; cursor: pointer; float: left; height: 16px; padding-right: 5px; width: 16px;"></a><a id="uyan_vs_4" onclick="UYAN.voteStar(4);" onmouseover="UYAN.cagStar(4);" onmouseout="UYAN.cagStar(0);" style="background: url('http://v2.uyan.cc/code/images/star_un.png') no-repeat scroll 0 0 transparent; cursor: pointer; float: left; height: 16px; padding-right: 5px; width: 16px;"></a><a id="uyan_vs_5" onclick="UYAN.voteStar(5);" onmouseover="UYAN.cagStar(5);" onmouseout="UYAN.cagStar(0);" style="background: url('http://v2.uyan.cc/code/images/star_un.png') no-repeat scroll 0 0 transparent; cursor: pointer; float: left; height: 16px; padding-right: 5px; width: 16px;"></a><div style="clear: both;"></div></div></div><div id="uyan_loginot" style="padding: 0 0 3px 60px;"><div style="clear: both;"></div></div><div style="height: 78px; overflow: hidden; padding: 0 0 20px 0; _padding: 0;"><div style="float: left; border-radius: 6px 6px 6px 6px; width: 50px; height: 50px; overflow: hidden; margin-right: 10px;"><img id="uyan_uface" style="width: 50px; height: 50px;" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/duface.png"></div><div style="padding: 0 0 0 60px; overflow: visible;"><div onclick="UYAN.hidIntro(this.firstChild);" style="height: 60px; background: url('http://v2.uyan.cc/code/images/textareabg.png') repeat-x scroll 0 0 #FFFFFF; border: 1px solid #d7d7d7; border-radius: 4px 4px 4px 4px; padding: 7px; position: relative; overflow: hidden; cursor: text;"><textarea id="uyan_comment" onkeyup="UYAN.checkTxt(this, 140);" onkeydown="UYAN.checkTxt(this, 140);" onfocus="UYAN.hidIntro(this);" onblur="UYAN.shoIntro(this);" style="background: none repeat scroll 0 0 #FFFFFF; padding: 0; box-shadow: 0 0; color: #BDBBBB; border: 0; z-index: 90; overflow: hidden; float: left; font-size: 13px; font-family: 'Microsoft YaHei',arial,tahoma,宋体,sans-serif; resize: none; height: 60px; display: block; outline: none; word-wrap: break-word; margin: 0;">请输入你的评论</textarea><pre style="width: 100%; font-size: 13px; left: 0; line-height: 18px; position: absolute; top: 0; visibility: hidden; word-wrap: break-word; white-space: pre-wrap;" id="uyan_cmt_cnt"></pre></div><div style="clear: both;"></div></div><div id="uyan_smile" onclick="UYAN.shoSmile(this);" style="display: none; background: url('http://v2.uyan.cc/code/images/emotion.png') no-repeat scroll 6px 2px #FFFFFF; color: #3A82FF; cursor: pointer; font-size: 11px; height: 17px; left: 70px; position: relative; top: -2px; width: 60px; z-index: 5500; border: 1px solid #d7d7d7; border-top: none; border-radius: 2px; margin: 0; line-height: 20px; padding-bottom: 2px; font-family: 'Microsoft YaHei',arial,tahoma,宋体,sans-serif; text-align: center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;表情</div></div><div id="uyan_ssmile" style="margin-left: 60px; margin-top: -20px; _margin-top: 0; position: absolute; z-index: 9999; display: none;"><div style="border: 1px solid #989999; border-radius: 5px; width: 322px; height: 160px; background: #fff; font-size: 12px; padding: 6px;"><ul style="margin: 5px 0 0 0; padding: 0; height: 24px;"><li id="uyan_ssmile_df" onclick="UYAN.shoSmile(this, 'df');" style="float: left; list-style: none; line-height: 22px; background: url('http://v2.uyan.cc/code/images/smileb.gif') no-repeat scroll 0 center transparent; color: #fff; width: 68px; height: 24px; overflow: hidden; text-align: center; margin: 0 5px; display: inline; cursor: pointer; padding: 0;">默认表情</li><li id="uyan_ssmile_al" onclick="UYAN.shoSmile(this, 'al');" style="float: left; list-style: none; line-height: 22px; background: none repeat scroll 0 center transparent; width: 68px; height: 24px; overflow: hidden; text-align: center; margin: 0 5px; display: inline; cursor: pointer; padding: 0;">阿狸</li></ul><ul id="uyan_ssmile_list" style="margin: 0; padding: 0; width: 310px; border-top: 1px solid #d3e4f0; border-left: 1px solid #d3e4f0; margin: 5px 0 0 5px;"></ul></div></div><div style="color: #D2D2D2; height: 20px; font-size: 13px; position: absolute; z-index: 100; margin-right: 10px; margin-top: -42px; right: 0;"><span id="uyan_tts">140</span></div><div id="uyan_stat_btn" style="position: relative; height: 40px; overflow: hidden; margin-top: -20px; _margin-top: 0;"><a id="uyan_cmt_btn" onmouseover="UYAN.cagBtn('on', this);" onmouseout="UYAN.cagBtn('out', this);" style="background: url('http://v2.uyan.cc/code/images/buttonLarge.png') repeat-x scroll 0 0 transparent; border: 1px solid #d0cfcf; border-radius: 5px 5px 5px 5px; color: #666; cursor: pointer; float: right; font-size: 13px; font-weight: bold; height: 24px; line-height: 21px; margin: 4px 0 0; padding: 3px 25px 1px; text-align: center; text-shadow: 0 1px 0 #FFFFFF;" onclick="UYAN.addCmt(this);">发&nbsp;&nbsp;布</a><div id="uyan_ottype" style="float: right; padding: 11px 15px 0 3px;"><div style="color: #AAAAAA; float: right; font-size: 12px; padding-left: 5px;"><span id="uyan_vis" style="float: right; line-height: 18px;">&nbsp;&nbsp;或<span style="text-decoration: underline; cursor: pointer;" onclick="UYAN.login();">游客留言</span></span><span onmouseover="UYAN.show('uyan_slog');" onmouseout="UYAN.hide('uyan_slog');" style="float: right; cursor: pointer;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/arrow.png" style="margin: 1px 2px 0;"></span><span onclick="UYAN.loginRenren();" title="使用人人账号登陆" style="float: right; cursor: pointer;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/renren.png" style="margin: 1px 2px 0;"></span><span onclick="UYAN.loginTQq();" title="使用腾讯微博账号登陆" style="float: right; cursor: pointer;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/tqq.png" style="margin: 1px 2px 0;"></span><span onclick="UYAN.loginQq();" title="使用QQ账号登陆" style="float: right; cursor: pointer;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/qq.png" style="margin: 1px 2px 0;"></span><span onclick="UYAN.loginTSina();" title="使用新浪微博账号登陆" style="float: right; cursor: pointer;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/tsina.png" style="margin: 1px 2px 0;"></span></div><div style="clear: both;"></div></div><div style="clear: both;"></div></div><div id="uyan_slog" class="uyan_st_slog" onmouseover="UYAN.show(this);" onmouseout="UYAN.hide(this);" style="background-color: #FFFFFF; border-color: #d3d2d2; border-width: 1px 1px 2px; border-style: solid; position: absolute; z-index: 90000; padding: 1px 3px; display: none; width: 20px;"><div onclick="UYAN.loginKaixin001();" title="kaixin001" style="color: #9797C4;  font-size: 12px; font-weight: normal; width:16px; margin:0 auto; padding:2px 0; cursor: pointer; height: 17px; overflow: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/kaixin001.png"></div><div onclick="UYAN.loginTSohu();" title="sohu" style="color: #9797C4;  font-size: 12px; font-weight: normal; width:16px; margin:0 auto; padding:2px 0; cursor: pointer; height: 17px; overflow: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/tsohu.png"></div><div onclick="UYAN.loginT163();" title="163" style="color: #9797C4;  font-size: 12px; font-weight: normal; width:16px; margin:0 auto; padding:2px 0; cursor: pointer; height: 17px; overflow: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/t163.png"></div></div><div id="uyan_sort" style="color: #424242; font-size: 12px;"><div style="height: 28px; overflow: hidden; float: left;"><a id="uyan_sort_name" onclick="UYAN.cmtSort();" style="background: url('http://v2.uyan.cc/code/images/sorttype.png') no-repeat scroll right 7px transparent; color: #424242; cursor: pointer; display: block; float: left; font-size: 12px; padding-right: 15px;">按时间排序</a></div><div style="clear: both;"></div></div><div id="uyan_sort_box" style="background-color: #FFFFFF; border-color: #d3d2d2; border-width: 1px 1px 2px; border-style: solid; left: 15px; position: absolute; width: 115px; z-index: 90000; display: none;"><div style="color: #9797C4; font-size: 12px; font-weight: normal; padding-bottom: 2px; padding-left: 21px; padding-top: 4px; height: 16px;">排序方式:</div><a id="uyan_sort_time" onclick="UYAN.cmtSort(0);" style="color: rgb(28, 28, 28); cursor: pointer; display: block; font-size: 12px; padding-bottom: 2px; padding-left: 21px; padding-top: 2px; height: 16px; background: url(&quot;http://v2.uyan.cc/code/images/currentSort.png&quot;) no-repeat scroll 8px 8px transparent; font-weight: bold;">按时间排序</a><a id="uyan_sort_hot" onclick="UYAN.cmtSort(1);" style="color: rgb(28, 28, 28); cursor: pointer; display: block; font-size: 12px; padding-bottom: 2px; padding-left: 21px; padding-top: 2px; height: 16px;">按热度排序</a></div><div id="uyan_cmt_list">	<div id="uyan_cmt_26578002" onmouseover="UYAN.changeS(this, 'on', '26578002');" onmouseout="UYAN.changeS(this, 'out', '26578002');" style="border-top: 1px solid #D7D7D7; padding: 15px 0;">		<div style="position: relative; float: left; border-radius: 6px 6px 6px 6px; width: 50px; height: 50px; margin-right: 10px;">			<a href="" style="cursor: pointer; text-decoration: none; white-space: inherit;" target="_blank">				<img style="border: 0 none; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.22); border-radius: 4px; width: 50px; height: 50px;" onload="UYAN.loadUface(this, 'http://v2.uyan.cc/code/images/duface.png', 'http://v2.uyan.cc/code/images/duface.png');" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/duface.png" onerror="UYAN.noUface(this, 'http://v2.uyan.cc/code/images/duface.png');">			</a>			<span style="bottom: -4px; position: absolute; right: -5px;">				<a title="游客" style="cursor: pointer; text-decoration: none; background: url('http://v2.uyan.cc/code/images/semail.png') no-repeat scroll 0 0 transparent; background-position: 0 0; opacity: 1; display: block; float: left; height: 16px !important; line-height: 100px; opacity: 0.8; overflow: hidden; width: 16px !important;" href="" target="_blank"></a>			</span>		</div>		<div style="padding-left: 60px;">			<div style="color: #303030; font-size: 13px; line-height: 18px; height: 20px;">				<a id="uyan_cmt_uname_26578002" class="uyan_cmt_uname" href="" target="_blank" style="color: #2B8CE6; cursor: pointer; float: left; text-decoration: none; padding-right: 6px;">1147692726</a>								<span class="uyan_cmt_ufromname" style="color: #aaaaaa; float: left;">(<a style="color: #aaaaaa; text-decoration: none;" href="" target="_blank">游客</a>)</span>				<div id="uyan_star_26578002" style="float: right; display: none;"></div>			</div>			<div class="uyan_cmt_txt" style="color: #303030; font-size: 13px; line-height: 18px; word-wrap: break-word; text-align: left;">图片都看不清，真不晓得上图的作者有没有一点用心</div>			<div class="uyan_cmt_exp" style="padding: 5px 5px 0 0; line-height: 14px;">				<a id="uyan_exp_rpy_26578002" onclick="UYAN.addRpy(26578002);" onmouseover="UYAN.mouseOO(this.nextSibling, 'rpy.png');" onmouseout="UYAN.mouseOO(this.nextSibling, 'rpy2.png');" style="color: #999999; cursor: pointer; display: block; float: right; font-size: 11px; padding: 0 4px 0 0;">回复</a><a onclick="UYAN.addRpy(26578002);" onmouseover="UYAN.mouseOO(this, 'rpy.png');" onmouseout="UYAN.mouseOO(this, 'rpy2.png');" style="background: url('http://v2.uyan.cc/code/images/rpy2.png') no-repeat scroll 0 0 transparent; cursor: pointer; display: block; float: right; height: 13px; margin-right: 4px; margin-top: 0px; width: 14px;"></a>				<a onclick="UYAN.cmtUD('du', 26578002);" style="color: #999999; cursor: pointer; display: none; float: right; font-size: 11px; padding: 0 10px 0 0;">踩<span id="uyan_cd_26578002" style="padding-left: 3px;"></span></a>				<a id="uyan_cdw_26578002" onclick="UYAN.cmtUD('du', 26578002);" style="background: url('http://v2.uyan.cc/code/images/downDig2.png') no-repeat scroll 0 0 transparent; cursor: pointer; display: none; float: right; height: 13px; margin-right: 4px; margin-top: 3px; width: 13px;"></a>				<a onclick="UYAN.cmtUD('uu', 26578002);" style="color: #999999; cursor: pointer; display: block; float: right; font-size: 11px; padding: 0 10px 0 0;">顶<span id="uyan_cu_26578002" style="padding-left: 3px;"></span></a>				<a id="uyan_cuw_26578002" onclick="UYAN.cmtUD('uu', 26578002);" style="background: url('http://v2.uyan.cc/code/images/upDig2.png') no-repeat scroll 0 0 transparent; cursor: pointer; display: block; float: right; height: 13px; margin-right: 4px; margin-top: 0px; width: 13px;"></a>								<div style="color: #999999; float: left; font-size: 11px; padding: 0 10px 0 0;">2014-11-26 09:27</div>				<div style="clear: both;"></div>			</div>		</div>		<div style="clear: both;"></div>	</div>	<div id="uyan_cmt_26645766" onmouseover="UYAN.changeS(this, 'on', '26645766');" onmouseout="UYAN.changeS(this, 'out', '26645766');" style="border-top: 1px solid #D7D7D7; padding: 15px 0; margin-left: 60px;">		<div style="position: relative; float: left; border-radius: 6px 6px 6px 6px; width: 38px; height: 38px; margin-right: 10px;">			<a href="http://s.uyan.cc/?u=http%3A%2F%2Fqzone.qq.com%2F" style="cursor: pointer; text-decoration: none; white-space: inherit;" target="_blank">				<img style="border: 0 none; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.22); border-radius: 4px; width: 38px; height: 38px;" onload="UYAN.loadUface(this, 'http://qzapp.qlogo.cn/qzapp/216508/70BB415B377FA00EBA54F140C811B89E/50', 'http://v2.uyan.cc/code/images/duface.png');" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/50.png" onerror="UYAN.noUface(this, 'http://v2.uyan.cc/code/images/duface.png');">			</a>			<span style="bottom: -4px; position: absolute; right: -5px;">				<a title="QQ空间" style="cursor: pointer; text-decoration: none; background: url('http://v2.uyan.cc/code/images/sqq.png') no-repeat scroll 0 0 transparent; background-position: 0 0; opacity: 1; display: block; float: left; height: 16px !important; line-height: 100px; opacity: 0.8; overflow: hidden; width: 16px !important;" href="http://s.uyan.cc/?u=http%3A%2F%2Fqzone.qq.com%2F" target="_blank"></a>			</span>		</div>		<div style="padding-left: 48px;">			<div style="color: #303030; font-size: 13px; line-height: 18px; height: 20px;">				<a id="uyan_cmt_uname_26645766" class="uyan_cmt_uname" href="http://s.uyan.cc/?u=http%3A%2F%2Fqzone.qq.com%2F" target="_blank" style="color: #2B8CE6; cursor: pointer; float: left; text-decoration: none; padding-right: 6px;"> colin</a>								<span class="uyan_cmt_ufromname" style="color: #aaaaaa; float: left;">(<a style="color: #aaaaaa; text-decoration: none;" href="http://s.uyan.cc/?u=http%3A%2F%2Fqzone.qq.com%2F" target="_blank">QQ空间</a>)</span>				<div id="uyan_star_26645766" style="float: right; display: none;"></div>			</div>			<div class="uyan_cmt_txt" style="color: #303030; font-size: 13px; line-height: 18px; word-wrap: break-word; text-align: left;">@1147692726: 你不会看大图吗？</div>			<div class="uyan_cmt_exp" style="padding: 5px 5px 0 0; line-height: 14px;">				<a id="uyan_exp_rpy_26645766" onclick="UYAN.addRpy(26645766, 26578002);" onmouseover="UYAN.mouseOO(this.nextSibling, 'rpy.png');" onmouseout="UYAN.mouseOO(this.nextSibling, 'rpy2.png');" style="color: #999999; cursor: pointer; display: block; float: right; font-size: 11px; padding: 0 4px 0 0;">回复</a><a onclick="UYAN.addRpy(26645766, 26578002);" onmouseover="UYAN.mouseOO(this, 'rpy.png');" onmouseout="UYAN.mouseOO(this, 'rpy2.png');" style="background: url('http://v2.uyan.cc/code/images/rpy2.png') no-repeat scroll 0 0 transparent; cursor: pointer; display: block; float: right; height: 13px; margin-right: 4px; margin-top: 0px; width: 14px;"></a>				<a onclick="UYAN.cmtUD('du', 26645766);" style="color: #999999; cursor: pointer; display: none; float: right; font-size: 11px; padding: 0 10px 0 0;">踩<span id="uyan_cd_26645766" style="padding-left: 3px;"></span></a>				<a id="uyan_cdw_26645766" onclick="UYAN.cmtUD('du', 26645766);" style="background: url('http://v2.uyan.cc/code/images/downDig2.png') no-repeat scroll 0 0 transparent; cursor: pointer; display: none; float: right; height: 13px; margin-right: 4px; margin-top: 3px; width: 13px;"></a>				<a onclick="UYAN.cmtUD('uu', 26645766);" style="color: #999999; cursor: pointer; display: block; float: right; font-size: 11px; padding: 0 10px 0 0;">顶<span id="uyan_cu_26645766" style="padding-left: 3px;">1</span></a>				<a id="uyan_cuw_26645766" onclick="UYAN.cmtUD('uu', 26645766);" style="background: url('http://v2.uyan.cc/code/images/upDig2.png') no-repeat scroll 0 0 transparent; cursor: pointer; display: block; float: right; height: 13px; margin-right: 4px; margin-top: 0px; width: 13px;"></a>								<div style="color: #999999; float: left; font-size: 11px; padding: 0 10px 0 0;">2014-11-28 12:56</div>				<div style="clear: both;"></div>			</div>		</div>		<div style="clear: both;"></div>	</div></div>    <div style="clear: both; display: none;"></div></div><div id="uyan_rpy" style="display: none; padding-left: 60px; padding-top: 10px;"><div style="height: 78px; overflow: hidden; padding: 0 0 20px 0; _padding: 0;"><div style="float: left; border-radius: 6px 6px 6px 6px; width: 38px; height: 38px; overflow: hidden; margin-right: 10px;"><img id="uyan_uface_r" style="width: 38px; height: 38px;" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/duface.png"></div><div style="padding: 0 0 0 48px; overflow: visible;"><div onclick="UYAN.hidIntro(this.firstChild, uyan_smile_region);" style="height: 60px; background: url('http://v2.uyan.cc/code/images/textareabg.png') repeat-x scroll 0 0 #FFFFFF; border: 1px solid #d7d7d7; border-radius: 4px 4px 4px 4px; padding: 7px; position: relative; overflow: hidden; cursor: text;"><textarea id="uyan_comment" onkeyup="UYAN.checkTxt(this, 140, uyan_tts_region);" onkeydown="UYAN.checkTxt(this, 140, uyan_tts_region);" onfocus="UYAN.hidIntro(this, uyan_smile_region);" onblur="UYAN.shoIntro(this, uyan_smile_region);" style="background: none repeat scroll 0 0 #FFFFFF; padding: 0; box-shadow: 0 0; color: #BDBBBB; border: 0; z-index: 90; overflow: hidden; float: left; font-size: 13px; font-family: 'Microsoft YaHei',arial,tahoma,宋体,sans-serif; resize: none; height: 60px; display: block; outline: none; word-wrap: break-word; margin: 0;">请输入你的评论</textarea><pre style="width: 100%; font-size: 13px; left: 0; line-height: 18px; position: absolute; top: 0; visibility: hidden; word-wrap: break-word; white-space: pre-wrap;" id="uyan_cmt_cnt"></pre></div><div style="clear: both;"></div></div><div id="uyan_smile" onclick="UYAN.shoSmile(this, '', uyan_smile_region);" style="display: none; background: url('http://v2.uyan.cc/code/images/emotion.png') no-repeat scroll 6px 2px #FFFFFF; color: #3A82FF; cursor: pointer; font-size: 11px; height: 17px; left: 58px; position: relative; top: -2px; width: 60px; z-index: 5500; border: 1px solid #d7d7d7; border-top: none; border-radius: 2px; margin: 0; line-height: 20px; padding-bottom: 2px; font-family: 'Microsoft YaHei',arial,tahoma,宋体,sans-serif; text-align: center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;表情</div></div><div id="uyan_ssmile" style="margin-left: 48px; margin-top: -20px; _margin-top: 0; position: absolute; z-index: 9999; display: none;"><div style="border: 1px solid #989999; border-radius: 5px; width: 322px; height: 160px; background: #fff; font-size: 12px; padding: 6px;"><ul style="margin: 5px 0 0 0; padding: 0; height: 24px;"><li id="uyan_ssmile_df" onclick="UYAN.shoSmile(this, 'df', uyan_smile_region);" style="float: left; list-style: none; line-height: 22px; background: url('http://v2.uyan.cc/code/images/smileb.gif') no-repeat scroll 0 center transparent; color: #fff; width: 68px; height: 24px; overflow: hidden; text-align: center; margin: 0 5px; display: inline; cursor: pointer; padding: 0;">默认表情</li><li id="uyan_ssmile_al" onclick="UYAN.shoSmile(this, 'al', uyan_smile_region);" style="float: left; list-style: none; line-height: 22px; background: none repeat scroll 0 center transparent; width: 68px; height: 24px; overflow: hidden; text-align: center; margin: 0 5px; display: inline; cursor: pointer; padding: 0;">阿狸</li></ul><ul id="uyan_ssmile_list" style="margin: 0; padding: 0; width: 310px; border-top: 1px solid #d3e4f0; border-left: 1px solid #d3e4f0; margin: 5px 0 0 5px;"></ul></div></div><div style="color: #D2D2D2; height: 20px; font-size: 13px; position: absolute; z-index: 100; margin-right: 10px; margin-top: -42px; right: 0;"><span id="uyan_tts">140</span></div><div id="uyan_stat_btn_r" style="position: relative; height: 40px; overflow: hidden; margin-top: -20px; _margin-top: 0;"><a id="uyan_cmt_btn" onmouseover="UYAN.cagBtn('on', this);" onmouseout="UYAN.cagBtn('out', this);" style="background: url('http://v2.uyan.cc/code/images/buttonLarge.png') repeat-x scroll 0 0 transparent; border: 1px solid #d0cfcf; border-radius: 5px 5px 5px 5px; color: #666; cursor: pointer; float: right; font-size: 13px; font-weight: bold; height: 24px; line-height: 21px; margin: 4px 0 0; padding: 3px 25px 1px; text-align: center; text-shadow: 0 1px 0 #FFFFFF;" onclick="UYAN.addCmt(this, uyan_comment_region);">回&nbsp;&nbsp;复</a><div style="float: right; padding: 11px 15px 0 3px;"><div style="color: #AAAAAA; float: right; font-size: 12px; padding-left: 5px;"><span id="uyan_vis" style="float: right; line-height: 18px;">&nbsp;&nbsp;或<span style="text-decoration: underline; cursor: pointer;" onclick="UYAN.login();">游客留言</span></span><span onmouseover="UYAN.show('uyan_slog');" onmouseout="UYAN.hide('uyan_slog');" style="float: right; cursor: pointer;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/arrow.png" style="margin: 1px 2px 0;"></span><span onclick="UYAN.loginRenren();" title="使用人人账号登陆" style="float: right; cursor: pointer;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/renren.png" style="margin: 1px 2px 0;"></span><span onclick="UYAN.loginTQq();" title="使用腾讯微博账号登陆" style="float: right; cursor: pointer;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/tqq.png" style="margin: 1px 2px 0;"></span><span onclick="UYAN.loginQq();" title="使用QQ账号登陆" style="float: right; cursor: pointer;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/qq.png" style="margin: 1px 2px 0;"></span><span onclick="UYAN.loginTSina();" title="使用新浪微博账号登陆" style="float: right; cursor: pointer;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/tsina.png" style="margin: 1px 2px 0;"></span></div><div style="clear: both;"></div></div><div style="clear: both;"></div></div><div id="uyan_slog" class="uyan_st_slog" onmouseover="UYAN.show(this);" onmouseout="UYAN.hide(this);" style="background-color: #FFFFFF; border-color: #d3d2d2; border-width: 1px 1px 2px; border-style: solid; position: absolute; z-index: 90000; padding: 1px 3px; display: none; width: 20px;"><div onclick="UYAN.loginKaixin001();" title="kaixin001" style="color: #9797C4;  font-size: 12px; font-weight: normal; width:16px; margin:0 auto; padding:2px 0; cursor: pointer; height: 17px; overflow: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/kaixin001.png"></div><div onclick="UYAN.loginTSohu();" title="sohu" style="color: #9797C4;  font-size: 12px; font-weight: normal; width:16px; margin:0 auto; padding:2px 0; cursor: pointer; height: 17px; overflow: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/tsohu.png"></div><div onclick="UYAN.loginT163();" title="163" style="color: #9797C4;  font-size: 12px; font-weight: normal; width:16px; margin:0 auto; padding:2px 0; cursor: pointer; height: 17px; overflow: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/t163.png"></div></div></div><div style="clear: both;"></div><div id="uyan_box" style="font-family: 'Microsoft YaHei'; display: none; top: 0px; left: 0px; z-index: 9999999; opacity: 1; empty-cells: show; position: absolute; background: none repeat scroll 0 0 #FFFFFF; text-align: left;"><table style="border: none; width: auto; line-height: normal;" border="0" cellpadding="0" cellspacing="0"><tbody><tr><td style="background: url('http://v2.uyan.cc/code/images/boxnw.png') repeat scroll 0 0 transparent; height: 10px; padding: 0; width: 10px; opacity: 0.5;"></td><td style="background-color: black; height: 10px; opacity: 0.3; padding: 0; filter: alpha(opacity=60);"></td><td onclick="UYAN.hideBox();" style="background: url('http://v2.uyan.cc/code/images/boxclose.png') no-repeat scroll 0 0 transparent; _background: url('http://v2.uyan.cc/code/images/boxclose.gif') no-repeat scroll 0 0 transparent; cursor: pointer; display: block; height: 23px; position: absolute; right: -8px; top: -8px; width: 23px; z-index: 100000; padding: 0;"></td></tr><tr><td style="background-color: black; opacity: 0.6; padding: 0; width: 10px; opacity: 0.3; filter: alpha(opacity=60);"></td><td style="background-color: white; padding: 0;"><div id="uyan_box_cnt"></div></td><td style="background-color: black; opacity: 0.6; padding: 0; width: 10px; opacity: 0.3; filter: alpha(opacity=60);"></td></tr><tr><td style="background: url('http://v2.uyan.cc/code/images/boxsw.png') repeat scroll 0 0 transparent; height: 10px; padding: 0; width: 10px; opacity: 0.5;"></td><td style="background-color: black; height: 10px; opacity: 0.3; padding: 0; filter: alpha(opacity=60);"></td><td style="background: url('http://v2.uyan.cc/code/images/boxse.png') repeat scroll 0 0 transparent; height: 10px; padding: 0; width: 10px; opacity: 0.5;"></td></tr></tbody></table></div><div id="uyan_cmty" style="display: none;"><div style="width: 520px;"><div style="border-bottom: 1px solid #b6b5b5; background: #eeeeee; color: #666; font-size: 16px; height: 22px; padding: 10px 0;"><span id="uyan_sdm_name" style="float: left; padding-left: 25px; text-shadow: 0 1px 0 #fff;">mobile.51cto.com</span></div><div style="color: #666;"><div style="background: url('http://v2.uyan.cc/code/images/commentWeb.png') no-repeat 20px 13px; border-right: 1px solid #EEEEEE; float: left; height: 49px; padding-left: 70px; padding-top: 6px; width: 102px;"><span id="uyan_dacn" style="font-size: 18px;">4225</span><br><span style="font-size: 12px;">评论数</span></div><div style="background: url('http://v2.uyan.cc/code/images/likeWeb.png') no-repeat 24px 10px; border-right: 1px solid #EEEEEE; float: left; height: 49px; padding-left: 70px; padding-top: 6px; width: 102px;"><span id="uyan_dvun" style="font-size: 18px;">2374</span><br><span style="font-size: 12px;">喜欢数</span></div><div style="background: url('http://v2.uyan.cc/code/images/humanWeb.png') no-repeat 27px 13px; border-right: 1px solid #EEEEEE; float: left; height: 49px; padding-left: 70px; padding-top: 6px; width: 102px;"><span id="uyan_daun" style="font-size: 18px;">589</span><br><span style="font-size: 12px;">用户数</span></div><div style="clear: both;"></div></div><div id="uyan_cmty_info_tmp" style="border-top: 1px solid #CCCCCC; padding: 10px 20px; font-size: 15px; color: #555555;">数据正在加载中...</div><div style="background-color: #F0F0F0; border-top: 1px solid #CCCCCC; height: 20px; padding-top: 6px;"><a target="_blank" href="http://www.uyan.cc/" style="color: #6B6B6B; cursor: pointer; display: block; float: right; font-family: Arial, Helvetica, sans-serif; font-size: 11px; margin-right: 15px; text-decoration: none;">友言</a><div style="clear: both;"></div></div></div></div><div id="uyan_login" style="display: none;"><div style="border-bottom: 1px solid #b6b5b5; background: #eeeeee; color: #666; font-size: 16px; height: 22px; padding: 10px 0;"><span style="padding-left: 25px; text-shadow: 0 1px 0 #fff; font-weight: 600;">社会化帐号登录</span></div><div style="width: 429px; padding: 22px;"><h2 style="margin: 0; font-size: 14px; font-weight: normal; color: #666; padding-left: 25px; padding-bottom: 5px; background: none repeat scroll 0 center transparent;">点击按钮，使用社交帐号评论</h2><div id="uyan_loginom" style="padding-bottom: 20px;"><span style="height: 16px; float: left; display: block; line-height: 16px; overflow: hidden; width: 60px; margin: 15px 22px 0 25px; display: inline;"><a title="用新浪微博账号登陆" onclick="UYAN.loginTSina();" style="cursor: pointer; font-size: 14px; color: #666; text-decoration: none;"><img title="用新浪微博账号登陆" style="display: block; float: left; width: 16px; height: 16px;" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/tsina.png" border="0">&nbsp;&nbsp;新浪微博</a></span><span style="height: 16px; float: left; display: block; line-height: 16px; overflow: hidden; width: 60px; margin: 15px 22px 0 25px; display: inline;"><a title="用QQ账号登陆" onclick="UYAN.loginQq();" style="cursor: pointer; font-size: 14px; color: #666; text-decoration: none;"><img title="用QQ账号登陆" style="display: block; float: left; width: 16px; height: 16px;" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/qq.png" border="0">&nbsp;&nbsp;QQ</a></span><span style="height: 16px; float: left; display: block; line-height: 16px; overflow: hidden; width: 60px; margin: 15px 22px 0 25px; display: inline;"><a title="用腾讯微博账号登陆" onclick="UYAN.loginTQq();" style="cursor: pointer; font-size: 14px; color: #666; text-decoration: none;"><img title="用腾讯微博账号登陆" style="display: block; float: left; width: 16px; height: 16px;" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/tqq.png" border="0">&nbsp;&nbsp;腾讯微博</a></span><span style="height: 16px; float: left; display: block; line-height: 16px; overflow: hidden; width: 60px; margin: 15px 22px 0 25px; display: inline;"><a title="用人人网账号登陆" onclick="UYAN.loginRenren();" style="cursor: pointer; font-size: 14px; color: #666; text-decoration: none;"><img title="用人人网账号登陆" style="display: block; float: left; width: 16px; height: 16px;" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/renren.png" border="0">&nbsp;&nbsp;人人网</a></span><span style="height: 16px; float: left; display: block; line-height: 16px; overflow: hidden; width: 60px; margin: 15px 22px 0 25px; display: inline;"><a title="用网易微博账号登陆" onclick="UYAN.loginT163();" style="cursor: pointer; font-size: 14px; color: #666; text-decoration: none;"><img title="用网易微博账号登陆" style="display: block; float: left; width: 16px; height: 16px;" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/t163.png" border="0">&nbsp;&nbsp;网易微博</a></span><span style="height: 16px; float: left; display: block; line-height: 16px; overflow: hidden; width: 60px; margin: 15px 22px 0 25px; display: inline;"><a title="用搜狐微博账号登陆" onclick="UYAN.loginTSohu();" style="cursor: pointer; font-size: 14px; color: #666; text-decoration: none;"><img title="用搜狐微博账号登陆" style="display: block; float: left; width: 16px; height: 16px;" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/tsohu.png" border="0">&nbsp;&nbsp;搜狐微博</a></span><span style="height: 16px; float: left; display: block; line-height: 16px; overflow: hidden; width: 60px; margin: 15px 22px 0 25px; display: inline;"><a title="用开心网账号登陆" onclick="UYAN.loginKaixin001();" style="cursor: pointer; font-size: 14px; color: #666; text-decoration: none;"><img title="用开心网账号登陆" style="display: block; float: left; width: 16px; height: 16px;" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/kaixin001.png" border="0">&nbsp;&nbsp;开心网</a></span><div style="clear: both;"></div></div><div id="uyan_vis_login"><h2 style="padding-top: 10px; border-top: 1px solid #ccc; margin: 0; font-size: 14px; font-weight: normal; color: #666; padding-left: 25px; margin-top: 15px; background: none repeat scroll 0 center transparent;">作为游客留言</h2><span style="height: 30px; display: block; padding-left: 54px; overflow: hidden; margin-top: 15px;"><p style="text-indent: 0; display: block; float: left; width: 58px; line-height: 30px; text-align: left; margin: 0; font-size: 14px; color: #666;">Email <span style="color: #ff0000;">*</span></p><input onkeyup="UYAN.syncEN();" onkeydown="UYAN.syncEN();" id="uyan_email_tmp" style="margin: auto; border: 1px solid #c1c1c1; color: #687793; float: left; height: 24px; line-height: 24px; padding: 2px 8px; width: 230px; border-radius: 5px;" type="text"></span><span style="height: 30px; display: block; padding-left: 54px; overflow: hidden; margin-top: 18px;"><p style="text-indent: 0; display: block; float: left; width: 58px; line-height: 30px; text-align: left; margin: 0; font-size: 14px; color: #666;">昵&nbsp;&nbsp;称</p><input onfocus="UYAN.nnbg('h');" onblur="UYAN.nnbg('s');" id="uyan_uname_tmp" style="margin: auto; background: #f2f2f2; border: 1px solid #c1c1c1; color: #687793; float: left; height: 24px; line-height: 24px; padding: 2px 8px; width: 230px; border-radius: 5px; box-shadow: 0 1px 5px rgba(0, 0, 0, 0.15) inset;" type="text"></span><span style="height: 30px; display: block; padding-left: 54px; overflow: hidden; margin-top: 15px; width: 306px;"><div id="uyan_login_warn_tmp" style="color: #ff0000; float: left; font-family: Arial, Helvetica, sans-serif; font-size: 13px; padding-right: 15px; padding-top: 8px; text-align: right; width: 150px;"></div><input onclick="UYAN.loginEmail();" style="margin: auto; background: url('http://v2.uyan.cc/code/images/btn.jpg') no-repeat; width: 86px; height: 26px; border: none; font-size: 14px; font-weight: bold; color: #666; float: right; cursor: pointer;" value="登录" type="submit"></span></div></div></div><div style="background-color: #FFFFFF; border-color: #D3D2D2; border-style: solid; border-width: 1px 1px 2px; height: 130px; position: absolute; top: 23px; width: 135px; z-index: 99999; display: none;"><div style="color: #9797C4; font-size: 12px; font-weight: normal; padding: 4px 0 4px 10px; line-height: 18px;">顶并分享到:</div><div style="padding: 3px 0;"><input id="sinaShareBox" style="float: left; margin: 2px 5px 0 10px; padding: 0;" type="checkbox"><div style="background: url('http://v2.uyan.cc/code/images/tsina.png') no-repeat scroll 0 0 transparent; color: #494949; float: left; height: 18px; line-height: 18px; font-size: 12px; font-weight: normal; padding-left: 18px;">新浪微博</div><div style="clear: both;"></div></div><div style="padding: 3px 0;"><input id="sinaShareBox" style="float: left; margin: 2px 5px 0 10px; padding: 0;" type="checkbox"><div style="background: url('http://v2.uyan.cc/code/images/tsina.png') no-repeat scroll 0 0 transparent; color: #494949; float: left; height: 18px; line-height: 18px; font-size: 12px; font-weight: normal; padding-left: 18px;">新浪微博</div><div style="clear: both;"></div></div><div style="padding: 3px 0;"><input id="sinaShareBox" style="float: left; margin: 2px 5px 0 10px; padding: 0;" type="checkbox"><div style="background: url('http://v2.uyan.cc/code/images/tsina.png') no-repeat scroll 0 0 transparent; color: #494949; float: left; height: 18px; line-height: 18px; font-size: 12px; font-weight: normal; padding-left: 18px;">新浪微博</div><div style="clear: both;"></div></div><div style="padding: 5px 0 0 10px;"><a style="border: 1px solid #D0CFCF; background: url('http://v2.uyan.cc/code/images/buttonLarge.png') repeat-x; border-radius: 3px 3px 3px 3px; color: #666; font-weight: bold; cursor: pointer; font-weight: normal; float: left; font-size: 12px; height: 20px; line-height: 22px; overflow: hidden; padding: 0 18px;">顶</a><a style="background-color: #FFFFFF; border: 1px solid #FFFFFF; color: #737373; height: 20px; line-height: 22px; overflow: hidden; cursor: pointer; display: block; float: left; font-size: 12px; font-weight: normal; padding: 0 18px;">取消</a><div style="clear: both; height: 1px; overflow: hidden;"></div></div></div></div>
+<script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/uyan.js"></script>
+</div>
+<!--box end-->
+
+<div class="bor">
+<div class="titbg pl15">关于<a href="http://www.51cto.com/php/search.php?keyword=Android%B9%A4%B3%CC" target="_blank" class="underline">Android工程</a>&nbsp;&nbsp;<a href="http://www.51cto.com/php/search.php?keyword=%B4%FA%C2%EB%BD%E1%B9%B9" target="_blank" class="underline">代码结构</a>的更多文章</div>
+<div class="reltag">
+<ul class="fl list02">
+  <li><a href="http://mobile.51cto.com/news-410953.htm" title="Android 开源技术主管转投雅虎">Android 开源技术主管转投雅虎</a></li><li><a href="http://mobile.51cto.com/abased-410662.htm" title="Android开发之WebView中捕获JavaScript事件">Android开发之WebView中捕获JavaScript事件</a></li><li><a href="http://mobile.51cto.com/comment-404244.htm" title="这条安卓架构师之路，我们可以这样走">这条安卓架构师之路，我们可以这样走</a></li><li><a href="http://mobile.51cto.com/aprogram-400933.htm" title="Andorid APK反逆向解决方案：梆梆加固原理探寻">Andorid APK反逆向解决方案：梆梆加固原理</a></li><li><a href="http://mobile.51cto.com/aprogram-395717.htm" title="如何为你的Android应用缩放图片">如何为你的Android应用缩放图片</a></li>
+</ul>
+<div class="fr">
+<div class="h5 f12"><a href="http://mobile.51cto.com/anews-414191.htm" title="Android 4.4 最新功能大盘点"><b>Android 4.4 最新功能大盘点</b></a></div>
+<a href="http://mobile.51cto.com/anews-414191.htm" title="Android 4.4 最新功能大盘点"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wKioOVJveWbj3LjOAAAwITxsGSg851.jpg" alt="Android 4.4 最新功能大盘点" width="100" border="0" height="80"></a>
+<p class="c666">Android 4.4即将发布，这对大家来说都是很期待的，当然，无论是<a class="blue" href="http://mobile.51cto.com/anews-414191.htm" title="Android 4.4 最新功能大盘点">[详细]</a></p>
+</div>
+</div></div>
+
+<p class="blank10"></p>
+<div class="relart fl bor">
+<div class="titbg">
+<h3 class="fl t1">栏目热门</h3>
+<a href="http://mobile.51cto.com/col/1618/click1.htm" class="tmore">更多&gt;&gt;</a></div>
+<ul>
+  
+	  <li><a href="http://mobile.51cto.com/abased-410785.htm" title="Android 性能优化方法">Android 性能优化方法</a></li>
+	  
+	  <li><a href="http://mobile.51cto.com/abased-410889.htm" title="Android之ListView原理学习与优化总结">Android之ListView原理学习与优化总结</a></li>
+	  
+	  <li><a href="http://mobile.51cto.com/abased-410788.htm" title="Android开发优化之——对界面UI的优化（1）">Android开发优化之——对界面UI的优化（1）</a></li>
+	  
+	  <li><a href="http://mobile.51cto.com/abased-410852.htm" title="Android布局的优化方案汇总">Android布局的优化方案汇总</a></li>
+	  
+	  <li><a href="http://mobile.51cto.com/abased-410791.htm" title="Android开发优化之——从代码角度进行优化">Android开发优化之——从代码角度进行优化</a></li>
+	  
+</ul>
+</div>
+<div class="cathot fr bor">
+<div class="titbg">
+<h3 class="fl t1">同期最新</h3>
+<a href="http://mobile.51cto.com/col/1618" class="tmore">更多&gt;&gt;</a></div>
+<ul>
+	
+	  <li><a href="http://mobile.51cto.com/aprogram-380451.htm" title="Android的string.xml中使用html与变量">Android的string.xml中使用html与变量</a></li>
+	  
+	  <li><a href="http://mobile.51cto.com/abased-380447.htm" title="Android开发之性能优化">Android开发之性能优化</a></li>
+	  
+	  <li><a href="http://mobile.51cto.com/abased-380433.htm" title="提升Android应用开发性能的十大要点">提升Android应用开发性能的十大要点</a></li>
+	  
+	  <li><a href="http://mobile.51cto.com/abased-378357.htm" title="Android NFC开发概述">Android NFC开发概述</a></li>
+	  
+	  <li><a href="http://mobile.51cto.com/abased-377423.htm" title="从零开始学Android开发">从零开始学Android开发</a></li>
+	  
+</ul>
+</div>
+<p class="blank10"></p>
+<div class="bor">
+<div class="titbg">
+<h3 class="fl t1"><a href="http://mobile.51cto.com/">移动开发</a></h3>
+<span class="pl10">频道导航</span></div>
+ <ul class="xtlist">
+<li><span class="tit">平台</span>
+<div><a href="http://mobile.51cto.com/web/">移动Web</a>|<a href="http://mobile.51cto.com/android/">Android</a>|<a href="http://mobile.51cto.com/iphone/">iOS</a>|<a href="http://mobile.51cto.com/windows-phone/">Windows Phone</a></div>
+</li>
+
+<li><span class="tit">应用</span>
+<div><a href="http://mobile.51cto.com/app-show/">移动应用</a>|<a href="http://mobile.51cto.com/team/">移动团队</a>|<a href="http://mobile.51cto.com/market/">应用商店</a>|<a href="http://mobile.51cto.com/speclist/">专题汇总</a>|<a href="http://mobile.51cto.com/1603/">Phone Club</a></div>
+</li>
+
+<li><span class="tit">观察</span>
+<div><a href="http://mobile.51cto.com/comment/">业界观察</a>|<a href="http://mobile.51cto.com/data/">调查数据</a>|<a href="http://mobile.51cto.com/informatization/">移动信息化</a></div>
+</li>
+
+<li class="last"><span class="tit">Android</span>
+<div><a href="http://mobile.51cto.com/ahot/">热点</a>|<a href="http://mobile.51cto.com/anews/">资讯</a>|<a href="http://mobile.51cto.com/android/abased/">基础</a>|<a href="http://mobile.51cto.com/android/amedia/">多媒体</a>|<a href="http://mobile.51cto.com/android/adatabase/">数据库</a>|<a href="http://mobile.51cto.com/android/design/">设计</a>|<a href="http://mobile.51cto.com/android/aengine/">工具</a>|<a href="http://mobile.51cto.com/android/aprogram/">编译</a></div>
+</li>
+</ul> 
+</div> 
+<p class="blank10"></p>
+<div class="leftbotcon">
+<div class="bor jdlist">
+<div class="titbg">
+<h3 class="t2">热点推荐</h3></div>
+<ul>
+<li><a onclick="javascript: _gaq.push(['_trackPageview', '/51cto/neirong/d-t-4']);" href="http://mobile.51cto.com/mobile-182392.htm"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/153546162.jpg"></a> 
+<div class="name"><a onclick="javascript: _gaq.push(['_trackPageview', '/51cto/neirong/d-t-4']);" href="http://mobile.51cto.com/mobile-182392.htm">Android开发应用详解</a></div></li>
+<li><a onclick="javascript: _gaq.push(['_trackPageview', '/51cto/neirong/d-t-4']);" href="http://developer.51cto.com/art/201106/266369.htm"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/133620622.jpg"></a> 
+<div class="name"><a onclick="javascript: _gaq.push(['_trackPageview', '/51cto/neirong/d-t-4']);" href="http://developer.51cto.com/art/201106/266369.htm">那些性感的让人尖叫的程序员</a></div></li>
+<li><a href="http://developer.51cto.com/art/200907/133407.htm"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/134217922.jpg"></a> 
+<div class="name"><a href="http://developer.51cto.com/art/200907/133407.htm">HTML5 下一代Web开发标准详解</a></div></li>
+<li><a href="http://developer.51cto.com/art/201104/257581.htm"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/123123954.jpg"></a> 
+<div class="name"><a href="http://developer.51cto.com/art/201104/257581.htm">高性能WEB开发应用指南</a></div></li>
+<li><a href="http://os.51cto.com/art/200706/49181.htm"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/195816929.jpg"></a> 
+<div class="name"><a href="http://os.51cto.com/art/200706/49181.htm">Ubuntu开源技术交流频道</a></div></li></ul></div>
+<p class="blank10"></p>
+<div class="bor hotTag"><strong>热门标签：</strong> <a onclick="javascript: _gaq.push(['_trackPageview', '/51cto/neirong/d-2]);" href="http://os.51cto.com/windows/">windows频道</a><a onclick="javascript: _gaq.push(['_trackPageview', '/51cto/neirong/d-w']);" href="http://mobile.51cto.com/">移动开发</a><a onclick="javascript: _gaq.push(['_trackPageview', '/51cto/neirong/d-w']);" href="http://cloud.51cto.com/">云计算</a><a onclick="javascript: _gaq.push(['_trackPageview', '/51cto/neirong/d-w']);" href="http://mobile.51cto.com/mobile/objc/">objective-c</a><a onclick="javascript: _gaq.push(['_trackPageview', '/51cto/neirong/d-w']);" href="http://network.51cto.com/art/200909/151122.htm">tp-link路由器设置图解</a><a onclick="javascript: _gaq.push(['_trackPageview', '/51cto/neirong/d-w']);" href="http://developer.51cto.com/art/200907/133407.htm">html5</a> </div></div>
+<div class="leftbotbox"> </div>
+</div>
+<!--left end-->
+<div class="g_13 fr">
+<div style="height: 640px;" class="focus fixfloat"> 
+ <img style="border: 1px solid #CCCCCC; margin:5px 0px 5px;" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/weixin.jpg" width="298"><div style="top: 450px;" class="hot">
+<ul>
+<li class="tit"><em>专题</em> <a href="http://mobile.51cto.com/aengine-448169.htm">Android Studio上手攻略</a> </li>
+<li class="con"><dl><dt><a href="http://mobile.51cto.com/aengine-448169.htm"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wKioL1P--2OjD6MyAABa0wWx5Fs253.jpg" border="0"></a></dt>
+<dd>既然强大的Android Studio来了，有什么理由不去用呢？</dd>
+</dl></li></ul><ol class="hotlist"><li><a href="http://mobile.51cto.com/iphone-441694.htm">iOS新语言swift上手指南</a></li><li><a href="http://mobile.51cto.com/anews-449279.htm">MIUI 6 测评：细节的量变</a></li></ol></div>
+<p>
+<script language="JavaScript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ad.js" type="text/javascript"></script><script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ad.htm"></script><iframe noresize="" scrolling="No" marginheight="0" marginwidth="0" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/14_002.htm" align="left" width="300" frameborder="0" height="260"></iframe>
+</p>
+</div>
+<div class="rank">
+<div class="tlt">
+      <h3>文章排行</h3>
+      <a onmouseover="change_top10(3);" id="top_3">本月</a><a onmouseover="change_top10(2);" id="top_2">本周</a><a onmouseover="change_top10(1);" class="myon" id="top_1">24小时</a> </div>
+ <div id="top10_1" style="display: block;" class="list"><ul>
+<li><a href="http://mobile.51cto.com/design-250037.htm" target="_blank" title="21个免费的UI界面设计工具、资源及网站">21个免费的UI界面设计工具、资源及网站</a>
+</li><li><a href="http://mobile.51cto.com/android-227548.htm" target="_blank" title="在Eclipse下搭建Android开发环境教程">在Eclipse下搭建Android开发环境教程</a>
+</li><li><a href="http://mobile.51cto.com/hot-292923.htm" target="_blank" title="人人都是开发者：5款傻瓜式APP开发工具">人人都是开发者：5款傻瓜式APP开发工具</a>
+</li><li><a href="http://mobile.51cto.com/web-321296.htm" target="_blank" title="三大移动Web开发框架哪个适合你？">三大移动Web开发框架哪个适合你？</a>
+</li><li><a href="http://mobile.51cto.com/hot-464776.htm" target="_blank" title="哪个市场最挣钱，腾讯告诉你！">哪个市场最挣钱，腾讯告诉你！</a>
+</li><li><a href="http://mobile.51cto.com/news-464843.htm" target="_blank" title="阿里：这是全世界最大的打假团队">阿里：这是全世界最大的打假团队</a>
+</li><li><a href="http://mobile.51cto.com/design-464603.htm" target="_blank" title="Android应当从iOS处窃取的五大最佳功能">Android应当从iOS处窃取的五大最佳功能</a>
+</li><li><a href="http://mobile.51cto.com/iphone-464809.htm" target="_blank" title="iOS 8出色的跨应用通信效果：解读Actio">iOS 8出色的跨应用通信效果：解读Actio</a>
+</li><li><a href="http://mobile.51cto.com/comment-464778.htm" target="_blank" title="看库克如何干掉Android">看库克如何干掉Android</a>
+</li><li><a href="http://mobile.51cto.com/news-464748.htm" target="_blank" title="为什么说2015年将是微服务架构元年？">为什么说2015年将是微服务架构元年？</a>
+</li></ul></div>
+<div id="top10_2" style="display: none;" class="list"><ul>
+<li><a href="http://mobile.51cto.com/comment-464398.htm" target="_blank" title="漫画迎2015：用幽默的语言解读2014年IT">漫画迎2015：用幽默的语言解读2014年IT</a>
+</li><li><a href="http://mobile.51cto.com/aengine-464479.htm" target="_blank" title="盘点50款最实用的开源移动工具">盘点50款最实用的开源移动工具</a>
+</li><li><a href="http://mobile.51cto.com/news-464536.htm" target="_blank" title="微信正式推出Windows版客户端">微信正式推出Windows版客户端</a>
+</li><li><a href="http://mobile.51cto.com/design-464603.htm" target="_blank" title="Android应当从iOS处窃取的五大最佳功能">Android应当从iOS处窃取的五大最佳功能</a>
+</li><li><a href="http://mobile.51cto.com/aprogram-464570.htm" target="_blank" title="android一分钟学会可视化操作数据库（">android一分钟学会可视化操作数据库（</a>
+</li><li><a href="http://mobile.51cto.com/app-show-464555.htm" target="_blank" title="Facebook坏了谁干的？是我！是我！">Facebook坏了谁干的？是我！是我！</a>
+</li><li><a href="http://mobile.51cto.com/hot-464499.htm" target="_blank" title="聊科技：预测2015年手机六大技术趋势">聊科技：预测2015年手机六大技术趋势</a>
+</li><li><a href="http://mobile.51cto.com/abased-464571.htm" target="_blank" title="如何编写高效android代码">如何编写高效android代码</a>
+</li><li><a href="http://mobile.51cto.com/news-464389.htm" target="_blank" title="这才多久谷歌Project Ara就被玩坏了">这才多久谷歌Project Ara就被玩坏了</a>
+</li><li><a href="http://mobile.51cto.com/app-show-464374.htm" target="_blank" title="朋友圈的广告！改名叫商圈算了">朋友圈的广告！改名叫商圈算了</a>
+</li></ul></div>
+<div id="top10_3" style="display: none;" class="list"><ul>
+<li><a href="http://mobile.51cto.com/aengine-463841.htm" target="_blank" title="2014年 Java 工具和技术概览">2014年 Java 工具和技术概览</a>
+</li><li><a href="http://mobile.51cto.com/comment-464398.htm" target="_blank" title="漫画迎2015：用幽默的语言解读2014年IT">漫画迎2015：用幽默的语言解读2014年IT</a>
+</li><li><a href="http://mobile.51cto.com/aengine-463132.htm" target="_blank" title="跨平台开发移动应用程序的五大工具">跨平台开发移动应用程序的五大工具</a>
+</li><li><a href="http://mobile.51cto.com/aengine-464479.htm" target="_blank" title="盘点50款最实用的开源移动工具">盘点50款最实用的开源移动工具</a>
+</li><li><a href="http://mobile.51cto.com/web-463667.htm" target="_blank" title="开发移动应用程序的三种选择：原生、HT">开发移动应用程序的三种选择：原生、HT</a>
+</li><li><a href="http://mobile.51cto.com/iphone-463665.htm" target="_blank" title="最全面 iOS 语言学习资料整理">最全面 iOS 语言学习资料整理</a>
+</li><li><a href="http://mobile.51cto.com/anews-464161.htm" target="_blank" title="谷歌 Ara 项目究竟是何方神圣？">谷歌 Ara 项目究竟是何方神圣？</a>
+</li><li><a href="http://mobile.51cto.com/web-463939.htm" target="_blank" title="如何在Linux上开发跨平台的移动应用程">如何在Linux上开发跨平台的移动应用程</a>
+</li><li><a href="http://mobile.51cto.com/windows-phone-464288.htm" target="_blank" title="关于win10发布会，你必须知道的十件事">关于win10发布会，你必须知道的十件事</a>
+</li><li><a href="http://mobile.51cto.com/news-464536.htm" target="_blank" title="微信正式推出Windows版客户端">微信正式推出Windows版客户端</a>
+</li></ul></div>
+ 
+ </div>
+<p class="blank1"></p>
+
+<div class="bor">
+<div class="titbg">
+<h3 class="fl t1">热点专题</h3>
+<a href="http://mobile.51cto.com/col/1618/spec1.htm" class="tmore">更多&gt;&gt;</a></div>
+<ul class="plist01">
+<li><a href="http://mobile.51cto.com/app-show-407837.htm" title="移动应用App市场营销推广策略"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wKioJlIUboWDJ2ODAAA-MhNMXus978.jpg" alt="移动应用App市场营销推广策略" width="100" height="80"></a>
+<h5><a href="http://mobile.51cto.com/app-show-407837.htm" title="移动应用App市场营销推广策略">移动应用App市场营销</a></h5>
+<div class="c666">关于App营销，了解哪类App最能引起用户关注，以及不同</div>
+</li><li><a href="http://mobile.51cto.com/iphone-407836.htm" title="iOS开发之常见疑难问题解决方案大荟萃"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wKioJlIUbtHCr9i_AABAV0ACYrY825.png" alt="iOS开发之常见疑难问题解决方案大荟萃" width="100" height="80"></a>
+<h5><a href="http://mobile.51cto.com/iphone-407836.htm" title="iOS开发之常见疑难问题解决方案大荟萃">iOS开发之常见疑难问</a></h5>
+<div class="c666">在iOS开发过程中，尤其是对于新手来说，都会遇到或多</div>
+</li><li><a href="http://mobile.51cto.com/web-407734.htm" title="Web App开发最佳实践：模块化开发全解析"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wKioOVITTp_hih_EAABeG-WzaiU154.png" alt="Web App开发最佳实践：模块化开发全解析" width="100" height="80"></a>
+<h5><a href="http://mobile.51cto.com/web-407734.htm" title="Web App开发最佳实践：模块化开发全解析">Web App开发最佳实践</a></h5>
+<div class="c666">Web App开发中会面临越来越“重”的问题，如果在开始</div>
+</li> 
+</ul>
+</div>
+<p class="blank10"></p>
+<div class="tagCloud">
+<div class="tlt">
+<h3>热点标签</h3>
+</div>
+<div class="taglist"><a title="iOS开发" href="http://mobile.51cto.com/mobile/objc/">iOS开发</a>  <a title="Android开发" href="http://mobile.51cto.com/mobile-182392.htm">Android开发</a> <a title="Symbian开发" href="http://mobile.51cto.com/mobile-220581.htm">Symbian开发</a>  <a title="MeeGo开发" href="http://mobile.51cto.com/meego-208013.htm">MeeGo开发</a>  <a title="BlackBerry开发" href="http://mobile.51cto.com/blackberry-255350.htm">BlackBerry开发</a>  <a title="Windows Phone开发" href="http://mobile.51cto.com/mobile-219051.htm">Windows Phone开发</a>  <a title="Phone Club" href="http://mobile.51cto.com/1603/">Phone Club</a>  <a title="Android 4.0" href="http://mobile.51cto.com/android-297987.htm" class="imp">Android 4.0</a>  <a title="webOS 3.0" href="http://mobile.51cto.com/webos-256291.htm">webOS 3.0</a>  <a title="智能手机" href="http://www.linkphone.cn/">智能手机</a> <a title="软件下载" href="http://download.linkphone.cn/">软件下载</a> </div>
+</div>
+<div class="rss">
+<ul>
+<li class="lin f12-c"><a href="http://news.51cto.com/col/1323/"><strong>点击这里查看样刊</strong></a></li>
+<li>
+<dl>
+<dt> </dt>
+<dd><a href="http://home.51cto.com/index.php?s=/Subscribe"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/dingy.gif"></a></dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="bor">
+<div class="titbg">
+<h3 class="t1">全站热点</h3>
+</div>
+<div class="webhot fixfloat">
+<ul>
+
+<li>
+  <a href="http://netsecurity.51cto.com/secu/PRISM/" title="“棱镜”激醒中国信息安全最弱神经"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wKioOVHbcYTSu2qcAAARz_FHziU954.jpg"></a>
+  <div><a href="http://netsecurity.51cto.com/secu/PRISM/" title="“棱镜”激醒中国信息安全最弱神经">“棱镜”激醒中国信息安全最弱神经</a></div>
+</li>
+
+<li>
+  <a href="http://netsecurity.51cto.com/art/201306/397905.htm" title="云计算时代 需要怎样的加密保护"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wKioOVHSSlTRHtyeAAAVXhyEen0601.jpg"></a>
+  <div><a href="http://netsecurity.51cto.com/art/201306/397905.htm" title="云计算时代 需要怎样的加密保护">云计算时代 需要怎样的加密保护</a></div>
+</li>
+
+</ul>
+</div>
+<p class="blank1"></p>
+<ul class="list03">
+
+<li><a href="http://book.51cto.com/art/201310/412390.htm" title="谷歌软件测试之道">谷歌软件测试之道</a></li>
+
+<li><a href="http://server.51cto.com/News-412387.htm" title="浪潮王恩东向中央领导汇报信息化核心装备创新成果">浪潮王恩东向中央领导汇报信息化核心</a></li>
+
+<li><a href="http://network.51cto.com/art/201310/412362.htm" title="2013华为云计算大会">2013华为云计算大会</a></li>
+
+<li><a href="http://network.51cto.com/art/201310/412356.htm" title="3年磨一剑 F5 BIG-IP V11.4平台发布">3年磨一剑 F5 BIG-IP V11.4平台发布</a></li>
+
+<li><a href="http://network.51cto.com/art/201310/412347.htm" title="说说HCC2013的那些事儿">说说HCC2013的那些事儿</a></li>
+
+</ul>
+</div>
+<p class="blank10"></p>
+<div class="bor">
+<div class="titbg">
+<h3 class="t1">读书</h3>
+</div>
+  
+<div class="catbook"><a href="http://book.51cto.com/art/200704/44848.htm" title="《网管员必读——网络管理》"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/152218698.jpg" width="66" border="0" height="98"></a>
+<h5><a href="http://book.51cto.com/art/200704/44848.htm">《网管员必读——网络管理》</a></h5>
+<div class="c666 text">本书在全面介绍微软最新网络操作系统Windows Server 2003的基础上，简要地介绍了UNIX和Linux两大操作系统的代表产品：Sun（太阳</div>
+</div>
+
+
+<ul class="list03">
+
+<li><a href="http://book.51cto.com/art/200711/59804.htm" title="Linux指令速查手册">Linux指令速查手册</a></li>
+
+<li><a href="http://book.51cto.com/art/200711/59834.htm" title="Wicked Cool Java中文版">Wicked Cool Java中文版</a></li>
+
+<li><a href="http://book.51cto.com/art/200711/59953.htm" title="SQL实用简明教程(第2版)">SQL实用简明教程(第2版)</a></li>
+
+<li><a href="http://book.51cto.com/art/200711/60072.htm" title="大师品软件——软件之痛与应对之道">大师品软件——软件之痛与应对之道</a></li>
+
+</ul>
+</div>
+<p class="blank10"></p>
+<div class="bor">
+<div class="titbg">
+<h3 class="t1 fl">博文推荐</h3>
+<a class="tmore" href="http://blog.51cto.com/">更多&gt;&gt;</a></div>
+<div class="blogtj">
+<ul>
+<li> <a href="http://nowpaper.blog.51cto.com/"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/3893223_1320825949.jpg" width="60" height="65"></a>
+<h5><a href="http://nowpaper.blog.51cto.com/">nowpaper</a></h5>
+Windows Phone专家</li>
+<li> <a href="http://xiaominghimi.blog.51cto.com/"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/125657389.jpg" width="60" height="65"></a>
+<h5><a href="http://xiaominghimi.blog.51cto.com/">himi</a></h5>
+<p>Android开发专家</p>
+</li>
+</ul>
+</div>
+<ul class="list03">
+ <li><a href="http://virtualman.blog.51cto.com/200540/101590/" target="_blank" title="虚拟化为容灾添彩">虚拟化为容灾添彩</a></li><li><a href="http://songtao87.blog.51cto.com/380457/101570/" target="_blank" title="WSUS3.0安装与配置">WSUS3.0安装与配置</a></li><li><a href="http://linglingfa.blog.51cto.com/426963/101524/" target="_blank" title="直击Google手机G1发布">直击Google手机G1发布</a></li><li><a href="http://kevinleo.blog.51cto.com/341461/101514/" target="_blank" title="成都 2008年9月24日 星期三 实况转播  ">成都 2008年9月24日 星期三 实况转播</a></li>
+</ul>
+</div>
+<p class="blank10"></p>
+<div class="tj">
+<div class="tlt">
+<h3>最新热帖</h3>
+<a class="more" href="http://bbs.51cto.com/hotthreads.php">更多&gt;&gt;</a></div>
+<ul>
+<li><a href="http://bbs.51cto.com/thread-1022247-1.html" target="_blank" title="Exchange DAG架构的灾难恢复测试">Exchange DAG架构的灾难恢复测试</a></li><li><a href="http://bbs.51cto.com/thread-1022105-1.html" target="_blank" title="Exchange Server 2013申请证书">Exchange Server 2013申请证书</a></li><li><a href="http://bbs.51cto.com/thread-1022029-1.html" target="_blank" title="snort-2.9 安装中遇到的错误解决方法 。">snort-2.9 安装中遇到的错误解决方法</a></li><li><a href="http://bbs.51cto.com/thread-1021723-1.html" target="_blank" title="链表的代替品？">链表的代替品？</a></li><li><a href="http://bbs.51cto.com/thread-1021620-1.html" target="_blank" title="Keeplived配置Nginx双机高可用">Keeplived配置Nginx双机高可用</a></li>
+</ul>
+</div>
+<div class="picAD">
+<iframe class="bann" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/baidu.htm" scrolling="No" style="background-color: white; height: 265px; width: 300px; padding: 0px; margin: 0px; overflow: hidden;" frameborder="0"></iframe>
+</div>
+</div>
+<p class="blank1"></p> 
+<!--leftbotcon end-->
+</div> 
+<div class="subweb">
+<h4>51CTO旗下网站</h4>
+<div>
+<a target="_blank" href="http://www.51cto.com/">领先的IT技术网站 51CTO</a>
+<a target="_blank" href="http://www.watchstor.com/">领先的中文存储媒体 WatchStor</a>
+<a target="_blank" href="http://www.cioage.com/">中国首个CIO网站 CIOage</a>
+<a target="_blank" href="http://www.hc3i.cn/">中国首家数字医疗网站 HC3i</a>
+</div>
+</div>
+<div id="ft"><div id="foot" align="center"><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/copy_right.js"></script>Copyright&#169;2005-2015 <a href="http://www.51cto.com/">51CTO.COM</a> 版权所有 未经许可 请勿转载<div style="display:none;"><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/h.txt" type="text/javascript"></script><a href="http://tongji.baidu.com/hm-web/welcome/ico?s=5f70e4835ac91d9dbad7b7d529c65de7" target="_blank"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/21.gif" width="20" border="0" height="20"></a></div></div></div>
+<script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/count.js"></script><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/count_002.htm"></script>
+<script type="text/javascript">
+
+	$("#uyan_cmt_list").next().remove();	
+	$("#uyan_cmt_list").next().css("display","none");	
+</script>
+<style>
+.Nfloat {
+    position: fixed;
+    right: 2%;
+    top: 35%;
+    z-index: 801;
+}
+</style>
+
+
+<!-- 新监测代码 -->
+<!-- 新监测代码 -->
+<div id="MyMoveAd" style="display: none; height: 2px;">
+<span id="wordlink_1"><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wordlink1.js"></script><script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ajs.php"></script><a href="http://gg3.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=1271__zoneid=254__cb=77f5f75a8a__oadest=http%3A%2F%2Fwot.51cto.com%2F2015operation%2F" target="_blank"><font color="blue">WOT2015 运维开发人员必看</font></a><div id="beacon_77f5f75a8a" style="position: absolute; left: 0px; top: 0px; visibility: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/lg_002.gif" alt="" style="width: 0px; height: 0px;" width="0" height="0"></div>
+</span>
+<span id="wordlink_2"><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wordlink2.js"></script><script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ajs_004.php"></script><a href="http://gg2.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=591__zoneid=255__cb=7c9cd300ed__oadest=http%3A%2F%2Fnetwork.51cto.com%2Fnetwork%2FEquinix%2F2014%2Findex.html" target="_blank"><font color="blue">Equinix引领主机托管未来
+</font></a><div id="beacon_7c9cd300ed" style="position: absolute; left: 0px; top: 0px; visibility: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/lg.gif" alt="" style="width: 0px; height: 0px;" width="0" height="0"></div>
+</span>
+<span id="wordlink_3"><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wordlink3.js"></script><script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ajs_003.php"></script><a href="http://gg3.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=1261__zoneid=256__cb=dc2c1db474__oadest=http%3A%2F%2Fdown.51cto.com%2Fdata%2F1979596" target="_blank"><font color="red">有奖下载:F5全方位的安全服务</font></a><div id="beacon_dc2c1db474" style="position: absolute; left: 0px; top: 0px; visibility: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/lg_004.gif" alt="" style="width: 0px; height: 0px;" width="0" height="0"></div>
+</span>
+<span id="wordlink_4"><script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/wordlink4.js"></script><script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ajs_002.php"></script><a href="http://gg1.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=1192__zoneid=257__cb=30e363e345__oadest=http%3A%2F%2Fnetwork.51cto.com%2Fnetwork%2Fdptechnology%2FADX%2Findex.html" target="_blank"><font color="blue">迪普科技 最懂您业务的应用交付</font></a><div id="beacon_30e363e345" style="position: absolute; left: 0px; top: 0px; visibility: hidden;"><img src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/lg_003.gif" alt="" style="width: 0px; height: 0px;" width="0" height="0"></div>
+</span>
+<span id="pinglun"><script language="JavaScript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/getArtCount.htm"></script>0</span>
+<span id="tonglan"></span>
+<span id="wordlink"><script language="JavaScript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ad_003.js"></script></span>
+<script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ad_003.js"></script>
+<span id="bookss"><script language="JavaScript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/getBookData.htm"></script></span>
+</div>   
+<script language="javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/favorite.js"></script>
+
+<script language="javaScript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/dialog_utf8.js"></script>
+<script language="javaScript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/mail.js"></script>  
+<script type="text/javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/favorbox.js"></script>
+<script language="javascript" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/clipboard.js"></script>
+<script language="javaScript"> 
+	var thistid=386212; 
+	
+	//收藏按钮
+	var favor_url = 'http://mobile.51cto.com/abased-386212.htm';  // 如：http://bbs.51cto.com/thread-789649-1.html
+	var favor_title = 'App工程结构搭建：几种常见Android代码架构分析';       //  
+	
+	//绑定复制按钮
+	copy('msnqqcopy', 'http://mobile.51cto.com/abased-386212.htm', '分享到MSN/QQ的链接复制成功!');
+//	copy('bbscopy', '[url=http://mobile.51cto.com/abased-386212.htm][u]App工程结构搭建：几种常见Android代码架构分析[/u][/url]', '分享到论坛的UBB代码复制成功!');
+
+</script><div style="position: absolute; left: 784px; top: 7044px; width: 34px; height: 14px; z-index: 99;"><embed id="ZeroClipboardMovie_1" src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/ZeroClipboard.swf" loop="false" menu="false" quality="best" bgcolor="#ffffff" name="ZeroClipboardMovie_1" allowscriptaccess="always" allowfullscreen="false" type="application/x-shockwave-flash" pluginspage="http://www.macromedia.com/go/getflashplayer" flashvars="id=1&amp;width=34&amp;height=14" wmode="transparent" align="middle" width="34" height="14"></div> 
+<script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/index.htm" charset="utf-8"></script>
+<script src="App%E5%B7%A5%E7%A8%8B%E7%BB%93%E6%9E%84%E6%90%AD%E5%BB%BA%EF%BC%9A%E5%87%A0%E7%A7%8D%E5%B8%B8%E8%A7%81Android%E4%BB%A3%E7%A0%81%E6%9E%B6%E6%9E%84%E5%88%86%E6%9E%90%20-%2051CTO.COM_files/count.htm" language="javascript"></script>
+<script language="javascript">
+document.getElementById('books').innerHTML = document.getElementById("bookss").innerHTML; 
+</script>
+
+
+
+</body></html>

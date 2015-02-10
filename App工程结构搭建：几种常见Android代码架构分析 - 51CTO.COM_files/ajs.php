@@ -1,0 +1,3 @@
+var OX_82336fe0 = '';
+OX_82336fe0 += "<"+"a href=\'//gg1.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=1271__zoneid=254__cb=8bc6b0d37d__oadest=http%3A%2F%2Fwot.51cto.com%2F2015operation%2F\' target=\'_blank\'><"+"font color=\'blue\'>WOT2015 运维开发人员必看<"+"/font><"+"/a><"+"div id=\'beacon_8bc6b0d37d\' style=\'position: absolute; left: 0px; top: 0px; visibility: hidden;\'><"+"img src=\'//gg.51cto.com/www/delivery/lg.php?bannerid=1271&amp;campaignid=295&amp;zoneid=254&amp;loc=1&amp;referer=http%3A%2F%2Fmobile.51cto.com%2Fabased-386212.htm&amp;cb=8bc6b0d37d\' width=\'0\' height=\'0\' alt=\'\' style=\'width: 0px; height: 0px;\' /><"+"/div>\n";
+document.write(OX_82336fe0);

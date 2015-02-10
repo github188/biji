@@ -1,0 +1,3 @@
+var OX_fb506f44 = '';
+OX_fb506f44 += "<"+"a href=\'//gg1.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=1192__zoneid=257__cb=2b56d140d7__oadest=http%3A%2F%2Fnetwork.51cto.com%2Fnetwork%2Fdptechnology%2FADX%2Findex.html\' target=\'_blank\'><"+"font color=\'blue\'>迪普科技 最懂您业务的应用交付<"+"/font><"+"/a><"+"div id=\'beacon_2b56d140d7\' style=\'position: absolute; left: 0px; top: 0px; visibility: hidden;\'><"+"img src=\'//gg3.51cto.com/www/delivery/lg.php?bannerid=1192&amp;campaignid=282&amp;zoneid=257&amp;loc=1&amp;referer=http%3A%2F%2Fmobile.51cto.com%2Fabased-386212.htm&amp;cb=2b56d140d7\' width=\'0\' height=\'0\' alt=\'\' style=\'width: 0px; height: 0px;\' /><"+"/div>\n";
+document.write(OX_fb506f44);

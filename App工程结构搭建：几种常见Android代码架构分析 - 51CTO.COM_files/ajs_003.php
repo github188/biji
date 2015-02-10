@@ -1,0 +1,3 @@
+var OX_057728a1 = '';
+OX_057728a1 += "<"+"a href=\'//gg2.51cto.com/www/delivery/ck.php?oaparams=2__bannerid=1261__zoneid=256__cb=13370aae93__oadest=http%3A%2F%2Fdown.51cto.com%2Fdata%2F1979596\' target=\'_blank\'><"+"font color=\'red\'>有奖下载:F5全方位的安全服务<"+"/font><"+"/a><"+"div id=\'beacon_13370aae93\' style=\'position: absolute; left: 0px; top: 0px; visibility: hidden;\'><"+"img src=\'//gg.51cto.com/www/delivery/lg.php?bannerid=1261&amp;campaignid=287&amp;zoneid=256&amp;loc=1&amp;referer=http%3A%2F%2Fmobile.51cto.com%2Fabased-386212.htm&amp;cb=13370aae93\' width=\'0\' height=\'0\' alt=\'\' style=\'width: 0px; height: 0px;\' /><"+"/div>\n";
+document.write(OX_057728a1);

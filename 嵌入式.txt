@@ -4949,7 +4949,8 @@ pwd,的集合。编写完成后，就可以通过执行以下文件，全部执行里面的命令
            [root @test root]# myname='$name its me'
            [root @test root]# echo $myname
            $name its me
-      （3）必要时以跳转字符“\”将特殊符号（如Enter，$，\，空格符，'等）变成一般符号；
+
+      （3）必要时以跳转字符“\”将特殊符号（如Enter，$，\，空格符，'等）变成一般符号；
            [test @test test]# name=VBird\$ s\ name <==正确。
 
       （4）变量添加值：则需以双引号及$变量名称（如"$PATH":/home）继续累加内容； 
@@ -10105,7 +10106,8 @@ void time0() interrupt 1
 传输方式：从设备总是在时钟线为高时，才发送下一个数据，而当时钟线为低时，保存数据不变；而主设备总是在时钟发生下降沿时，才读入这个数据
 
 ②设备通信：主设备->从设备，较为不常用，例如单片机向键盘鼠标发送数据
-主设备先将时钟线和数据线置为请求发送状态：时钟线置为低电平最少100us，为了不让从设备通信->数据线置为低电平->时钟线置为高电平。在这个过程中，从设备需要检测是否主设备已经设为了请求发送状态，如果是的话，他将产生时钟信号，然后，主设备开始向从设备发送数据，此时每一帧数据由12位组成
+
+主设备先将时钟线和数据线置为请求发送状态：时钟线置为低电平最少100us，为了不让从设备通信->数据线置为低电平->时钟线置为高电平。在这个过程中，从设备需要检测是否主设备已经设为了请求发送状态，如果是的话，他将产生时钟信号，然后，主设备开始向从设备发送数据，此时每一帧数据由12位组成
 
 
 数据位，是12位：上面的11位数据位+1位应答位ACK
@@ -12482,13 +12484,15 @@ TH和TL，分别可以往里面写两个温度数值，这样，当实际温度>TH，或者<TL时，芯片就会报
 2(0次方)，左边的是整数，右边的是小数。
 （2）温度精度匹配寄存器
 高位MSb                 低位LSb
-  0     R1 R0   1  1  1  1  1 
+
+  0     R1 R0   1  1  1  1  1 
 
 
 R1R0：00精度9bit，转换时间最小；01精度10bit；10精度11bit；11精度12bit，转换时间最大
 
 3）内部寄存器结构
-第0个字节，实际所测温度的低位；第1个字节，实际所测温度的高位；第2个字节TH；第3个字节TL；第4个字节，匹配温度精度；
+
+第0个字节，实际所测温度的低位；第1个字节，实际所测温度的高位；第2个字节TH；第3个字节TL；第4个字节，匹配温度精度；
 EERAM：可以存放TH，TL，匹配精度
 
 4）时序图：它默认高电平，即1。它的读写顺序是D0-D7
@@ -30677,7 +30681,60 @@ TableLayout layout=new TableLayout(this);//定义表格布局
         android:layout_toRightOf="@+id/img1"
         android:layout_below="@+id/img2"
     />
-<RelativeLayout/>   
+<RelativeLayout/> 
+RelativeLayout用到的一些重要的属性：
+
+第一类:属性值为true或false
+android:layout_centerHrizontal 水平居中
+android:layout_centerVertical 垂直居中
+android:layout_centerInparent 相对于父元素完全居中
+android:layout_alignParentBottom 贴紧父元素的下边缘
+android:layout_alignParentLeft 贴紧父元素的左边缘
+android:layout_alignParentRight 贴紧父元素的右边缘
+android:layout_alignParentTop 贴紧父元素的上边缘
+android:layout_alignWithParentIfMissing 如果对应的兄弟元素找不到的话就以父元素做参照物
+
+第二类：属性值必须为id的引用名“@id/id-name”
+android:layout_below 在某元素的下方
+android:layout_above 在某元素的的上方
+android:layout_toLeftOf 在某元素的左边
+android:layout_toRightOf 在某元素的右边
+
+android:layout_alignTop 本元素的上边缘和某元素的的上边缘对齐
+android:layout_alignLeft 本元素的左边缘和某元素的的左边缘对齐
+android:layout_alignBottom 本元素的下边缘和某元素的的下边缘对齐
+android:layout_alignRight 本元素的右边缘和某元素的的右边缘对齐
+
+第三类：属性值为具体的像素值，如30dip，40px
+android:layout_marginBottom 离某元素底边缘的距离
+android:layout_marginLeft 离某元素左边缘的距离
+android:layout_marginRight 离某元素右边缘的距离
+android:layout_marginTop 离某元素上边缘的距离  
+例如：
+<Button  
+       android:id="@+id/button1"  
+      android:layout_width="wrap_content"　　　　　　　　　　　　　　　　//宽度匹配内容  
+       android:layout_height="wrap_content"　　　　　　　　　　　　　　　//高度匹配内容　　  
+       android:layout_alignParentLeft="true"                         //贴紧父元素左边  
+       android:layout_alignParentTop="true"　　　　　　　　　　　　　　　//贴紧父元素上边　  
+       android:layout_marginLeft="20dp"                              //设置左间距20dp  
+       android:layout_marginTop="20dp"                               //设置上间距20dp 
+<Button  
+		android:id="@+id/button2"  
+		android:layout_width="wrap_content"　　　　　　　　　　　　　　//宽度匹配内容  
+		android:layout_height="wrap_content"　　　　　　　　　　　　 　//高度匹配内容  
+		android:layout_below="@+id/button1"　　　　　　　　　　　　　　//位置在第一个按钮的下面  
+		android:layout_toRightOf="@+id/button1" 　　　　　　　　　　　//与第一个按钮的右边对齐  
+		android:layout_marginTop="15dp"                            //设置上间距15dp  
+　　　　 android:text="第二个按钮" />  	   
+<Button  
+	android:id="@+id/button3"  
+	android:layout_width="wrap_content"　　　　　　　　　　　　　　//宽度匹配内容  
+	android:layout_height="wrap_content"　　　　　　　　　　　　 　//高度匹配内容  
+	android:layout_below="@+id/button2"　　　　　　　　　　　　　　//位置在第二个按钮的下面  
+	android:layout_toLeftOf="@+id/button2"　　　　　　　　　　　　//与第二个按钮的左边对齐  
+	android:layout_marginTop="15dp"　　　　　　　　　　　　　　　　//设置上间距15dp          
+	android:text="第三个按钮" />  
 
 *布局的嵌套
 <TableLayout>
@@ -30852,8 +30909,29 @@ private class onClickListenerChk implements OnClickListener
 			}
 		}
 	}
+变种Switch:
+<Switch   
+   android:layout_marginTop="20dip"  
+   android:id="@+id/state_switch"  
+   android:layout_width="wrap_content"  
+   android:layout_height="wrap_content"  
+   android:textOn="联网版"  
+   android:textOff="单机版"  							           
+   android:layout_gravity="center_horizontal"/> 
+   
+   
+switchamount = (Switch)findViewById(R.id.switchamount);
+switchamount.setOnCheckedChangeListener(new OnCheckedChangeListener() {
 
-
+	@Override
+	public void onCheckedChanged(CompoundButton buttonView,
+			boolean isChecked) {
+		// TODO Auto-generated method stub
+		btnamount.setEnabled(isChecked);	
+	}  
+	
+	
+}); 
 
 *单选钮接口:OnCheckedChangeListener
 import android.widget.RadioGroup.OnCheckedChangeListener;
@@ -31262,18 +31340,11 @@ private class OnItemClickListenerList implements OnItemClickListener
 }
 
 *树形组件android.widget.ExpandableListView:
+1.基本显示
 如果要配置他的显示内容，可以使用setAdapter()方法完成，
-1.自定义一个类
-src->New->class:名字MyExpanseListAdapter,Superclass:BaseExpandableListAdapter
-package com.example.treetab;
-
-import android.content.Context;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseExpandableListAdapter;
-import android.widget.TextView;
-
-public class MyExpanseListAdapter extends BaseExpandableListAdapter 
+1).自定义一个类
+//专门填充数据的适配器类
+class MyExpanseListAdapter extends BaseExpandableListAdapter 
 {
 	//组名称
 	private String group[]=new String[]{"我的好友","家人","同事","黑名单"};
@@ -31281,8 +31352,9 @@ public class MyExpanseListAdapter extends BaseExpandableListAdapter
 	private String child[][]=new String[][]{{"aa","bb","cc","dd"},{"11","22","333","44"},
 			{"11q","12w","22","3w"},{"4a","43","dw","aax"}};
 	private Context context=null;
+
 	//构造方法
-	private MyExpanseListAdapter(Context context)
+	public MyExpanseListAdapter(Context context)
 	{
 		this.context = context;
 	}
@@ -31298,6 +31370,17 @@ public class MyExpanseListAdapter extends BaseExpandableListAdapter
 	public long getChildId(int arg0, int arg1) {
 		// TODO Auto-generated method stub
 		return arg1;
+	}
+	
+	private TextView buildTextView()
+	{
+		AbsListView.LayoutParams params=new AbsListView.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT,35); 
+		TextView textView=new TextView(this.context);
+		textView.setLayoutParams(params);
+		textView.setTextSize(15.0f);
+		textView.setGravity(Gravity.LEFT);
+		textView.setPadding(40, 8, 3, 3);
+		return textView;
 	}
 
 	@Override
@@ -31333,12 +31416,12 @@ public class MyExpanseListAdapter extends BaseExpandableListAdapter
 		// TODO Auto-generated method stub
 		return groupPosition;
 	}
-
+	
 	@Override
 	public View getGroupView(int groupPosition, boolean isExpanded,
 			View convertView, ViewGroup parent) {
 		// TODO Auto-generated method stub
-		TextView textview=new TextView(this.context);
+		TextView textview=this.buildTextView();
 		textview.setText(this.getGroup(groupPosition).toString());
 		return textview;
 	}
@@ -31346,23 +31429,24 @@ public class MyExpanseListAdapter extends BaseExpandableListAdapter
 	@Override
 	public boolean hasStableIds() {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean isChildSelectable(int groupPosition, int childPosition) {
 		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 }
+
 一个适配器类就完成了
-2.要在该组件上配置数据，需要通过xml文件完成
+2).要在该组件上配置数据，需要通过xml文件完成
 <ExpandableListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/tree" />
-3.
+        android:id="@+id/listview" />
+3).
 private ExpandableListView listview = null;
 	private ExpandableListAdapter adapter = null;
     @Override
@@ -31374,7 +31458,105 @@ private ExpandableListView listview = null;
         this.listview.setAdapter(this.adapter);
     }
 
+2.实现监听接口
+ExpandableListView.onChildClickListener单机子选项
+ExpandableListView.onGroupClickListener单机组选项
+ExpandableListView.onGroupCollapseListener分组关闭
+ExpandableListView.onGroupExpandListener分组打开
+this.elistview.setOnChildClickListener(new OnChildClickListener() {
+			
+	@Override
+	public boolean onChildClick(ExpandableListView parent, View v,
+			int groupPosition, int childPosition, long id) {
+		// TODO Auto-generated method stub
+		Toast.makeText(MainActivity.this, "子选项,group="+groupPosition+",child="+childPosition, Toast.LENGTH_LONG).show();
+		return false;
+	}
+	});
+	this.elistview.setOnGroupClickListener(new OnGroupClickListener() {
 
+	@Override
+	public boolean onGroupClick(ExpandableListView parent, View v,
+			int groupPosition, long id) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+	});
+	this.elistview.setOnGroupExpandListener(new OnGroupExpandListener() {
+
+	@Override
+	public void onGroupExpand(int groupPosition) {
+		// TODO Auto-generated method stub
+		
+	}
+	});
+	this.elistview.setOnGroupCollapseListener(new OnGroupCollapseListener() {
+
+	@Override
+	public void onGroupCollapse(int groupPosition) {
+		// TODO Auto-generated method stub
+		
+	}
+	});
+	
+3.实现上下文菜单
+protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		this.elistview = (ExpandableListView) super.findViewById(R.id.elistview);
+        this.adapter = new MyExpanseListAdapter(this);
+        this.elistview.setAdapter(this.adapter);
+        super.registerForContextMenu(this.elistview);//注册上下文菜单
+        this.elistview.setOnChildClickListener(new OnChildClickListener() {
+			
+			@Override
+			public boolean onChildClick(ExpandableListView parent, View v,
+					int groupPosition, int childPosition, long id) {
+				// TODO Auto-generated method stub
+				Toast.makeText(MainActivity.this, "子选项,group="+groupPosition+",child="+childPosition, Toast.LENGTH_LONG).show();
+				return false;
+			}
+		});
+        this.elistview.setOnGroupClickListener(new OnGroupClickListener() {
+			
+			@Override
+			public boolean onGroupClick(ExpandableListView parent, View v,
+					int groupPosition, long id) {
+				// TODO Auto-generated method stub
+				return false;
+			}
+		});
+        this.elistview.setOnGroupExpandListener(new OnGroupExpandListener() {
+			
+			@Override
+			public void onGroupExpand(int groupPosition) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+        this.elistview.setOnGroupCollapseListener(new OnGroupCollapseListener() {
+			
+			@Override
+			public void onGroupCollapse(int groupPosition) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
+	}
+	//创建上下文菜单，操作是长按住
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		// TODO Auto-generated method stub
+		ExpandableListView.ExpandableListContextMenuInfo info=(ExpandableListView.ExpandableListContextMenuInfo)menuInfo;
+		int type= ExpandableListView.getPackedPositionType(info.packedPosition);//取得菜单项
+		int group= ExpandableListView.getPackedPositionGroup(info.packedPosition);//取得所在组的索引
+		int child= ExpandableListView.getPackedPositionChild(info.packedPosition);//取得子菜单的索引
+		Toast.makeText(MainActivity.this, "type="+type+",group="+group+",child="+child, Toast.LENGTH_LONG).show();
+		
+		
+		super.onCreateContextMenu(menu, v, menuInfo);
+	}	
 
 *对话框:android.app.Dialog
 1.
@@ -32194,6 +32376,7 @@ public class MainActivity extends Activity {
 	}
     
 *GridView
+1.这个是简单只加载图片，具体可以参考BaseAdapter的使用，若要加载图片和其他信息，可以参考书本
 public class HeadActivity extends Activity 
 {
 
@@ -33029,6 +33212,80 @@ public void onClick(View v)
 {
    Main.this.size = size-2;
    Main.this.text.setTextSize(size);    
+}
+
+*Uri
+android图片文件的路径地址与Uri的相互转换
+这是一张图片的Uri，那么我们如何根据这个Uri获得其在文件系统中的路径呢？
+/**
+ * Try to return the absolute file path from the given Uri
+ *
+ * @param context
+ * @param uri
+ * @return the file path or null
+ */
+public static String getRealFilePath( final Context context, final Uri uri ) {
+    if ( null == uri ) return null;
+    final String scheme = uri.getScheme();
+    String data = null;
+    if ( scheme == null )
+        data = uri.getPath();
+    else if ( ContentResolver.SCHEME_FILE.equals( scheme ) ) {
+        data = uri.getPath();
+    } else if ( ContentResolver.SCHEME_CONTENT.equals( scheme ) ) {
+        Cursor cursor = context.getContentResolver().query( uri, new String[] { ImageColumns.DATA }, null, null, null );
+        if ( null != cursor ) {
+            if ( cursor.moveToFirst() ) {
+                int index = cursor.getColumnIndex( ImageColumns.DATA );
+                if ( index > -1 ) {
+                    data = cursor.getString( index );
+                }
+            }
+            cursor.close();
+        }
+    }
+    return data;
+}
+
+那么假如我们有一个图片的路径地址又该如何获得其Uri呢？
+String type = Utils.ensureNotNull(intent.getType());
+Log.d(TAG, "uri is " + uri);
+if (uri.getScheme().equals("file") && (type.contains("image/"))) {
+    String path = uri.getEncodedPath();
+    Log.d(TAG, "path1 is " + path);
+    if (path != null) {
+        path = Uri.decode(path);
+        Log.d(TAG, "path2 is " + path);
+        ContentResolver cr = this.getContentResolver();
+        StringBuffer buff = new StringBuffer();
+        buff.append("(")
+                .append(Images.ImageColumns.DATA)
+                .append("=")
+                .append("'" + path + "'")
+                .append(")");
+        Cursor cur = cr.query(
+                Images.Media.EXTERNAL_CONTENT_URI,
+                new String[] { Images.ImageColumns._ID },
+                buff.toString(), null, null);
+        int index = 0;
+        for (cur.moveToFirst(); !cur.isAfterLast(); cur
+                .moveToNext()) {
+            index = cur.getColumnIndex(Images.ImageColumns._ID);
+            // set _id value
+            index = cur.getInt(index);
+        }
+        if (index == 0) {
+            //do nothing
+        } else {
+            Uri uri_temp = Uri
+                    .parse("content://media/external/images/media/"
+                            + index);
+            Log.d(TAG, "uri_temp is " + uri_temp);
+            if (uri_temp != null) {
+                uri = uri_temp;
+            }
+        }
+    }
 }
 
 *多线程
@@ -35596,3 +35853,6 @@ public class MainActivity extends Activity {
 }
 2.地图的所有变更可以看百度文档(查看百度地图APP开发日志)
 
+
+*App工程结构搭建查看附录
+架构思想都差不多的,个人觉得android的XML+Activity就类似ASP.NET那个控件跟代码分离的View层，业务处理和数据访问层常常会根据android的特点细分为adapter适配器层、或者网络访问层net、后台处理层、逻辑控制层、自定义组件层等,公司那边这样做的,仅供讨论，呵呵！
