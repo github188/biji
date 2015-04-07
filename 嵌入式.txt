@@ -27303,7 +27303,10 @@ while(iter.hasNext())
 }
 
 2)TreeMap:有排序，如果自定义的类要作为key的话，需要实现Comparable接口
+TreeMap默认是按升序排，也可以指定排序的比较器。遍历的时候按升序遍历。
 Map<String,String> allSet = new TreeMap<String,String>() ;
+
+3)LinkedHashMap:有排序，保存了记录的插入顺序，先插入的先遍历到
 
 3）四种引用类型
 之前的map都是强引用，即如果内存不足，会报错也不会释放空间。
@@ -31235,6 +31238,11 @@ private class OnItemSelectedListenercity implements OnItemSelectedListener
 				
 }
 
+3.直接得到选项的值
+dialogspincabtype.getSelectedItem();//得到选项值
+dialogspincabtype.getSelectedItemId()//得到选项id索引
+
+
 *日期和时间选择器接口DatePicker,TimePicker:
 android.widget.DatePicker.OnDateChangedListener;
 android.widget.TimePicker.OnTimeChangedListener;
@@ -32056,6 +32064,163 @@ Toast myToast = Toast.makeText(Main.this, "Toast信息提示框", Toast.LENGTH_LONG);
 //居中对齐
 myToast.setGravity(Gravity.CENTER, 60, 30);
 myToast.show();
+
+
+*PrograssBar进度条控件
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical" >
+   
+    <ProgressBar
+        android:id="@+id/large_indeterminate"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:indeterminate="true" />
+
+    <ProgressBar
+        android:id="@+id/horizontal_indeterminate"
+       
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:indeterminate="true" />
+
+    <Button
+        android:id="@+id/indeterminate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/indeterminate" />
+
+    <ProgressBar
+        android:id="@+id/large_determinate"
+        style="?android:attr/progressBarStyleLargeInverse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:visibility="gone" />
+
+    <ProgressBar
+        android:id="@+id/horizontal_determinate"
+        style="@android:style/Widget.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/progress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/progress" />
+
+    <Button
+        android:id="@+id/determinate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/determinate" />
+
+</LinearLayout>
+
+package com.csc.progressbartest;
+
+import com.example.progressbartest.R;
+
+import Android.os.Bundle;
+import android.os.Handler;
+import android.app.Activity;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
+public class ProgressBarActivity extends Activity {
+ //定义是否显示进度条
+ boolean isVisable = true;
+ //定义显示精度条的进度
+ int status = 0;
+ @Override
+ protected void onCreate(Bundle savedInstanceState) {
+  super.onCreate(savedInstanceState);
+  setContentView(R.layout.activity_progress_bar);
+  final Handler handler = new Handler();
+  final TextView progress = (TextView)findViewById(R.id.progress);
+  final ProgressBar largeIndeterminate = (ProgressBar)findViewById(R.id.large_indeterminate);
+  final ProgressBar horizontalIndeterminate = (ProgressBar)findViewById(R.id.horizontal_indeterminate);
+  final ProgressBar largeDeterminate = (ProgressBar)findViewById(R.id.large_determinate);
+  final ProgressBar horizontalDeterminate = (ProgressBar)findViewById(R.id.horizontal_determinate);
+  Button indeterminate = (Button)findViewById(R.id.indeterminate);
+  Button determinate = (Button)findViewById(R.id.determinate);
+  indeterminate.setOnClickListener(new View.OnClickListener() {
+   
+   @Override
+   public void onClick(View v) {
+    //当单击不确定按钮时显示或隐藏进度条
+    if (isVisable) {
+     largeIndeterminate.setVisibility(View.VISIBLE);
+     horizontalIndeterminate.setVisibility(View.VISIBLE);
+     isVisable = false;
+    } else {
+     largeIndeterminate.setVisibility(View.GONE);
+     horizontalIndeterminate.setVisibility(View.GONE);
+     isVisable = true;
+    }
+   }
+  });
+ 
+  determinate.setOnClickListener(new View.OnClickListener() {
+   
+   @Override
+   public void onClick(View v) {
+    new Thread(new Runnable() {
+     
+     @Override
+     public void run() {
+      status = 0;
+      while (status<100) {
+       handler.post(new Runnable() {
+       
+        @Override
+        public void run() {
+         //显示进度条
+         progress.setVisibility(View.VISIBLE);
+         largeDeterminate.setVisibility(ProgressBar.VISIBLE);
+         horizontalDeterminate.setVisibility(ProgressBar.VISIBLE);
+         largeDeterminate.setProgress(status);
+         horizontalDeterminate.setProgress(status);
+         //显示已进行的进度
+         progress.setText("进度："+status+"%");
+        }
+       });
+       try {
+        Thread.sleep(50);
+       } catch (InterruptedException e) {
+        e.printStackTrace();
+       }
+       //改变进度条的进度
+       status++;
+      }
+      handler.post(new Runnable() {
+       
+       @Override
+       public void run() {
+        //隐藏进度条
+        largeDeterminate.setVisibility(View.GONE);
+        horizontalDeterminate.setVisibility(View.GONE);
+        progress.setVisibility(View.GONE);
+       }
+      });
+     
+     }
+    }).start();
+   }
+  });
+ }
+
+}
 
 *ImageView图片显示控件
 例子1：android加载自己文件夹的图片，使用R类
@@ -33184,6 +33349,7 @@ public void onCreateContextMenu(ContextMenu menu, View v,
 
 
 5.弹出菜单android.widget.PopupWindow
+与对话框不一样的是没有确定，取消按钮，里面的内容可以自己定义
 1)新建popwindow.xml页面布局
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -33383,13 +33549,6 @@ public class MainActivity extends Activity
 		}
 		
 	}
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
 }
 
 

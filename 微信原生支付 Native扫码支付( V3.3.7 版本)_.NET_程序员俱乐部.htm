@@ -1,0 +1,824 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head><script async="" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ex"></script><script async="" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ex_002"></script><script async="" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ex_003"></script><script async="" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ex_004"></script><script async="" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ex_005"></script><script mod_name="tanxssp-main" async="" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/main.js"></script><script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/tanxssp.js" async="" charset="gbk"></script><script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/tanxssp.js" async="" charset="gbk"></script><script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/tanxssp.js" async="" charset="gbk"></script><script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/tanxssp.js" async="" charset="gbk"></script><script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ex_005.js" charset="gbk"></script><script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ex.js" charset="gbk"></script><script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ex_004.js" charset="gbk"></script><script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ex_002.js" charset="gbk"></script><script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ex_003.js" charset="gbk"></script><script mod_name="inf-main" async="" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/main_002.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=gbk">
+     <title>微信原生支付 Native扫码支付( V3.3.7 版本)_.NET_程序员俱乐部</title>
+    <meta name="keywords" content=",版本">
+    <meta name="description" content="[尊重别人的劳动成果，转载请注明出处：一缕晨光工作室，www.wispdawn.com]前言辛苦研究三天，遇到各种困难，最终还是克服了，把我的理解和思路分享给需要帮助的人，如果你觉的好，请帮我分享一下，谢谢。在没有做之前，我以为和支付宝，以及银联一样，会在官网找到相应的demo，照葫芦画瓢即可，没有什么复杂的，真正去做的时候，发现各种错误，很多时候都莫名其妙找不到北，在网上搜了不知道多少遍，有V3版的，不过都是jsapi版本的，没有找到原生扫码支付，下了几个V2版本的微信支付c#demo">
+    
+    <link href="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/news_master.css" rel="stylesheet" type="text/css">
+    <link type="text/css" rel="stylesheet" href="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/header_master_top.css">
+    <link href="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/head.css" rel="stylesheet" type="text/css">
+    <link href="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/master.css" rel="stylesheet" type="text/css">
+    <link href="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/css.css" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/index_1_down.js"></script>
+
+    <script language="javascript" type="text/javascript" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/so.js"></script>
+
+    <!-- base href="http://www.cxyclub.cn/n/68451/" -->
+<script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/b5m.js" charset="utf-8" id="b5mmain" type="text/javascript"></script></head>
+<body><script charset="utf-8" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/jiathis.php"></script><link type="text/css" rel="stylesheet" href="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/jiathis_share.css"><div style="height: auto; position: absolute; z-index: 100000000; top: 686.4px; right: 0px; overflow: hidden; width: 26px;" class="jiathis_style"><table cellpadding="0" cellspacing="0"><tbody style="background:transparent"><tr><td style="background:transparent"><img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/r1.gif" style="cursor:pointer;" onmouseover="$CKE.over()" onclick="$CKE.center(this)"></td><td><div><div class="jiadiv_01"><div style="width:100%;background:#F2F2F2;border-bottom:1px solid #E5E5E5;line-height:200%;padding-left:5px;font-size:12px"><table width="100%"><tbody><tr class="jt_sharetitle"><td style="text-align:left;line-height:25px;font-size:14px;font-weight:bold;color:#000000;" align="left">分享到...</td><td style="text-align:right;" align="right"><img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/img_exit.gif" style="opacity:0.5;filter:alpha(opacity=50);margin:0 10px;cursor:pointer;" onclick="$CKE.shareClose();" border="0"></td></tr></tbody></table></div><div class="jiadiv_02" style="width:100%;" id="jiathis_sers"><a href="javascript:;" onclick="jiathis_sendto('copy');return false;" class="jiatitle"><span class="jtico jtico_copy">复制网址</span></a><a href="javascript:;" onclick="jiathis_sendto('email');return false;" class="jiatitle"><span class="jtico jtico_email">邮件</span></a><a href="javascript:;" onclick="jiathis_sendto('qzone');return false;" class="jiatitle"><span class="jtico jtico_qzone">QQ空间</span></a><a href="javascript:;" onclick="jiathis_sendto('tsina');return false;" class="jiatitle"><span class="jtico jtico_tsina">新浪微博</span></a><a href="javascript:;" onclick="jiathis_sendto('tqq');return false;" class="jiatitle"><span class="jtico jtico_tqq">腾讯微博</span></a><a href="javascript:;" onclick="jiathis_sendto('weixin');return false;" class="jiatitle"><span class="jtico jtico_weixin">微信</span></a><a href="javascript:;" onclick="jiathis_sendto('renren');return false;" class="jiatitle"><span class="jtico jtico_renren">人人网</span></a><a href="javascript:;" onclick="jiathis_sendto('yixin');return false;" class="jiatitle"><span class="jtico jtico_yixin">易信</span></a><a href="javascript:;" onclick="jiathis_sendto('t163');return false;" class="jiatitle"><span class="jtico jtico_t163">网易微博</span></a><a href="javascript:;" onclick="jiathis_sendto('tsohu');return false;" class="jiatitle"><span class="jtico jtico_tsohu">搜狐微博</span></a><a href="javascript:;" onclick="jiathis_sendto('cqq');return false;" class="jiatitle"><span class="jtico jtico_cqq">QQ好友</span></a><a href="javascript:;" onclick="jiathis_sendto('kaixin001');return false;" class="jiatitle"><span class="jtico jtico_kaixin001">开心网</span></a><a href="javascript:;" onclick="jiathis_sendto('feixin');return false;" class="jiatitle"><span class="jtico jtico_feixin">飞信</span></a><a href="javascript:;" onclick="jiathis_sendto('douban');return false;" class="jiatitle"><span class="jtico jtico_douban">豆瓣</span></a><a href="javascript:;" onclick="jiathis_sendto('ishare');return false;" class="jiatitle"><span class="jtico jtico_ishare">一键分享</span></a><a href="javascript:;" onclick="$CKE.center(this);return false;" class="jiatitle"><span class="jtico jtico_jiathis">查看更多(122)</span></a><div style="clear:both"></div></div><div class="ckepopBottom" style="width:100%;"><div style="float:left;font-size:10px"><a href="http://www.jiathis.com/help/html/what-is-jiathis" class="link_01" style="color:#333333;" target="_blank">这是什么工具?</a></div><div style="float:right;font-size:11px;margin:0 5px 0 0;"><img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/img_012.gif" align="absmiddle" border="0"><a href="http://www.jiathis.com/index2" style="color:#333333;padding:0 3px;" class="link_01" target="_blank">JiaThis</a></div><div style="clear:both"></div></div></div></div></td></tr></tbody></table></div><iframe style="position: fixed; display: none;" frameborder="0"></iframe><div style="height: auto; position: absolute; z-index: 100000000; display: none; top: 50%; left: 50%; overflow: auto;" class="jiathis_style"><div style="border:10px solid #7F7F7F; width:300px;"><div class="jiadiv_01" style="width:300px;"><div style="background:#F2F2F2;line-height:100%;height:30px;overflow:hidden;width:300px;"><table style="margin:5px 0 0 0;" width="100%"><tbody><tr class="jt_sharetitle" style="line-height:20px!important;"><td style="text-align:left;font-size:12px;" align="left">分享到各大网站</td><td align="right"><img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/img_exit.gif" style="margin:0 4px;cursor:pointer;" onclick="$CKE.centerClose();" border="0"></td></tr></tbody></table></div><div class="searchTxtCont"><div style="background:url(http://v2.jiathis.com/code/images/img_so.gif) no-repeat center;height:30px; width:281px"><form onsubmit="return false;"><input class="searchTxt" name="" onclick="this.value='';this.style.color='#000';" value="输入网站名或拼音缩写" onkeyup="$CKE.choose(this);" type="text"></form></div></div><div id="jiathis_sharelist" class="jiadiv_02" style="width:300px;height:300px;overflow-y:auto;"><a href="javascript:;" onclick="jiathis_sendto('ishare');return false;" class="jiatitle"><span class="jtico jtico_ishare">一键分享</span><input value="ishare,一键分享,yjfx" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('ujian');return false;" class="jiatitle"><span class="jtico jtico_ujian">猜你喜欢</span><input value="ujian,猜你喜欢,cnxh" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('copy');return false;" class="jiatitle"><span class="jtico jtico_copy">复制网址</span><input value="copy,复制网址,fzwz" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('fav');return false;" class="jiatitle"><span class="jtico jtico_fav">收藏夹</span><input value="fav,收藏夹,scj" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('print');return false;" class="jiatitle"><span class="jtico jtico_print">打印</span><input value="print,打印,dy" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('email');return false;" class="jiatitle"><span class="jtico jtico_email">邮件</span><input value="email,邮件,yj" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('qzone');return false;" class="jiatitle"><span class="jtico jtico_qzone">QQ空间</span><input value="qzone,QQ空间,qqkj" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('tsina');return false;" class="jiatitle"><span class="jtico jtico_tsina">新浪微博</span><input value="tsina,新浪微博,xlwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('weixin');return false;" class="jiatitle"><span class="jtico jtico_weixin">微信</span><input value="weixin,微信,wx" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('tqq');return false;" class="jiatitle"><span class="jtico jtico_tqq">腾讯微博</span><input value="tqq,腾讯微博,txwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('tsohu');return false;" class="jiatitle"><span class="jtico jtico_tsohu">搜狐微博</span><input value="tsohu,搜狐微博,shwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('t163');return false;" class="jiatitle"><span class="jtico jtico_t163">网易微博</span><input value="t163,网易微博,wywb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('renren');return false;" class="jiatitle"><span class="jtico jtico_renren">人人网</span><input value="renren,人人网,rrw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('kaixin001');return false;" class="jiatitle"><span class="jtico jtico_kaixin001">开心网</span><input value="kaixin001,开心网,kxw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('googleplus');return false;" class="jiatitle"><span class="jtico jtico_googleplus">Google+</span><input value="googleplus,Google+,googlej" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('yixin');return false;" class="jiatitle"><span class="jtico jtico_yixin">易信</span><input value="yixin,易信,yx" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('alibaba');return false;" class="jiatitle"><span class="jtico jtico_alibaba">阿里巴巴</span><input value="alibaba,阿里巴巴,albb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('douban');return false;" class="jiatitle"><span class="jtico jtico_douban">豆瓣</span><input value="douban,豆瓣,db" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('xiaoyou');return false;" class="jiatitle"><span class="jtico jtico_xiaoyou">朋友网</span><input value="xiaoyou,朋友网,pyw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('sdonote');return false;" class="jiatitle"><span class="jtico jtico_sdonote">麦库记事</span><input value="sdonote,麦库记事,mkjs" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('baidu');return false;" class="jiatitle"><span class="jtico jtico_baidu">百度搜藏</span><input value="baidu,百度搜藏,bdsc" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('taobao');return false;" class="jiatitle"><span class="jtico jtico_taobao">淘江湖</span><input value="taobao,淘江湖,tjh" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('ydnote');return false;" class="jiatitle"><span class="jtico jtico_ydnote">有道云笔记</span><input value="ydnote,有道云笔记,ydybj" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('189share');return false;" class="jiatitle"><span class="jtico jtico_189share">手机快传</span><input value="189share,手机快传,sjkc" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('tianya');return false;" class="jiatitle"><span class="jtico jtico_tianya">天涯社区</span><input value="tianya,天涯社区,tysq" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('feixin');return false;" class="jiatitle"><span class="jtico jtico_feixin">飞信</span><input value="feixin,飞信,fx" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('tieba');return false;" class="jiatitle"><span class="jtico jtico_tieba">百度贴吧</span><input value="tieba,百度贴吧,bdtb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('qingbiji');return false;" class="jiatitle"><span class="jtico jtico_qingbiji">轻笔记</span><input value="qingbiji,轻笔记,qbj" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('tifeng');return false;" class="jiatitle"><span class="jtico jtico_tifeng">凤凰微博</span><input value="tifeng,凤凰微博,fhwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('youshi');return false;" class="jiatitle"><span class="jtico jtico_youshi">优士网</span><input value="youshi,优士网,ysw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('fanfou');return false;" class="jiatitle"><span class="jtico jtico_fanfou">饭否</span><input value="fanfou,饭否,ff" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('diandian');return false;" class="jiatitle"><span class="jtico jtico_diandian">点点网</span><input value="diandian,点点网,ddw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('mingdao');return false;" class="jiatitle"><span class="jtico jtico_mingdao">明道</span><input value="mingdao,明道,md" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('zsvs');return false;" class="jiatitle"><span class="jtico jtico_zsvs">中搜v商</span><input value="zsvs,中搜v商,zsvs" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('google');return false;" class="jiatitle"><span class="jtico jtico_google">谷歌</span><input value="google,谷歌,gg" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('buzz');return false;" class="jiatitle"><span class="jtico jtico_buzz">谷歌Buzz</span><input value="buzz,谷歌Buzz,ggbuzz" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('youdao');return false;" class="jiatitle"><span class="jtico jtico_youdao">有道书签</span><input value="youdao,有道书签,ydsq" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('cqq');return false;" class="jiatitle"><span class="jtico jtico_cqq">QQ好友</span><input value="cqq,QQ好友,cqq" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('qq');return false;" class="jiatitle"><span class="jtico jtico_qq">QQ书签</span><input value="qq,QQ书签,qqsq" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('msn');return false;" class="jiatitle"><span class="jtico jtico_msn">MSN</span><input value="msn,MSN,msn" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('pinterest');return false;" class="jiatitle"><span class="jtico jtico_pinterest">Pinterest</span><input value="pinterest,Pinterest,pinterest" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('huaban');return false;" class="jiatitle"><span class="jtico jtico_huaban">花瓣网</span><input value="huaban,花瓣网,hbw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('duitang');return false;" class="jiatitle"><span class="jtico jtico_duitang">堆糖</span><input value="duitang,堆糖,dt" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('tyaolan');return false;" class="jiatitle"><span class="jtico jtico_tyaolan">摇篮微博</span><input value="tyaolan,摇篮微博,ylwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('115');return false;" class="jiatitle"><span class="jtico jtico_115">115收藏</span><input value="115,115收藏,115sc" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('hi');return false;" class="jiatitle"><span class="jtico jtico_hi">百度空间</span><input value="hi,百度空间,bdkj" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('gmail');return false;" class="jiatitle"><span class="jtico jtico_gmail">Gmail邮箱</span><input value="gmail,Gmail邮箱,gmailyx" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('hotmail');return false;" class="jiatitle"><span class="jtico jtico_hotmail">Hotmail邮箱</span><input value="hotmail,Hotmail邮箱,hotmailyx" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('xqw');return false;" class="jiatitle"><span class="jtico jtico_xqw">雪球</span><input value="xqw,雪球,xqw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('hexun');return false;" class="jiatitle"><span class="jtico jtico_hexun">和讯</span><input value="hexun,和讯,hx" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('toeeee');return false;" class="jiatitle"><span class="jtico jtico_toeeee">南方微博</span><input value="toeeee,南方微博,nfwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('139mail');return false;" class="jiatitle"><span class="jtico jtico_139mail">139邮箱</span><input value="139mail,139邮箱,139yx" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('189mail');return false;" class="jiatitle"><span class="jtico jtico_189mail">189邮箱</span><input value="189mail,189邮箱,189yx" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('i139');return false;" class="jiatitle"><span class="jtico jtico_i139">爱分享</span><input value="i139,爱分享,afx" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('iwo');return false;" class="jiatitle"><span class="jtico jtico_iwo">WO+分享</span><input value="iwo,WO+分享,iwo" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('189cn');return false;" class="jiatitle"><span class="jtico jtico_189cn">翼友圈</span><input value="189cn,翼友圈,yyq" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('139');return false;" class="jiatitle"><span class="jtico jtico_139">移动微博</span><input value="139,移动微博,ydwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('tpeople');return false;" class="jiatitle"><span class="jtico jtico_tpeople">人民微博</span><input value="tpeople,人民微博,rmwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('cnfol');return false;" class="jiatitle"><span class="jtico jtico_cnfol">中金微博</span><input value="cnfol,中金微博,zjwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('txinhua');return false;" class="jiatitle"><span class="jtico jtico_txinhua">新华微博</span><input value="txinhua,新华微博,xhwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('caimi');return false;" class="jiatitle"><span class="jtico jtico_caimi">财迷</span><input value="caimi,财迷,cm" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('translate');return false;" class="jiatitle"><span class="jtico jtico_translate">谷歌翻译</span><input value="translate,谷歌翻译,ggfy" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('tuita');return false;" class="jiatitle"><span class="jtico jtico_tuita">推他</span><input value="tuita,推他,tt" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('mop');return false;" class="jiatitle"><span class="jtico jtico_mop">猫扑推客</span><input value="mop,猫扑推客,mptk" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('digu');return false;" class="jiatitle"><span class="jtico jtico_digu">嘀咕网</span><input value="digu,嘀咕网,dgw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('xianguo');return false;" class="jiatitle"><span class="jtico jtico_xianguo">鲜果</span><input value="xianguo,鲜果,xg" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('faxianla');return false;" class="jiatitle"><span class="jtico jtico_faxianla">发现啦</span><input value="faxianla,发现啦,fxl" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('ganniu');return false;" class="jiatitle"><span class="jtico jtico_ganniu">赶牛网</span><input value="ganniu,赶牛网,gnw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('miliao');return false;" class="jiatitle"><span class="jtico jtico_miliao">米聊</span><input value="miliao,米聊,ml" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('kansohu');return false;" class="jiatitle"><span class="jtico jtico_kansohu">搜狐随身看</span><input value="kansohu,搜狐随身看,shssk" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('51');return false;" class="jiatitle"><span class="jtico jtico_51">51社区</span><input value="51,51社区,51sq" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('ifengkb');return false;" class="jiatitle"><span class="jtico jtico_ifengkb">凤凰快博</span><input value="ifengkb,凤凰快博,fhkb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('jcrb');return false;" class="jiatitle"><span class="jtico jtico_jcrb">法律微博</span><input value="jcrb,法律微博,flwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('gmw');return false;" class="jiatitle"><span class="jtico jtico_gmw">光明网</span><input value="gmw,光明网,gmw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('leihou');return false;" class="jiatitle"><span class="jtico jtico_leihou">雷猴网</span><input value="leihou,雷猴网,lhw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('thexun');return false;" class="jiatitle"><span class="jtico jtico_thexun">和讯微博</span><input value="thexun,和讯微博,hxwb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('dream163');return false;" class="jiatitle"><span class="jtico jtico_dream163">游戏江湖</span><input value="dream163,游戏江湖,yxjh" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('masar');return false;" class="jiatitle"><span class="jtico jtico_masar">玛撒网</span><input value="masar,玛撒网,msw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('binzhi');return false;" class="jiatitle"><span class="jtico jtico_binzhi">宾至网</span><input value="binzhi,宾至网,bzw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('fb');return false;" class="jiatitle"><span class="jtico jtico_fb">Facebook</span><input value="fb,Facebook,facebook" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('twitter');return false;" class="jiatitle"><span class="jtico jtico_twitter">Twitter</span><input value="twitter,Twitter,twitter" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('tumblr');return false;" class="jiatitle"><span class="jtico jtico_tumblr">Tumblr</span><input value="tumblr,Tumblr,tumblr" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('reddit');return false;" class="jiatitle"><span class="jtico jtico_reddit">Reddit</span><input value="reddit,Reddit,reddit" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('instapaper');return false;" class="jiatitle"><span class="jtico jtico_instapaper">Instapaper</span><input value="instapaper,Instapaper,instapaper" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('pocket');return false;" class="jiatitle"><span class="jtico jtico_pocket">Pocket</span><input value="pocket,Pocket,pocket" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('wealink');return false;" class="jiatitle"><span class="jtico jtico_wealink">若邻网</span><input value="wealink,若邻网,rlw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('leshou');return false;" class="jiatitle"><span class="jtico jtico_leshou">乐收</span><input value="leshou,乐收,ls" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('waakee');return false;" class="jiatitle"><span class="jtico jtico_waakee">挖客网</span><input value="waakee,挖客网,wkw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('cyzone');return false;" class="jiatitle"><span class="jtico jtico_cyzone">创业邦</span><input value="cyzone,创业邦,cyb" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('99earth');return false;" class="jiatitle"><span class="jtico jtico_99earth">救救地球</span><input value="99earth,救救地球,jjdq" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('chouti');return false;" class="jiatitle"><span class="jtico jtico_chouti">抽屉网</span><input value="chouti,抽屉网,ctw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('dig24');return false;" class="jiatitle"><span class="jtico jtico_dig24">递客网</span><input value="dig24,递客网,dkw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('douban9dian');return false;" class="jiatitle"><span class="jtico jtico_douban9dian">豆瓣9点</span><input value="douban9dian,豆瓣9点,db9d" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('meilishuo');return false;" class="jiatitle"><span class="jtico jtico_meilishuo">美丽说</span><input value="meilishuo,美丽说,mls" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('mogujie');return false;" class="jiatitle"><span class="jtico jtico_mogujie">蘑菇街</span><input value="mogujie,蘑菇街,mgj" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('tianji');return false;" class="jiatitle"><span class="jtico jtico_tianji">天际网</span><input value="tianji,天际网,tjw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('poco');return false;" class="jiatitle"><span class="jtico jtico_poco">Poco网</span><input value="poco,Poco网,pocow" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('yijee');return false;" class="jiatitle"><span class="jtico jtico_yijee">易集网</span><input value="yijee,易集网,yjw" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('pdfonline');return false;" class="jiatitle"><span class="jtico jtico_pdfonline">Pdf在线转换</span><input value="pdfonline,Pdf在线转换,pdfzxzh" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('printfriendly');return false;" class="jiatitle"><span class="jtico jtico_printfriendly">友好打印</span><input value="printfriendly,友好打印,yhdy" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('w3c');return false;" class="jiatitle"><span class="jtico jtico_w3c">W3c验证</span><input value="w3c,W3c验证,w3cyz" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('bitly');return false;" class="jiatitle"><span class="jtico jtico_bitly">Bit.ly</span><input value="bitly,Bit.ly,bitly" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('digg');return false;" class="jiatitle"><span class="jtico jtico_digg">Digg</span><input value="digg,Digg,digg" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('mailru');return false;" class="jiatitle"><span class="jtico jtico_mailru">Mail.ru</span><input value="mailru,Mail.ru,mail.ru" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('diigo');return false;" class="jiatitle"><span class="jtico jtico_diigo">Diigo</span><input value="diigo,Diigo,diigo" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('evernote');return false;" class="jiatitle"><span class="jtico jtico_evernote">EverNote</span><input value="evernote,EverNote,evernote" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('friendfeed');return false;" class="jiatitle"><span class="jtico jtico_friendfeed">FriendFeed</span><input value="friendfeed,FriendFeed,friendfeed" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('myspace');return false;" class="jiatitle"><span class="jtico jtico_myspace">Myspace</span><input value="myspace,Myspace,myspace" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('linkedin');return false;" class="jiatitle"><span class="jtico jtico_linkedin">LinkedIn</span><input value="linkedin,LinkedIn,linkedin" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('mixx');return false;" class="jiatitle"><span class="jtico jtico_mixx">Mixx</span><input value="mixx,Mixx,mixx" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('netlog');return false;" class="jiatitle"><span class="jtico jtico_netlog">NetLog</span><input value="netlog,NetLog,netlog" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('netvibes');return false;" class="jiatitle"><span class="jtico jtico_netvibes">Netvibes</span><input value="netvibes,Netvibes,netvibes" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('phonefavs');return false;" class="jiatitle"><span class="jtico jtico_phonefavs">Phonefavs</span><input value="phonefavs,Phonefavs,phonefavs" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('pingfm');return false;" class="jiatitle"><span class="jtico jtico_pingfm">Ping.fm</span><input value="pingfm,Ping.fm,ping.fm" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('plaxo');return false;" class="jiatitle"><span class="jtico jtico_plaxo">Plaxo</span><input value="plaxo,Plaxo,plaxo" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('delicious');return false;" class="jiatitle"><span class="jtico jtico_delicious">Delicious</span><input value="delicious,Delicious,delicious" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('wong');return false;" class="jiatitle"><span class="jtico jtico_wong">Mister Wong</span><input value="wong,Mister Wong,misterwong" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('stumbleupon');return false;" class="jiatitle"><span class="jtico jtico_stumbleupon">Stumbleupon</span><input value="stumbleupon,Stumbleupon,stumbleupon" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('plurk');return false;" class="jiatitle"><span class="jtico jtico_plurk">Plurk</span><input value="plurk,Plurk,plurk" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('funp');return false;" class="jiatitle"><span class="jtico jtico_funp">Funp</span><input value="funp,Funp,funp" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('myshare');return false;" class="jiatitle"><span class="jtico jtico_myshare">Myshare</span><input value="myshare,Myshare,myshare" type="hidden"></a><a href="javascript:;" onclick="jiathis_sendto('fwisp');return false;" class="jiatitle"><span class="jtico jtico_fwisp">Fwisp</span><input value="fwisp,Fwisp,fwisp" type="hidden"></a><div style="clear:both"></div></div><div class="centerBottom"><div style="float:left;font-size:10px;"><a href="http://www.jiathis.com/help/html/what-is-jiathis" class="link_01" style="color:#333333;" target="_blank">这是什么工具?</a></div><div style="float:right;font-size:11px;margin:0 10px 0 0;"><img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/img_012.gif" align="absmiddle" border="none">&nbsp;<a href="http://www.jiathis.com/index2" style="color:#333333;" class="link_01" target="_blank">JiaThis</a></div><div style="clear:both"></div></div></div></div></div><iframe src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/jiathis_utility.htm" style="display: none;" frameborder="0"></iframe><iframe src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/acbeacon2.htm" style="width: 0px; height: 0px; display: none;"></iframe>
+    <h1>
+        微信原生支付 Native扫码支付( V3.3.7 版本)_.NET_编程开发_程序员俱乐部</h1>
+    <div id="home_top">
+        <div class="top_nav">
+            <div class="left">
+                中国优秀的程序员网站<img style="padding-top: 2px;" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/top_bg_xian.gif" align="absmiddle" width="16" height="25"><a target="_blank" href="http://www.cxyclub.cn/feijishu/" onmouseout="popupClose();" onmouseover="show(1,this);">程序员频道<img style="padding-left: 4px;" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/nav_ico1.gif" align="absmiddle"></a><img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/top_bg_xian.gif" align="absmiddle" width="16" height="25"><a target="_blank" href="http://www.cxyclub.cn/developer/" onmouseout="popupClose();" onmouseover="show(2,this);">CXYCLUB技术<img style="padding-left: 4px;" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/nav_ico1.gif" align="absmiddle"></a><img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/top_bg_xian.gif" align="absmiddle" width="16" height="25"><a target="_blank" href="http://www.cxyclub.cn/sitemap.html">地图</a>
+            </div>
+            <div class="right">
+                <div class="more">
+                    <img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/top_shequ.gif" align="absmiddle" width="27" height="16"><a href="http://www.cxyclub.cn/TopNews.aspx">最新资讯</a> | <a href="http://www.cxyclub.cn/BaiDu.xml">百度新闻</a> | <a href="http://www.cxyclub.cn/Google.xml">
+                            GOOGLE地图</a> | <a href="http://www.cxyclub.cn/rss.xml" style="color: #ff0000">RSS订阅</a> | <a href="http://www.cxyclub.cn/" onmouseout="popupClose()" onmouseover="show(3,this)">更多<img style="padding-left: 4px;" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/nav_ico1.gif" align="absmiddle"></a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div style="display: none;" class="subMenu1" id="s1" onmouseover="popupNoClose();" onmouseout="popupClose();">
+        <ul>
+            <li><a href="http://www.cxyclub.cn/feijishu/zhichanghuati/" target="_blank">
+                职场话题</a></li>
+            <li><a href="http://www.cxyclub.cn/feijishu/shenghuoxiuxian/" target="_blank">
+                生活休闲</a></li>
+            <li><a href="http://www.cxyclub.cn/feijishu/lianaijiaoyou/" target="_blank">
+                恋爱交友</a></li>
+            <li><a href="http://www.cxyclub.cn/feijishu/chengxurensheng/" target="_blank">
+                程序人生</a></li>
+            <li><a href="http://www.cxyclub.cn/feijishu/xuexijinxiu/" target="_blank">
+                学习进修</a></li>
+            <li><a href="http://www.cxyclub.cn/feijishu/zhiyefazhan/" target="_blank">
+                职业发展</a></li>
+            <li><a href="http://www.cxyclub.cn/feijishu/xiangmuguanli/" target="_blank">
+                项目管理</a></li>
+            <li><a href="http://www.cxyclub.cn/feijishu/qiuzhimianshi/" target="_blank">
+                求职面试</a></li>
+            <li><a href="http://www.cxyclub.cn/feijishu/chengxuyuanchuangye/" target="_blank">
+                程序员创业</a></li>
+            
+        </ul>
+    </div>
+    <div style="display: none; top: 29px; left: 421px;" class="subMenu2" id="s2" onmouseover="popupNoClose()" onmouseout="popupClose()">
+        <ul>
+            <li><a href="http://www.cxyclub.cn/developer/java/" target="_blank" title="JAVA">JAVA</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/net/" target="_blank" title=".NET">.NET</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/c_c++/" target="_blank" title="C/C++">C/C++</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/ruby/" target="_blank" title="Ruby">Ruby</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/delphi/" target="_blank" title="Delphi">Delphi</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/js/" target="_blank" title="JavaScript">JavaScript</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/php/" target="_blank" title="PHP">PHP</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/asp/" target="_blank" title="ASP">ASP</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/jsp/" target="_blank" title="JSP">JSP</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/html/" target="_blank" title="HTML">HTML</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/xml/" target="_blank" title="XML">XML</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/mobile/" target="_blank" title="移动开发">移动开发</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/tools/" target="_blank" title="开发工具">开发工具</a></li>
+            <li><a href="http://www.cxyclub.cn/developer/other/" target="_blank" title="其他">其他</a></li>
+            
+        </ul>
+    </div>
+    <div class="subMenu3" id="s3" onmouseover="popupNoClose()" onmouseout="popupClose()" style="z-index: 9999; position: absolute;">
+        <ul>
+            <li><a href="http://www.cxyclub.cn/developer/" target="_blank">编程开发</a></li>
+            <li><a href="http://www.cxyclub.cn/database/" target="_blank">数据库</a></li>
+            <li><a href="http://www.cxyclub.cn/os/" target="_blank">操作系统</a></li>
+            <li><a href="http://www.cxyclub.cn/news/" target="_blank">新闻资讯</a></li>
+            <li><a href="http://www.cxyclub.cn/internet/" target="_blank">互联网</a></li>
+            <li><a href="http://www.cxyclub.cn/feijishu/" target="_blank">非技术区</a></li>
+            
+        </ul>
+    </div>
+    <center>
+        <table>
+            <tbody><tr>
+                <td>
+                </td>
+            </tr>
+        </tbody></table>
+    </center>
+    <div id="subNav">
+        <div class="logo">
+            <a href="http://www.cxyclub.cn/" target="_self">
+                <img style="border: 0px; width: 99px; height: 39px" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/Logo.gif" alt=""></a>
+        </div>
+        <div class="menu5">
+            <div>
+                <h2>
+                    <a href="http://www.cxyclub.cn/feijishu/">非技术区</a></h2>
+                <a href="http://www.cxyclub.cn/feijishu/shenghuoxiuxian/">生活休闲</a><a href="http://www.cxyclub.cn/feijishu/lianaijiaoyou/">恋爱交友</a></div>
+            <div class="menufoot">
+                <a href="http://www.cxyclub.cn/feijishu/zhiyefazhan/">职业发展</a><span><a href="http://www.cxyclub.cn/feijishu/qiuzhimianshi/">求职面试</a></span><a href="http://www.cxyclub.cn/feijishu/chengxurensheng/">程序人生</a></div>
+        </div>
+        <div class="menu4">
+            <div>
+                <h2>
+                    <a href="http://www.cxyclub.cn/developer/mobile/" style="margin-right: 0px;">移动开发</a></h2>
+                <a href="http://www.cxyclub.cn/developer/tools/" style="margin: 0px">开发工具</a></div>
+            <div class="menufoot">
+                <h2>
+                    <a href="http://www.cxyclub.cn/database/db2/">DB2</a></h2>
+                <a href="http://www.cxyclub.cn/database/mysql/">MySql</a><a href="http://www.cxyclub.cn/database/sybase/">Sybase</a></div>
+        </div>
+        <div class="menu3">
+            <div>
+                <h2>
+                    <a href="http://www.cxyclub.cn/developer/">开发</a></h2>
+                <a href="http://www.cxyclub.cn/developer/java/">JAVA</a><a style="color: Red" href="http://www.cxyclub.cn/developer/net/">.NET</a><a href="http://www.cxyclub.cn/developer/php/">PHP</a><span><a href="http://www.cxyclub.cn/developer/c_c++/">C/C++</a></span></div>
+            <div class="menufoot">
+                <h2>
+                    <a href="http://www.cxyclub.cn/database/">数据库</a></h2>
+                <a href="http://www.cxyclub.cn/database/sql%20server/">SQL Server</a><a href="http://www.cxyclub.cn/database/oracle/">Oracle</a>
+            </div>
+        </div>
+        <div class="menu2">
+            <div>
+                <h2>
+                    <a href="http://www.cxyclub.cn/internet/">互联网</a></h2>
+                <a href="http://www.cxyclub.cn/internet/wangzhanyunyingweihu/">运营</a><a href="http://www.cxyclub.cn/internet/wangluotuiguang/">推广</a><a href="http://www.cxyclub.cn/internet/wangluoyingxiao/">营销</a><a style="color: Red" href="http://www.cxyclub.cn/internet/seo/">SEO</a></div>
+            <div class="menufoot">
+                <h2>
+                    <a href="http://www.cxyclub.cn/os/">系统</a></h2>
+                <a href="http://www.cxyclub.cn/os/linux/">Linux</a><a href="http://www.cxyclub.cn/os/unix/">Unix</a><span><a href="http://www.cxyclub.cn/os/windows/">Windows</a></span></div>
+        </div>
+        <div class="menu1">
+            <div>
+                <h2>
+                    <a href="http://www.cxyclub.cn/news/">资讯</a></h2>
+                <a href="http://www.cxyclub.cn/news/last/">动态</a><a href="http://www.cxyclub.cn/news/tech/">产品</a><a href="http://www.cxyclub.cn/news/people/">人物</a></div>
+            <div class="menufoot">
+                <h2>
+                    <a href="http://www.cxyclub.cn/feijishu/chengxuyuanchuangye/">创业</a></h2>
+                <a href="http://www.cxyclub.cn/feijishu/zhichanghuati/">职场</a><a href="http://www.cxyclub.cn/feijishu/xuexijinxiu/">学习</a><a href="http://www.cxyclub.cn/feijishu/xiangmuguanli/">管理</a></div>
+        </div>
+    </div>
+    <div id="Hot1">
+        <div class="Hot1_lift">
+            <span>热搜：</span>
+            <div style="width: 535px; float:left">
+                <marquee direction="left" scrollamount="3" onmouseover="this.stop();" onmouseout="this.start();" style="margin: 0px; padding: 0px;"><ul>
+<li><a href="http://www.cxyclub.cn/Tag/gaoshou.html">高手</a></li><li><a href="http://www.cxyclub.cn/Tag/daxingwangzhan.html">大型网站</a></li><li><a href="http://www.cxyclub.cn/Tag/tianmao.html">天猫</a></li><li><a href="http://www.cxyclub.cn/Tag/huisu.html">回溯</a></li><li><a href="http://www.cxyclub.cn/Tag/xunhuan.html">循环</a></li><li><a href="http://www.cxyclub.cn/Tag/class.html">class</a></li><li><a href="http://www.cxyclub.cn/Tag/instance.html">instance</a></li><li><a href="http://www.cxyclub.cn/Tag/win8.html">Win8</a></li><li><a href="http://www.cxyclub.cn/Tag/meituxiuxiu.html">美图秀秀</a></li><li><a href="http://www.cxyclub.cn/Tag/shexiangtou.html">摄像头</a></li><li><a href="http://www.cxyclub.cn/Tag/erweima.html">二维码</a></li><li><a href="http://www.cxyclub.cn/Tag/yingyongchengxuchi.html">应用程序池</a></li><li><a href="http://www.cxyclub.cn/Tag/iis7.html">IIS7</a></li><li><a href="http://www.cxyclub.cn/Tag/controller.html">controller</a></li><li><a href="http://www.cxyclub.cn/Tag/erjinzhi.html">二进制</a></li>
+<li><a href="http://www.cxyclub.cn/Tag/gaoshou.html">高手</a></li><li><a href="http://www.cxyclub.cn/Tag/daxingwangzhan.html">大型网站</a></li><li><a href="http://www.cxyclub.cn/Tag/tianmao.html">天猫</a></li><li><a href="http://www.cxyclub.cn/Tag/huisu.html">回溯</a></li><li><a href="http://www.cxyclub.cn/Tag/xunhuan.html">循环</a></li><li><a href="http://www.cxyclub.cn/Tag/class.html">class</a></li><li><a href="http://www.cxyclub.cn/Tag/instance.html">instance</a></li><li><a href="http://www.cxyclub.cn/Tag/win8.html">Win8</a></li><li><a href="http://www.cxyclub.cn/Tag/meituxiuxiu.html">美图秀秀</a></li><li><a href="http://www.cxyclub.cn/Tag/shexiangtou.html">摄像头</a></li>
+</ul></marquee>
+            </div>
+            <span><a href="http://www.cxyclub.cn/Tag/">更多&gt;&gt;</a></span>
+        </div>
+        <div class="Hot1_fight">
+            <span style="margin-top: -3.5px">
+                <input name="txt_keyword" id="txt_keyword" class="Hot1_fight1" type="text">&nbsp;</span>
+            <span style="margin-top: -3px">
+                <input onclick="OnSearch();" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/So.gif" style="width: 50px;
+                    height: 24px;" type="image"></span>
+        </div>
+    </div>
+<div style="text-align:center;">
+<script type="text/javascript"> 
+alimama_pid="mm_10618175_3219119_10576327"; 
+alimama_width=950; 
+alimama_height=90; 
+</script> 
+<script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/inf.js" type="text/javascript"> 
+</script><div id="tanxssp_con_mm_10618175_3219119_10576327" style="display:inline-block;position:relative;width:950px;height:90px;*display:inline;*zoom:1;"><iframe scrolling="no" marginheight="0" marginwidth="0" border="0" style="width:950px;height:90px;" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/950x90danpin0911.htm" frameborder="0"></iframe><a id="iconmm_10618175_3219119_10576327" title="我也要申请橱窗推广" target="_blank" href="http://c.alimama.com/" style="overflow:hidden;width:26px;height:17px;right:18px;bottom:0px;display:block;position:absolute;cursor:pointer;z-index:250;">   <span id="icon_smallmm_10618175_3219119_10576327" style="float:none;width:26px;display:block;height:17px;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i2/T1oY3VXmNbXXXb8qDc-26-18.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i2/T1oY3VXmNbXXXb8qDc-26-18.png');"></span>   <span id="icon_bigmm_10618175_3219119_10576327" style="float:none;width:110px;height:17px;display: none;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i3/T1dt7VXiRaXXbd25o5-110-18.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i3/T1dt7VXiRaXXbd25o5-110-18.png');"></span></a><a id="sxmm_10618175_3219119_10576327" href="javascript:;" style="width:17px;height:17px;right:0px;bottom:0px;display:block;position:absolute;cursor:pointer;z-index:250;">   <span id="sx1mm_10618175_3219119_10576327" style="float:none;width:17px;display:block;height:17px;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i4/TB1HRyeGXXXXXbRXXXX1DxgFpXX-17-17.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i4/TB1HRyeGXXXXXbRXXXX1DxgFpXX-17-17.png');"></span>   <span id="sx2mm_10618175_3219119_10576327" style="float:none;width:110px;height:17px;display: none;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i3/TB1buFUGXXXXXcIXVXX1DxgFpXX-17-17.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i3/TB1buFUGXXXXXcIXVXX1DxgFpXX-17-17.png');"></span></a><div id="sxtipmm_10618175_3219119_10576327" style="display:none;width:100px;position:absolute;right:0;bottom:17px;"><div style="width:100px; height:20px;background:#ddd;color:#666;line-height:1.5;text-align: center;">屏蔽此推广内容</div><div style="float:right;margin-right:6px;width: 0;height: 0;border-left: 3px solid transparent;border-right: 3px solid transparent;border-top: 6px solid #ddd;"></div></div></div><iframe style="display:none" id="tanx-a-mm_10618175_3219119_10576327" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>
+</div>
+    <div class="wrap">
+        <div class="m_l">
+            <div class="m_l_menu" style="background-color: #ECF0FC;">
+                您所在的位置： <a href="http://www.cxyclub.cn/" target="_blank">程序员俱乐部</a> &gt; <a href="http://www.cxyclub.cn/developer/" target="_blank">编程开发</a> &gt; <a href="http://www.cxyclub.cn/developer/net/" target="_blank">.NET</a> &gt; 微信原生支付 Native扫码支付( V3.3.7 版本)</div>
+            
+            <div class="m_l_cont">
+                <div class="m_l_cont_title">
+                    <h3>
+                        微信原生支付 Native扫码支付( V3.3.7 版本)</h3>
+                </div>
+                <div class="m_l_cont_note">
+                    &nbsp;2015/1/7 3:15:05 &nbsp;-星空- &nbsp;<a href="http://www.cxyclub.cn/" target="_blank">程序员俱乐部</a> &nbsp;<a target="_self" href="#pl">我要评论(<span id="feedback">0</span>)</a></div>
+                <div class="m_l_cont_note1">
+                    <ul>
+                        <li><span class="fa">摘要：</span>[尊重别人的劳动成果，转载请注明出
+处：一缕晨光工作室，www.wispdawn.com]前言辛苦研究三天，遇到各种困难，最终还是克服了，把我的理解和思路分享给需要帮助的人，如果你
+觉的好，请帮我分享一下，谢谢。在没有做之前，我以为和支付宝，以及银联一样，会在官网找到相应的demo，照葫芦画瓢即可，没有什么复杂的，真正去做的
+时候，发现各种错误，很多时候都莫名其妙找不到北，在网上搜了不知道多少遍，有V3版的，不过都是jsapi版本的，没有找到原生扫码支付，下了几个V2
+版本的微信支付c#demo</li>
+                        <li><span class="fa">标签：</span><a href="http://www.cxyclub.cn/Tag/banben.html" target="_blank">版本</a> </li>
+                        <li class="m_l_cont_note1_r"></li>
+                    </ul>
+                </div>
+                <div class="m_l_cont_text">
+                    <!--StartContent-->
+                    <p>[<a href="http://www.cxyclub.cn/Tag/zunzhong.html" target="_blank">尊重</a>别人的劳动成果，转载请注明出处：一缕晨光工作室，www.wispdawn.com]</p>
+<p>前言</p>
+<p>辛苦<a href="http://www.cxyclub.cn/Tag/yanjiu.html" target="_blank">研究</a>三天，遇到各种困难，最终还是克服了，把我的<a href="http://www.cxyclub.cn/Tag/lijie.html" target="_blank">理解</a>和思路分享给需要帮助的人，如果你觉的好，请帮我分享一下，谢谢。 在没有做之前，我以为和<a href="http://www.cxyclub.cn/Tag/zhifubao.html" target="_blank">支付宝</a>，以及银联一样，会在官网找到相应的demo，照葫芦画瓢即可，没有什么复杂的，真正去做的时候，<a href="http://www.cxyclub.cn/Tag/faxian.html" target="_blank">发现</a>各种<a href="http://www.cxyclub.cn/Tag/cuowu.html" target="_blank">错误</a>，很多时候都莫名其妙找不到北， 在网上搜了不知道多少遍，有V3版的，不过都是js&nbsp;api<a href="http://www.cxyclub.cn/Tag/banben.html" target="_blank">版本</a>的，
+没有找到原生扫码支付，下了几个V2版本的微信支付c#demo，感觉乱糟糟的。官网只提供了一个php版本的demo 
+研究了一天没有结果，第二天我决定从官网的php的原生扫码支付，根据他的逻辑，用c#写出来，下面就是所有思路及代码，文章最后我放上整个解决方案压缩
+包。</p>
+<p><strong>想实现扫码支付需要三大步骤</strong></p>
+<ol>
+<li>生成<a href="http://www.cxyclub.cn/Tag/erweima.html" target="_blank">二维码</a>，二维码包含产品ID</li>
+<li>微信公众平台-&gt;微信支付-&gt;配置支付回调URL(自己开发回调页面)</li>
+<li>开发支付成功后通知页面</li>
+</ol>
+<p>最终效果如图</p>
+<p><img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/96A06BDA7951FA1B.jpg" alt="" data-cke-saved-src="/Upload/Images/2015010703/96A06BDA7951FA1B.jpg" width="336" height="504"></p>
+<p>下面一步一步讲解</p>
+<strong>一.生成二维码</strong>
+<p>&nbsp;这步骤比较简单，根据官网文档 ，需要固定的参数，其中签名<a href="http://www.cxyclub.cn/Tag/suanfa.html" target="_blank">算法</a>已经写好，如下代码</p>
+<p>下图是用于生成二维码字符串，</p>
+
+<img id="code_img_closed_29bcd626-4171-4bd1-9bc3-49a8a68e703c" <a="" href="http://www.cxyclub.cn/Tag/class.html" target="_blank">class="code_img_closed" src="/Upload/Images/2015010703/0015B68B3C38AA5B.gif" alt="" /&gt;<img id="code_img_opened_29bcd626-4171-4bd1-9bc3-49a8a68e703c" class="code_img_opened" style="display: none;" onclick="cnb<a href=" http:="" www.cxyclub.cn="" tag="" logs.html"="" target="_blank">logs_code_hide('29bcd626-4171-4bd1-9bc3-49a8a68e703c',event)" src="/Upload/Images/2015010703/2B1B950FA3DF188F.gif" alt="" /&gt;
+
+<pre><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">string</span> CreateQRCodeUrl(<span style="color: #0000ff;">string</span><span style="color: #000000;"> productid)
+  {
+            Dictionary</span>&lt;<span style="color: #0000ff;">string</span>, <span style="color: #0000ff;">string</span>&gt; dic = <span style="color: #0000ff;">new</span> Dictionary&lt;<span style="color: #0000ff;">string</span>, <span style="color: #0000ff;">string</span>&gt;<span style="color: #000000;">();
+            dic.Add(</span><span style="color: #800000;">"</span><span style="color: #800000;">appid</span><span style="color: #800000;">"</span><span style="color: #000000;">, helper.GetAppId);
+            dic.Add(</span><span style="color: #800000;">"</span><span style="color: #800000;">mch_id</span><span style="color: #800000;">"</span><span style="color: #000000;">, helper.GetMch_Id);
+            dic.Add(</span><span style="color: #800000;">"</span><span style="color: #800000;">nonce_str</span><span style="color: #800000;">"</span><span style="color: #000000;">, <a href="http://www.cxyclub.cn/Tag/ten.html" target="_blank">Ten</a>payUtil.getNoncestr());
+            dic.Add(</span><span style="color: #800000;">"</span><span style="color: #800000;">product_id</span><span style="color: #800000;">"</span><span style="color: #000000;">, productid);
+            dic.Add(</span><span style="color: #800000;">"</span><span style="color: #800000;">time_stamp</span><span style="color: #800000;">"</span><span style="color: #000000;">, TenpayUtil.getTimestamp());
+            dic.Add(</span><span style="color: #800000;">"</span><span style="color: #800000;">sign</span><span style="color: #800000;">"</span><span style="color: #000000;">,helper.GetSign(dic));
+           
+            </span><span style="color: #0000ff;">string</span> url = WxPayHelper.FormatBizQueryParaMap(dic, <span style="color: #0000ff;">false</span>);<span style="color: #008000;">//</span><span style="color: #008000;">这里不要url<a href="http://www.cxyclub.cn/Tag/bianma.html" target="_blank">编码</a></span>
+            <span style="color: #0000ff;">return</span> <span style="color: #800000;">"</span><span style="color: #800000;">weixin://wxpay/bizpayurl?</span><span style="color: #800000;">"</span> +<span style="color: #000000;"> url;
+ }</span></pre>
+
+<span class="cnblogs_code_collapse">生成微信二维码字符串</span>
+<p>&nbsp;<img class="cke_reset cke_widget_mask" style="line-height: 1.5;" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt=""><span class="cke_reset cke_widget_drag_handler_container" style="line-height: 1.5;"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" data-cke-widget-drag-handler="1" width="15" height="15"></span></p>
+
+<p>最终生成的url</p>
+<p><small>weixin://wxpay/bizpayurl?appid=wxed94e****9b4bc&amp;mch_id=122468****&amp;nonce_str=877A9BA7A98F75B90A9D49F53F15A858&amp;
+ 
+product_id=1&amp;sign=B2A03B1B6583972FF67C8AD3D7414DD1&amp;time_stamp=1420466744</small></p>
+<p>有了文本想生成二维码就简单了，起初我是采用ThoughtWorks.QRCode.dll，后来发现一值报错，超出数组范围，估计是字符串太长了，最后选择使用一个<a href="http://www.cxyclub.cn/Tag/kaiyuanxiangmu.html" target="_blank">开源项目</a>&nbsp;Gma.QrCodeNet.Encoding.dll，速度很快。</p>
+<p>代码如下</p>
+
+<img id="code_img_closed_a49ff276-2161-424a-8df7-d4e43657cee1" class="code_img_closed" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/0015B68B3C38AA5B.gif" alt=""><img id="code_img_opened_a49ff276-2161-424a-8df7-d4e43657cee1" class="code_img_opened" style="display: none;" onclick="cnblogs_code_hide('a49ff276-2161-424a-8df7-d4e43657cee1',event)" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/2B1B950FA3DF188F.gif" alt="">
+
+<pre> WxPayHelper helper = <span style="color: #0000ff;">new</span><span style="color: #000000;"> WxPayHelper();
+        </span><span style="color: #0000ff;">public</span> <span style="color: #0000ff;">void</span><span style="color: #000000;"> ProcessRequest(HttpContext context)
+        {         
+            </span><span style="color: #0000ff;">if</span> (context.Request[<span style="color: #800000;">"</span><span style="color: #800000;">buynum</span><span style="color: #800000;">"</span>]!=<span style="color: #0000ff;">null</span><span style="color: #000000;">)
+            {
+                </span><span style="color: #0000ff;">string</span> proId =<span style="color: #800000;">"</span><span style="color: #800000;">1</span><span style="color: #800000;">"</span>;<span style="color: #008000;">//</span><span style="color: #008000;">示例代码写死了,自己根据业务处理</span>
+                <span style="color: #0000ff;">string</span> qrurl =<span style="color: #000000;"> CreateQRCodeUrl(proId);
+
+                QrEncoder qrEncoder </span>= <span style="color: #0000ff;">new</span><span style="color: #000000;"> QrEncoder(ErrorCorrectionLevel.H);
+                Gma.QrCodeNet.Encoding.QrCode qrCode </span>= <span style="color: #0000ff;">new</span><span style="color: #000000;"> Gma.QrCodeNet.Encoding.QrCode();
+                qrEncoder.TryEncode(qrurl, </span><span style="color: #0000ff;">out</span><span style="color: #000000;"> qrCode);
+                </span><span style="color: #0000ff;">using</span> (MemoryStream ms = <span style="color: #0000ff;">new</span><span style="color: #000000;"> MemoryStream())
+                {
+                    </span><span style="color: #0000ff;">var</span> renderer = <span style="color: #0000ff;">new</span> GraphicsRenderer(<span style="color: #0000ff;">new</span> FixedModuleSize(<span style="color: #800080;">4</span><span style="color: #000000;">, QuietZoneModules.Two));
+                    renderer.WriteToStream(qrCode.Matrix, ImageFormat.Png, ms);
+                    context.Response.ContentType </span>= <span style="color: #800000;">"</span><span style="color: #800000;">image/png</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+                    context.Response.OutputStream.Write(ms.GetBuffer(), </span><span style="color: #800080;">0</span>, (<span style="color: #0000ff;">int</span><span style="color: #000000;">)ms.Length);
+                }
+            }          
+        }</span></pre>
+
+<span class="cnblogs_code_collapse">生成二维码</span>
+<p>&nbsp;<img class="cke_reset cke_widget_mask" style="line-height: 1.5;" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt=""><span class="cke_reset cke_widget_drag_handler_container" style="line-height: 1.5;"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" data-cke-widget-drag-handler="1" width="15" height="15"></span></p>
+
+<p>前台js调用</p>
+
+
+<pre>$(<span style="color: #0000ff;"><a href="http://www.cxyclub.cn/Tag/function.html" target="_blank">function</a></span><span style="color: #000000;"> () {
+            $(</span>"#txtKey").keyup(<span style="color: #0000ff;">function</span><span style="color: #000000;"> () {               
+                </span><span style="color: #0000ff;">var</span> num=$(<span style="color: #0000ff;">this</span>).val();<span style="color: #008000;">//</span><span style="color: #008000;">这里设置购买数量</span>
+                $("#qrDiv").html("&lt;img src=QrCode.ashx?buynum="+num+" height=200 width=200 /&gt; "<span style="color: #000000;">);
+            });
+ });</span></pre>
+
+<p>&nbsp;<span class="cke_reset cke_widget_drag_handler_container" style="line-height: 1.5;"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" data-cke-widget-drag-handler="1" width="15" height="15"></span></p>
+
+<strong>二、写回调页面，本程序是NativeCallBack.aspx</strong>
+<p>这个页面主要任务是当扫码二维码的时候，微信向这个页面post <a href="http://www.cxyclub.cn/Tag/xml.html" target="_blank">XML</a>数据，其中包含产品id，即二维码上的产品id&nbsp;，我们需要根据产品id，查询产品名称，总价格，以及一些附属信息， 我们需要再次把这些参数post给微信统一支付<a href="http://www.cxyclub.cn/Tag/jiekou.html" target="_blank">接口</a>，如果数据正确，微信会给我们生成一个prepay_id 预支付id，我们再次把prepay_id post给微信，整个流程即是这样子的，其实产品id就相当于一个订单号，唯一性，当然你也可以根据产品id，在这个页面里面下单，业务根据自己需要处理。</p>
+<p>页面代码如下</p>
+
+<img id="code_img_closed_3ee966e5-c320-490a-b331-d647a7d958b7" class="code_img_closed" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/0015B68B3C38AA5B.gif" alt=""><img id="code_img_opened_3ee966e5-c320-490a-b331-d647a7d958b7" class="code_img_opened" style="display: none;" onclick="cnblogs_code_hide('3ee966e5-c320-490a-b331-d647a7d958b7',event)" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/2B1B950FA3DF188F.gif" alt="">
+
+<pre>log4net.ILog logger =<span style="color: #000000;"> WxV3.Helper.LogHelper.GetInstance().Log;
+        WxV3.Helper.WxPayHelper helper </span>= <span style="color: #0000ff;">new</span><span style="color: #000000;"> Helper.WxPayHelper();
+        </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">void</span> Page_Load(<span style="color: #0000ff;">object</span><span style="color: #000000;"> sender, EventArgs e)
+        {
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">1.接受微信平台post 过来的XML信息
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">2.验证签名，从XML中获取ProductID，获取产品信息
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">2.1设置out_trade_no，total_fee，notify_url，trade_type，product_id 参数，提交统一接口         
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">3.提交统一接口后获取PrepayId
+            </span><span style="color: #008000;">//</span><span style="color: #008000;">4.将PrepayId 和return 根据参数拼接生xml信息（其中包含生成的package参数）输出</span>
+            <span style="color: #0000ff;">if</span> (Request.RequestType == <span style="color: #800000;">"</span><span style="color: #800000;">POST</span><span style="color: #800000;">"</span><span style="color: #000000;">)
+            {
+                </span><span style="color: #0000ff;">try</span><span style="color: #000000;">
+                {
+                    StreamReader reader </span>= <span style="color: #0000ff;">new</span><span style="color: #000000;"> StreamReader(Request.InputStream);
+                    String xmlData </span>=<span style="color: #000000;"> reader.ReadToEnd();
+                    helper.ReceivePostXmlData(xmlData);
+                    logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">接收post来的xmlData=</span><span style="color: #800000;">"</span> +<span style="color: #000000;"> xmlData);
+                    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (helper.CheckSign())
+                    {
+                        logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">签名验证通过</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                        </span><span style="color: #0000ff;">string</span> proId =<span style="color: #000000;"> helper.GetProductId();
+                        logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">产品id=</span><span style="color: #800000;">"</span> +<span style="color: #000000;"> proId);
+
+                        </span><span style="color: #0000ff;">switch</span><span style="color: #000000;"> (proId)
+                        {
+                            </span><span style="color: #0000ff;">case</span> <span style="color: #800000;">"</span><span style="color: #800000;">1</span><span style="color: #800000;">"</span><span style="color: #000000;">:
+                               
+                                </span><span style="color: #0000ff;">#region</span> 业务处理<span style="color: #000000;">
+                                helper.SetParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">body</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">一缕晨光<a href="http://www.cxyclub.cn/Tag/cms.html" target="_blank">CMS</a>系统</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                                helper.SetParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">out_trade_no</span><span style="color: #800000;">"</span>, DateTime.Now.ToString(<span style="color: #800000;">"</span><span style="color: #800000;">yyyyMMddHHmmss</span><span style="color: #800000;">"</span>) + CommonUtil.BuildRandomStr(<span style="color: #800080;">4</span><span style="color: #000000;">));
+                                helper.SetParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">total_fee</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">88800</span><span style="color: #800000;">"</span>);<span style="color: #008000;">//</span><span style="color: #008000;">这里单位是分</span>
+                                helper.SetParameter(<span style="color: #800000;">"</span><span style="color: #800000;">notify_url</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">http://www.wispdawn.com/WxV3/NativeNotify.aspx</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                                helper.SetParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">trade_type</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">NATIVE</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                                </span><span style="color: #0000ff;">string</span> prepay_id =<span style="color: #000000;"> helper.GetPrepayId();
+                                logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">prepay_id=</span><span style="color: #800000;">"</span> +<span style="color: #000000;"> prepay_id);
+                                </span><span style="color: #0000ff;">if</span> (!<span style="color: #0000ff;">string</span><span style="color: #000000;">.IsNullOrEmpty(prepay_id))
+                                {
+                                    helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_code</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">SUCCESS</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                                    helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">result_code</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">SUCCESS</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                                    helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">prepay_id</span><span style="color: #800000;">"</span><span style="color: #000000;">, prepay_id);
+                                    helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">appid</span><span style="color: #800000;">"</span><span style="color: #000000;">, helper.GetAppId);
+                                    helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">mch_id</span><span style="color: #800000;">"</span><span style="color: #000000;">, helper.GetMch_Id);
+                                    helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">nonce_str</span><span style="color: #800000;">"</span><span style="color: #000000;">, TenpayUtil.getNoncestr());
+                                }
+                                </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
+                                {
+                                    helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_code</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">SUCCESS</span><span style="color: #800000;">"</span>);<span style="color: #008000;">//</span><span style="color: #008000;">返回状态码</span>
+                                    helper.SetReturnParameter(<span style="color: #800000;">"</span><span style="color: #800000;">result_code</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">FAIL</span><span style="color: #800000;">"</span>);<span style="color: #008000;">//</span><span style="color: #008000;">业务结果</span>
+                                    helper.SetReturnParameter(<span style="color: #800000;">"</span><span style="color: #800000;">err_code_des</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">预订单生产失败</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                                }
+                                </span><span style="color: #0000ff;">#endregion</span>
+
+                                <span style="color: #0000ff;"><a href="http://www.cxyclub.cn/Tag/break.html" target="_blank">break</a></span><span style="color: #000000;">;
+                            </span><span style="color: #0000ff;">default</span><span style="color: #000000;">:
+                                helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_code</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">SUCCESS</span><span style="color: #800000;">"</span>);<span style="color: #008000;">//</span><span style="color: #008000;">返回状态码</span>
+                                helper.SetReturnParameter(<span style="color: #800000;">"</span><span style="color: #800000;">result_code</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">FAIL</span><span style="color: #800000;">"</span>);<span style="color: #008000;">//</span><span style="color: #008000;">业务结果</span>
+                                helper.SetReturnParameter(<span style="color: #800000;">"</span><span style="color: #800000;">err_code_des</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">此商品无效</span><span style="color: #800000;">"</span>);<span style="color: #008000;">//</span><span style="color: #008000;">业务结果</span>
+                                <span style="color: #0000ff;">break</span><span style="color: #000000;">;
+                        }
+                    }
+                    </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
+                    {
+                        helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_code</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">FAIL</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                        helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_msg</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">签名失败</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                        logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">签名验证没有通过</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                    }
+                    </span><span style="color: #0000ff;">string</span> xmlStr =<span style="color: #000000;"> helper.GetReturnXml();
+                    logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">返回xml=</span><span style="color: #800000;">"</span> +<span style="color: #000000;"> xmlStr);
+                    Response.ContentType </span>= <span style="color: #800000;">"</span><span style="color: #800000;">text/xml</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+                    Response.Clear();
+                    Response.Write(xmlStr);
+                    Response.End();
+                }
+                </span><span style="color: #0000ff;">catch</span><span style="color: #000000;"> (Exception ex)
+                {
+                    logger.Error(</span><span style="color: #800000;">"</span><span style="color: #800000;"><a href="http://www.cxyclub.cn/Tag/yichang.html" target="_blank">异常</a>了</span><span style="color: #800000;">"</span><span style="color: #000000;">, ex);
+                }
+            }
+        }</span></pre>
+
+<span class="cnblogs_code_collapse">NativeCallBack代码</span>
+<p>&nbsp;</p>
+
+<strong>三、支付通知页面，本程序&nbsp;NativeNotify.aspx</strong>
+<p>这个页面用来处理成功通知的，微信把交易的结果依xml形式post该页面，当你收到消息后，如果成功了，你可以根据此来修改数据库，或者更新状
+态，等等。我做到这步时候，需要实现扫码二维码，支付成功后，3秒后调整， 实现思路是这样的，在二维码页面，setinterval 
+get后台数据库是否已经支付，如果已经支付则执行settimeout 3秒后调整到成功页面。目前我是这样实现的，不知道别人怎么实现的。</p>
+<p>通知代码如下。</p>
+
+<img id="code_img_closed_68f1508e-10a5-4333-bff7-bb520f5aa417" class="code_img_closed" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/0015B68B3C38AA5B.gif" alt=""><img id="code_img_opened_68f1508e-10a5-4333-bff7-bb520f5aa417" class="code_img_opened" style="display: none;" onclick="cnblogs_code_hide('68f1508e-10a5-4333-bff7-bb520f5aa417',event)" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/2B1B950FA3DF188F.gif" alt="">
+
+<pre>  log4net.ILog logger =<span style="color: #000000;"> WxV3.Helper.LogHelper.GetInstance().Log;
+        WxV3.Helper.WxPayHelper helper </span>= <span style="color: #0000ff;">new</span><span style="color: #000000;"> Helper.WxPayHelper();
+        </span><span style="color: #0000ff;">protected</span> <span style="color: #0000ff;">void</span> Page_Load(<span style="color: #0000ff;">object</span><span style="color: #000000;"> sender, EventArgs e)
+        {
+            </span><span style="color: #0000ff;">if</span> (Request.RequestType == <span style="color: #800000;">"</span><span style="color: #800000;">POST</span><span style="color: #800000;">"</span><span style="color: #000000;">)
+            {
+                </span><span style="color: #0000ff;">try</span><span style="color: #000000;">
+                {
+                    StreamReader reader </span>= <span style="color: #0000ff;">new</span><span style="color: #000000;"> StreamReader(Request.InputStream);
+                    String xmlData </span>=<span style="color: #000000;"> reader.ReadToEnd();
+                    helper.ReceivePostXmlData(xmlData);
+                    logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">Notify_接收post来的xmlData=</span><span style="color: #800000;">"</span> +<span style="color: #000000;"> xmlData);
+                    </span><span style="color: #0000ff;">if</span><span style="color: #000000;"> (helper.CheckSign())
+                    {
+                        Dictionary</span>&lt;<span style="color: #0000ff;">string</span>, <span style="color: #0000ff;">string</span>&gt; dicBack = helper.GetParameter();<span style="color: #008000;">//</span><span style="color: #008000;">获取所有参数</span>
+                        <span style="color: #0000ff;">if</span> (dicBack!=<span style="color: #0000ff;">null</span>&amp;&amp;dicBack.Keys.Contains(<span style="color: #800000;">"</span><span style="color: #800000;">return_code</span><span style="color: #800000;">"</span><span style="color: #000000;">))
+                        {
+                            </span><span style="color: #0000ff;">if</span> (dicBack[<span style="color: #800000;">"</span><span style="color: #800000;">return_code</span><span style="color: #800000;">"</span>] == <span style="color: #800000;">"</span><span style="color: #800000;">SUCCESS</span><span style="color: #800000;">"</span><span style="color: #000000;">)
+                            {
+                                logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_code=SUCCESS</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                                </span><span style="color: #0000ff;">if</span> (dicBack[<span style="color: #800000;">"</span><span style="color: #800000;">result_code</span><span style="color: #800000;">"</span>]==<span style="color: #800000;">"</span><span style="color: #800000;">SUCCESS</span><span style="color: #800000;">"</span><span style="color: #000000;">)
+                                {
+                                    logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">result_code=SUCCESS</span><span style="color: #800000;">"</span><span style="color: #000000;">);                                  
+                                    </span><span style="color: #0000ff;">string</span> out_trade_no = dicBack[<span style="color: #800000;">"</span><span style="color: #800000;">out_trade_no</span><span style="color: #800000;">"</span>];<span style="color: #008000;">//</span><span style="color: #008000;">商户订单号</span>
+                                    logger.Info(<span style="color: #800000;">"</span><span style="color: #800000;">out_trade_no=</span><span style="color: #800000;">"</span>+<span style="color: #000000;">out_trade_no);
+
+                                    </span><span style="color: #008000;">//</span><span style="color: #008000;">1.验证商户订单号是否被处理
+                                    </span><span style="color: #008000;">//</span><span style="color: #008000;">2.处理过直接返回成功，否则返回
+                                    </span><span style="color: #008000;">//</span><span style="color: #008000;">此处根据out_trade_no 处理业务数据
+
+
+                                    </span><span style="color: #008000;">//</span><span style="color: #008000;">处理业务数据结束</span>
+<span style="color: #000000;">
+                                    logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">Notify_验证签名成功</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                                    helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_code</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">SUCCESS</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                                    helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_msg</span><span style="color: #800000;">"</span>, <span style="color: #800000;">""</span><span style="color: #000000;">);   
+                                }    
+                            }
+                            </span><span style="color: #0000ff;">if</span> (dicBack[<span style="color: #800000;">"</span><span style="color: #800000;">return_code</span><span style="color: #800000;">"</span>]==<span style="color: #800000;">"</span><span style="color: #800000;">FAIL</span><span style="color: #800000;">"</span><span style="color: #000000;">)
+                            {
+                                logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">Notify_验证签名成功</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                                helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_code</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">SUCCESS</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                                helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_msg</span><span style="color: #800000;">"</span>, dicBack[<span style="color: #800000;">"</span><span style="color: #800000;">return_msg</span><span style="color: #800000;">"</span><span style="color: #000000;">]);    
+                            }
+                        }
+                    }
+                    </span><span style="color: #0000ff;">else</span><span style="color: #000000;">
+                    {
+                        logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">Notify_验证签名失败</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                        helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_code</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">FAIL</span><span style="color: #800000;">"</span><span style="color: #000000;">);
+                        helper.SetReturnParameter(</span><span style="color: #800000;">"</span><span style="color: #800000;">return_msg</span><span style="color: #800000;">"</span>, <span style="color: #800000;">"</span><span style="color: #800000;">签名失败</span><span style="color: #800000;">"</span><span style="color: #000000;">);     
+                    }
+                    </span><span style="color: #0000ff;">string</span> xmlStr =<span style="color: #000000;"> helper.GetReturnXml();
+                    logger.Info(</span><span style="color: #800000;">"</span><span style="color: #800000;">Notify_返回xml=</span><span style="color: #800000;">"</span> +<span style="color: #000000;"> xmlStr);
+                    Response.ContentType </span>= <span style="color: #800000;">"</span><span style="color: #800000;">text/xml</span><span style="color: #800000;">"</span><span style="color: #000000;">;
+                    Response.Clear();
+                    Response.Write(xmlStr);
+                    Response.End();
+                }
+                </span><span style="color: #0000ff;">catch</span><span style="color: #000000;"> (Exception ex)
+                {
+                    logger.Error(</span><span style="color: #800000;">"</span><span style="color: #800000;">Notify_异常了</span><span style="color: #800000;">"</span><span style="color: #000000;">, ex);
+                }
+            }
+        }</span></pre>
+
+<span class="cnblogs_code_collapse">NativeNotify页面代码</span>
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_mask" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt=""><span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" data-cke-widget-drag-handler="1" width="15" height="15"></span>
+<p>如果你也是需要扫描原生支付，可以直接下载本解决方案，只需要把&nbsp;WxPayHelper<a href="http://www.cxyclub.cn/Tag/gouzaohanshu.html" target="_blank">构造函数</a>中的参数修改下即可使用</p>
+
+
+<pre> <span style="color: #0000ff;">public</span><span style="color: #000000;"> WxPayHelper()
+        {
+            </span><span style="color: #0000ff;">this</span>.parameters = <span style="color: #0000ff;">new</span> Dictionary&lt;<span style="color: #0000ff;">string</span>, <span style="color: #0000ff;">string</span>&gt;<span style="color: #000000;">();
+            </span><span style="color: #0000ff;">this</span>.returnParameter = <span style="color: #0000ff;">new</span> Dictionary&lt;<span style="color: #0000ff;">string</span>, <span style="color: #0000ff;">string</span>&gt;<span style="color: #000000;">();
+            </span><span style="color: #0000ff;">this</span>.appid = <span style="color: #800000;">"</span><span style="color: #800000;">wxed94e6985d29****</span><span style="color: #800000;">"</span>;<span style="color: #008000;">//</span><span style="color: #008000;">appid</span>
+            <span style="color: #0000ff;">this</span>.mch_id = <span style="color: #800000;">"</span><span style="color: #800000;">122468****</span><span style="color: #800000;">"</span>;      <span style="color: #008000;">//</span><span style="color: #008000;">微信支付商户号         </span>
+            <span style="color: #0000ff;">this</span>.PartnerKey = <span style="color: #800000;">"</span><span style="color: #800000;">ASD2Ssaghh3df4570erdssd4we33****</span><span style="color: #800000;">"</span>;<span style="color: #008000;">//</span><span style="color: #008000;">这里是商户的partnerkey  </span>
+        }</pre>
+
+<p>&nbsp;</p>
+<img class="cke_reset cke_widget_mask" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt=""><span class="cke_reset cke_widget_drag_handler_container"><img class="cke_reset cke_widget_drag_handler" title="点击并拖拽以移动" src="data:image/gif;base64,R0lGODlhAQABAPABAP///wAAACH5BAEKAAAALAAAAAABAAEAAAICRAEAOw==" alt="" data-cke-widget-drag-handler="1" width="15" height="15"></span>
+<p>本文主要讲解整个思路，详细请看代码，点击下载本解决方案</p>
+<p>尊重别人的劳动成功，转载请注明出处：一缕晨光工作室，www.wispdawn.com</p>
+                    <!--EndContent-->
+                </div>
+            </div>
+            
+            <div class="m_l_cont_tips">
+                上一篇： <a href="http://www.cxyclub.cn/n/68450/">C#创建服务及使用程序自动安装服务，.NET创建一个即是可执行程序又是Windows服务的exe</a> 下一篇：  没有下一篇了!</div>
+            <div class="m_l_list">
+                <div class="m_l_list_l">
+                    <ul>
+                        <li class="m_l_list_l1">
+                            <img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ico1.gif" width="5" height="9">
+                            相关文章</li>
+                        
+                        <li>·<a href="http://www.cxyclub.cn/n/68451/" title="微信原生支付 Native扫码支付( V3.3.7 版本)">微信原生支付 Native扫码支付( V</a></li>
+                        
+                        <li>·<a href="http://www.cxyclub.cn/n/68281/" title="hadoop2.6版本集群环境搭建">hadoop2.6版本集群环境搭建</a></li>
+                        
+                        <li>·<a href="http://www.cxyclub.cn/n/67887/" title="制作越狱版本的ipa文件">制作越狱版本的ipa文件</a></li>
+                        
+                        <li>·<a href="http://www.cxyclub.cn/n/67657/" title="Android项目源码界面超级华丽的仿QQ最新版本">Android项目源码界面超级华丽的仿Q</a></li>
+                        
+                        <li>·<a href="http://www.cxyclub.cn/n/67457/" title="c# System.Data.OracleClient需要Oracle客户端软件8.1.7或更高版本">c# System.Data.Oracl</a></li>
+                        
+                    </ul>
+                </div>
+                <div class="m_l_list_r">
+                    <ul>
+                        <li class="m_l_list_r1"></li>
+                        
+                        <li>·<a href="http://www.cxyclub.cn/n/67018/" title="请各位开发者尽快升级Git客户端版本至 V2.2.1！">请各位开发者尽快升级Git客户端版本至 </a></li>
+                        
+                        <li>·<a href="http://www.cxyclub.cn/n/66729/" title="【SimpleMsgPack.NET】发布一个msgpack协议C#版本的解析开源库">【SimpleMsgPack.NET】发</a></li>
+                        
+                        <li>·<a href="http://www.cxyclub.cn/n/66565/" title="Mozilla公布Rust 1.0版本的发布计划">Mozilla公布Rust 1.0版本的</a></li>
+                        
+                        <li>·<a href="http://www.cxyclub.cn/n/66341/" title="PHP 线程安全与非线程安全版本的区别">PHP 线程安全与非线程安全版本的区别</a></li>
+                        
+                        <li>·<a href="http://www.cxyclub.cn/n/65828/" title="版本号比较">版本号比较</a></li>
+                        
+                    </ul>
+                </div>
+            </div>
+            <div class="m_l_list_hot">
+                
+                <div class="m_l_list_hot1">
+                    <a href="http://www.cxyclub.cn/n/68451/" title="微信原生支付 Native扫码支付( V3.3.7 版本)">
+                        <img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/96A06BDA7951FA1B_002.jpg" alt="微信原生支付 Native扫码支付( V3.3.7 版本)" width="100" border="0" height="80"></a>
+                </div>
+                
+                <div class="m_l_list_hot1">
+                    <a href="http://www.cxyclub.cn/n/68281/" title="hadoop2.6版本集群环境搭建">
+                        <img src="" alt="hadoop2.6版本集群环境搭建" width="100" border="0" height="80"></a>
+                </div>
+                
+                <div class="m_l_list_hot1">
+                    <a href="http://www.cxyclub.cn/n/67887/" title="制作越狱版本的ipa文件">
+                        <img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/246EEB7215F4E827.gif" alt="制作越狱版本的ipa文件" width="100" border="0" height="80"></a>
+                </div>
+                
+                <div class="m_l_list_hot1">
+                    <a href="http://www.cxyclub.cn/n/67657/" title="Android项目源码界面超级华丽的仿QQ最新版本">
+                        <img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/D8347B6BE959109E.png" alt="Android项目源码界面超级华丽的仿QQ最新版本" width="100" border="0" height="80"></a>
+                </div>
+                
+                <div class="m_l_list_hot1">
+                    <a href="http://www.cxyclub.cn/n/67457/" title="c# System.Data.OracleClient需要Oracle客户端软件8.1.7或更高版本">
+                        <img src="" alt="c# System.Data.OracleClient需要Oracle客户端软件8.1.7或更高版本" width="100" border="0" height="80"></a>
+                </div>
+                
+            </div>
+            <!-- 评论 Start -->
+            <div id="comment">
+                <div class="tit2">
+                    <ul>
+                        <h3>
+                            <a target="_blank" href="http://www.cxyclub.cn/CommentList.aspx?NewsID=68451">
+                                查看所有评论(<span style="color: Red">0</span>)</a></h3>
+                        <a target="_self" href="#pl" class="color02">我要评论</a>
+                    </ul>
+                    <br>
+                </div>
+                <div class="comment_list" id="commentlist">
+                    
+                </div>
+                <div class="clear">
+                </div>
+                <div class="con">
+                    <div class="artcomment">
+                        发表评论<a name="pl" id="pl"></a></div>
+
+                    <script type="text/javascript" language="javascript" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/Comment.js"></script>
+
+                    <div class="kuangcomment">
+                        <div class="formcomment">
+                            <textarea name="textarea3" class="textarea1" id="content"></textarea>
+                            <div class="associator_con">
+                                用户名:
+                                <input name="textfield" class="textarea" id="uname" type="text">
+                                <!--密码:<input type="password" name="textfield2" class="password" /> -->
+                                <input checked="checked" name="checkbox" value="checkbox" type="checkbox">
+                                匿名
+                                <input name="Submit22" id="Submit22" value="提交" class="buttom" onclick="recomment('68451');" type="button">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- 评论 End -->
+        </div>
+        <div class="m_r">
+            <div class="m_r_news">
+                <span class="m_r_news_l">
+                    <h2>
+                        <a>最新文章</a></h2>
+                </span><span class="m_r_news_r"></span>
+            </div>
+            <div class="m_r_news_im">
+                
+                <div class="m_r_news_im_l">
+                    <div class="m_r_news_im_l1">
+                        <a href="http://www.cxyclub.cn/n/68451/" title="微信原生支付 Native扫码支付( V3.3.7 版本)">
+                            <img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/96A06BDA7951FA1B_002.jpg" alt="微信原生支付 Native扫码支付( V3.3.7 版本)" width="100" height="80"></a></div>
+                    <div class="m_r_news_im_l2">
+                        <a href="http://www.cxyclub.cn/n/68451/" title="微信原生支付 Native扫码支付( V3.3.7 版本)">微信原生支付 ..</a></div>
+                </div>
+                 
+                <div class="m_r_news_im_r">
+                    <div class="m_r_news_im_l1">
+                        <a href="http://www.cxyclub.cn/n/68450/" title="C#创建服务及使用程序自动安装服务，.NET创建一个即是可执行程序又是Windows服务的exe">
+                            <img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/05E139A15DBB60DD.png" alt="C#创建服务及使用程序自动安装服务，.NET创建一个即是可执行程序又是Windows服务的exe" width="100" height="80"></a></div>
+                    <div class="m_r_news_im_l2">
+                        <a href="http://www.cxyclub.cn/n/68450/" title="C#创建服务及使用程序自动安装服务，.NET创建一个即是可执行程序又是Windows服务的exe">C#创建服务及..</a></div>
+                </div>
+                
+            </div>
+            <div class="m_r_news_list">
+                <ul>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68451/" title="微信原生支付 Native扫码支付( V3.3.7 版本)">微信原生支付 Native扫码支付( V</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68450/" title="C#创建服务及使用程序自动安装服务，.NET创建一个即是可执行程序又是Windows服务的exe">C#创建服务及使用程序自动安装服务，.N</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68430/" title="WPF之MVVM(Step4)——使用Prism(2)">WPF之MVVM(Step4)&amp;mdas</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68421/" title="一体广告机实现思路，非常实用（二）">一体广告机实现思路，非常实用（二）</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68413/" title="C#中的Dictionary字典类介绍">C#中的Dictionary字典类介绍</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68410/" title="二维码的生成细节和原理【转】">二维码的生成细节和原理【转】</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68404/" title="从客户端中检测到有潜在危险的 request.form值[解决方法]">从客户端中检测到有潜在危险的 reque</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68384/" title="WCF系列 Restful WCF">WCF系列 Restful WCF</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68383/" title="14年总结">14年总结</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68381/" title="如何实现SQL事务的提交，又不对外进行污染(2)">如何实现SQL事务的提交，又不对外进行污</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68380/" title="asp.net中Repeart选中整行操作">asp.net中Repeart选中整行操</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68379/" title="大熊君大话NodeJS之------Net模块">大熊君大话NodeJS之------Ne</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68373/" title="[WPF系列]-DynamicResource与StaticResource的区别">[WPF系列]-DynamicResou</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68370/" title="LinqToSqlite 一一二二">LinqToSqlite 一一二二</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68369/" title="Http 请求处理流程">Http 请求处理流程</a></li>
+                    
+                </ul>
+            </div>
+<div class="m_r_news_list">
+<!--广告-->
+<script type="text/javascript"> 
+alimama_pid="mm_10618175_3219119_10576579"; 
+alimama_width=300; 
+alimama_height=250; 
+</script> 
+<script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/inf.js" type="text/javascript"> 
+</script><div id="tanxssp_con_mm_10618175_3219119_10576579" style="display:inline-block;position:relative;width:300px;height:250px;*display:inline;*zoom:1;"><iframe scrolling="no" marginheight="0" marginwidth="0" border="0" style="width:300px;height:250px;" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/300x250danpin0911.htm" frameborder="0"></iframe><a id="iconmm_10618175_3219119_10576579" title="我也要申请橱窗推广" target="_blank" href="http://c.alimama.com/" style="overflow:hidden;width:26px;height:17px;right:18px;bottom:0px;display:block;position:absolute;cursor:pointer;z-index:250;">   <span id="icon_smallmm_10618175_3219119_10576579" style="float:none;width:26px;display:block;height:17px;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i2/T1oY3VXmNbXXXb8qDc-26-18.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i2/T1oY3VXmNbXXXb8qDc-26-18.png');"></span>   <span id="icon_bigmm_10618175_3219119_10576579" style="float:none;width:110px;height:17px;display: none;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i3/T1dt7VXiRaXXbd25o5-110-18.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i3/T1dt7VXiRaXXbd25o5-110-18.png');"></span></a><a id="sxmm_10618175_3219119_10576579" href="javascript:;" style="width:17px;height:17px;right:0px;bottom:0px;display:block;position:absolute;cursor:pointer;z-index:250;">   <span id="sx1mm_10618175_3219119_10576579" style="float:none;width:17px;display:block;height:17px;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i4/TB1HRyeGXXXXXbRXXXX1DxgFpXX-17-17.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i4/TB1HRyeGXXXXXbRXXXX1DxgFpXX-17-17.png');"></span>   <span id="sx2mm_10618175_3219119_10576579" style="float:none;width:110px;height:17px;display: none;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i3/TB1buFUGXXXXXcIXVXX1DxgFpXX-17-17.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i3/TB1buFUGXXXXXcIXVXX1DxgFpXX-17-17.png');"></span></a><div id="sxtipmm_10618175_3219119_10576579" style="display:none;width:100px;position:absolute;right:0;bottom:17px;"><div style="width:100px; height:20px;background:#ddd;color:#666;line-height:1.5;text-align: center;">屏蔽此推广内容</div><div style="float:right;margin-right:6px;width: 0;height: 0;border-left: 3px solid transparent;border-right: 3px solid transparent;border-top: 6px solid #ddd;"></div></div></div><iframe style="display:none" id="tanx-a-mm_10618175_3219119_10576579" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>
+</div>
+            <div class="m_r_news">
+                <span class="m_r_news_l">
+                    <h2>
+                        <a href="http://www.cxyclub.cn/tag/">最新标签</a></h2>
+                </span><span class="m_r_news_r"></span>
+            </div>
+            <div class="m_r_news_list">
+                <li><a href="http://www.cxyclub.cn/Tag/gaoshou.html">高手</a></li>
+                <li><a href="http://www.cxyclub.cn/Tag/daxingwangzhan.html">大型网站</a></li>
+                <li><a href="http://www.cxyclub.cn/Tag/tianmao.html">天猫</a></li>
+                <li><a href="http://www.cxyclub.cn/Tag/huisu.html">回溯</a></li>
+                <li><a href="http://www.cxyclub.cn/Tag/xunhuan.html">循环</a></li>
+                <li><a href="http://www.cxyclub.cn/Tag/class.html">class</a></li>
+                <li><a href="http://www.cxyclub.cn/Tag/instance.html">instance</a></li>
+                <li><a href="http://www.cxyclub.cn/Tag/win8.html">Win8</a></li>
+                <li><a href="http://www.cxyclub.cn/Tag/meituxiuxiu.html">美图秀秀</a></li>
+                <li><a href="http://www.cxyclub.cn/Tag/shexiangtou.html">摄像头</a></li>
+                
+            </div>
+            <div class="m_r_news">
+                <span class="m_r_news_l">
+                    <h2>
+                        <a>今日热点</a></h2>
+                </span><span class="m_r_news_r"></span>
+            </div>
+            <div class="m_r_news_list">
+                <ul>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/1715/" title="[转]超时时间已到。超时时间已到，但是尚未从池中获取连接。出现这种情况可能是因为所有池连接均在使用，并且达到了最大池大小">[转]超时时间已到。超时时间已到，但是尚</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/1487/" title="Spring.net + FluorineFx 项目搭建 之 一、搭建Spring环境(配置文件)">Spring.net + Fluorin</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/1477/" title="错误：没有注册类别 (异常来自 HRESULT:0x80040154 (REGDB_E_CLASSNOTREG))">错误：没有注册类别 (异常来自 HRES</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/3646/" title="c# 反射详解">c# 反射详解</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68450/" title="C#创建服务及使用程序自动安装服务，.NET创建一个即是可执行程序又是Windows服务的exe">C#创建服务及使用程序自动安装服务，.N</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68421/" title="一体广告机实现思路，非常实用（二）">一体广告机实现思路，非常实用（二）</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68381/" title="如何实现SQL事务的提交，又不对外进行污染(2)">如何实现SQL事务的提交，又不对外进行污</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68373/" title="[WPF系列]-DynamicResource与StaticResource的区别">[WPF系列]-DynamicResou</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68368/" title="WebClient在多线程、使用代理情况下 socket closed 问题的一个解决办法[htmlunit]">WebClient在多线程、使用代理情况</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/68413/" title="C#中的Dictionary字典类介绍">C#中的Dictionary字典类介绍</a></li>
+                    
+                </ul>
+            </div>
+
+<div class="m_r_news_list">
+<!--广告-->
+<script type="text/javascript"> 
+alimama_pid="mm_10618175_3219119_10576561"; 
+alimama_width=300; 
+alimama_height=250; 
+</script> 
+<script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/inf.js" type="text/javascript"> 
+</script><div id="tanxssp_con_mm_10618175_3219119_10576561" style="display:inline-block;position:relative;width:300px;height:250px;*display:inline;*zoom:1;"><iframe scrolling="no" marginheight="0" marginwidth="0" border="0" style="width:300px;height:250px;" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/300x250danpin0911_002.htm" frameborder="0"></iframe><a id="iconmm_10618175_3219119_10576561" title="我也要申请橱窗推广" target="_blank" href="http://c.alimama.com/" style="overflow:hidden;width:26px;height:17px;right:18px;bottom:0px;display:block;position:absolute;cursor:pointer;z-index:250;">   <span id="icon_smallmm_10618175_3219119_10576561" style="float:none;width:26px;display:block;height:17px;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i2/T1oY3VXmNbXXXb8qDc-26-18.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i2/T1oY3VXmNbXXXb8qDc-26-18.png');"></span>   <span id="icon_bigmm_10618175_3219119_10576561" style="float:none;width:110px;height:17px;display: none;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i3/T1dt7VXiRaXXbd25o5-110-18.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i3/T1dt7VXiRaXXbd25o5-110-18.png');"></span></a><a id="sxmm_10618175_3219119_10576561" href="javascript:;" style="width:17px;height:17px;right:0px;bottom:0px;display:block;position:absolute;cursor:pointer;z-index:250;">   <span id="sx1mm_10618175_3219119_10576561" style="float:none;width:17px;display:block;height:17px;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i4/TB1HRyeGXXXXXbRXXXX1DxgFpXX-17-17.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i4/TB1HRyeGXXXXXbRXXXX1DxgFpXX-17-17.png');"></span>   <span id="sx2mm_10618175_3219119_10576561" style="float:none;width:110px;height:17px;display: none;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i3/TB1buFUGXXXXXcIXVXX1DxgFpXX-17-17.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i3/TB1buFUGXXXXXcIXVXX1DxgFpXX-17-17.png');"></span></a><div id="sxtipmm_10618175_3219119_10576561" style="display:none;width:100px;position:absolute;right:0;bottom:17px;"><div style="width:100px; height:20px;background:#ddd;color:#666;line-height:1.5;text-align: center;">屏蔽此推广内容</div><div style="float:right;margin-right:6px;width: 0;height: 0;border-left: 3px solid transparent;border-right: 3px solid transparent;border-top: 6px solid #ddd;"></div></div></div><iframe style="display:none" id="tanx-a-mm_10618175_3219119_10576561" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>
+</div>
+            <div class="m_r_news">
+                <span class="m_r_news_l">
+                    <h2>
+                        <a>推荐文章</a></h2>
+                </span><span class="m_r_news_r"></span>
+            </div>
+            <div class="m_r_news_im">
+                
+                <div class="m_r_news_im_l">
+                    <div class="m_r_news_im_l1">
+                        <a href="http://www.cxyclub.cn/n/3332/" title="【共享】流程图控件">
+                            <img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/2B3E24FDEDB96DDA.jpg" alt="【共享】流程图控件" width="100" height="80"></a></div>
+                    <div class="m_r_news_im_l2">
+                        <a href="http://www.cxyclub.cn/n/3332/" title="【共享】流程图控件">【共享】流程图..</a></div>
+                </div>
+                 
+                <div class="m_r_news_im_r">
+                    <div class="m_r_news_im_l1">
+                        <a href="http://www.cxyclub.cn/n/5561/" title="C# String.Format用法">
+                            <img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/A67AF14C3ADB4590.jpg" alt="C# String.Format用法" width="100" height="80"></a></div>
+                    <div class="m_r_news_im_l2">
+                        <a href="http://www.cxyclub.cn/n/5561/" title="C# String.Format用法">C# Stri..</a></div>
+                </div>
+                
+            </div>
+            <div class="m_r_news_list">
+                <ul>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/7728/" title="      java.net.ConnectException: Connection refused: no further information">      java.net.Conne</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/1477/" title="错误：没有注册类别 (异常来自 HRESULT:0x80040154 (REGDB_E_CLASSNOTREG))">错误：没有注册类别 (异常来自 HRES</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/4607/" title="iis7.0官方下载 IIS 7.0(微软Web服务器组件IIS 7.0) 官方(windows 2003,XP,2000)">iis7.0官方下载 IIS 7.0(微</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/4753/" title="Devpress.XtraGrid.GridControl.GridView 属性">Devpress.XtraGrid.Gr</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/1702/" title=".NET 开发淘宝API代码实例">.NET 开发淘宝API代码实例</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/7055/" title="win7 64位 安装ORACLE10g的一些问题">win7 64位 安装ORACLE10g</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/6317/" title="C#开发winform程序的界面框架">C#开发winform程序的界面框架</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/5550/" title="关于获得Repeater中某行数据项的某列值">关于获得Repeater中某行数据项的某</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/1476/" title="expression blend 3破解文件">expression blend 3破解</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/1703/" title=".net(C#)从html中提取中文字_正则表达式">.net(C#)从html中提取中文字_</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/3930/" title="關於PB12.NET">關於PB12.NET</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/4611/" title="读取csv时中文乱码问题">读取csv时中文乱码问题</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/4765/" title="gridview导出数据至Excel office2007、2010打开乱码">gridview导出数据至Excel o</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/1473/" title="c# WinForm开发 DataGridView控件的各种操作总结（单元格操作，属性设置）">c# WinForm开发 DataGri</a></li>
+                    
+                    <li>·<a href="http://www.cxyclub.cn/n/3923/" title="C# ComboBox控件使用">C# ComboBox控件使用</a></li>
+                    
+                </ul>
+            </div>
+<div class="m_r_news_list">
+<!--广告-->
+<script type="text/javascript"> 
+alimama_pid="mm_10618175_3219119_10576526"; 
+alimama_width=300; 
+alimama_height=250; 
+</script> 
+<script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/inf.js" type="text/javascript"> 
+</script><div id="tanxssp_con_mm_10618175_3219119_10576526" style="display:inline-block;position:relative;width:300px;height:250px;*display:inline;*zoom:1;"><iframe scrolling="no" marginheight="0" marginwidth="0" border="0" style="width:300px;height:250px;" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/300x250danpin0911_003.htm" frameborder="0"></iframe><a id="iconmm_10618175_3219119_10576526" title="我也要申请橱窗推广" target="_blank" href="http://c.alimama.com/" style="overflow:hidden;width:26px;height:17px;right:18px;bottom:0px;display:block;position:absolute;cursor:pointer;z-index:250;">   <span id="icon_smallmm_10618175_3219119_10576526" style="float:none;width:26px;display:block;height:17px;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i2/T1oY3VXmNbXXXb8qDc-26-18.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i2/T1oY3VXmNbXXXb8qDc-26-18.png');"></span>   <span id="icon_bigmm_10618175_3219119_10576526" style="float:none;width:110px;height:17px;display: none;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i3/T1dt7VXiRaXXbd25o5-110-18.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i3/T1dt7VXiRaXXbd25o5-110-18.png');"></span></a><a id="sxmm_10618175_3219119_10576526" href="javascript:;" style="width:17px;height:17px;right:0px;bottom:0px;display:block;position:absolute;cursor:pointer;z-index:250;">   <span id="sx1mm_10618175_3219119_10576526" style="float:none;width:17px;display:block;height:17px;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i4/TB1HRyeGXXXXXbRXXXX1DxgFpXX-17-17.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i4/TB1HRyeGXXXXXbRXXXX1DxgFpXX-17-17.png');"></span>   <span id="sx2mm_10618175_3219119_10576526" style="float:none;width:110px;height:17px;display: none;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i3/TB1buFUGXXXXXcIXVXX1DxgFpXX-17-17.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i3/TB1buFUGXXXXXcIXVXX1DxgFpXX-17-17.png');"></span></a><div id="sxtipmm_10618175_3219119_10576526" style="display:none;width:100px;position:absolute;right:0;bottom:17px;"><div style="width:100px; height:20px;background:#ddd;color:#666;line-height:1.5;text-align: center;">屏蔽此推广内容</div><div style="float:right;margin-right:6px;width: 0;height: 0;border-left: 3px solid transparent;border-right: 3px solid transparent;border-top: 6px solid #ddd;"></div></div></div><iframe style="display:none" id="tanx-a-mm_10618175_3219119_10576526" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>
+</div>
+        </div>
+        <div class="cle">
+        </div>
+    </div>
+<div style="text-align:center;">
+<!--广告-->
+<script type="text/javascript"> 
+alimama_pid="mm_10618175_3219119_10576454"; 
+alimama_width=950; 
+alimama_height=90; 
+</script> 
+<script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/inf.js" type="text/javascript"> 
+</script><div id="tanxssp_con_mm_10618175_3219119_10576454" style="display:inline-block;position:relative;width:950px;height:90px;*display:inline;*zoom:1;"><iframe scrolling="no" marginheight="0" marginwidth="0" border="0" style="width:950px;height:90px;" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/950x90danpin0911_002.htm" frameborder="0"></iframe><a id="iconmm_10618175_3219119_10576454" title="我也要申请橱窗推广" target="_blank" href="http://c.alimama.com/" style="overflow:hidden;width:26px;height:17px;right:18px;bottom:0px;display:block;position:absolute;cursor:pointer;z-index:250;">   <span id="icon_smallmm_10618175_3219119_10576454" style="float:none;width:26px;display:block;height:17px;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i2/T1oY3VXmNbXXXb8qDc-26-18.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i2/T1oY3VXmNbXXXb8qDc-26-18.png');"></span>   <span id="icon_bigmm_10618175_3219119_10576454" style="float:none;width:110px;height:17px;display: none;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i3/T1dt7VXiRaXXbd25o5-110-18.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i3/T1dt7VXiRaXXbd25o5-110-18.png');"></span></a><a id="sxmm_10618175_3219119_10576454" href="javascript:;" style="width:17px;height:17px;right:0px;bottom:0px;display:block;position:absolute;cursor:pointer;z-index:250;">   <span id="sx1mm_10618175_3219119_10576454" style="float:none;width:17px;display:block;height:17px;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i4/TB1HRyeGXXXXXbRXXXX1DxgFpXX-17-17.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i4/TB1HRyeGXXXXXbRXXXX1DxgFpXX-17-17.png');"></span>   <span id="sx2mm_10618175_3219119_10576454" style="float:none;width:110px;height:17px;display: none;background-repeat:no-repeat;background-image: url('//gw.alicdn.com/tps/i3/TB1buFUGXXXXXcIXVXX1DxgFpXX-17-17.png');*background-image:none;filter:progid:DXImageTransform.Microsoft.AlphaImageLoader(src='//gw.alicdn.com/tps/i3/TB1buFUGXXXXXcIXVXX1DxgFpXX-17-17.png');"></span></a><div id="sxtipmm_10618175_3219119_10576454" style="display:none;width:100px;position:absolute;right:0;bottom:17px;"><div style="width:100px; height:20px;background:#ddd;color:#666;line-height:1.5;text-align: center;">屏蔽此推广内容</div><div style="float:right;margin-right:6px;width: 0;height: 0;border-left: 3px solid transparent;border-right: 3px solid transparent;border-top: 6px solid #ddd;"></div></div></div><iframe style="display:none" id="tanx-a-mm_10618175_3219119_10576454" scrolling="no" marginwidth="0" marginheight="0" frameborder="0"></iframe>
+</div>
+    <div class="foot">
+        <ul>
+            <li><a>English</a> | <a href="http://www.cxyclub.cn/about-us.html">关于我们</a> | <a>诚聘英才</a> | <a href="http://www.cxyclub.cn/contact-us.html">联系我们</a> | <a>网站大事</a> | <a href="http://www.cxyclub.cn/links/">友情链接</a>
+                | <a>意见反馈</a> | <a href="http://www.cxyclub.cn/sitemap.html">网站地图</a> </li>
+        </ul>
+        <ul><li>
+        Powered by <a href="http://www.cxyclub.cn/">程序员俱乐部</a>
+        程序提供： HugoCMS 2.0 <script type="text/javascript" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/tongji.js"></script><img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/tongji.htm" width="1" border="0" height="1"><a href="http://tongji.linezing.com/report.html?unit_id=985790" target="_blank">LinezingStat</a><noscript><a href="http://www.linezing.com"><img src="http://img.tongji.linezing.com/985790/tongji.gif"/></a></noscript><br>网站备案：苏ICP备11048748号-1</li></ul>
+    </div>
+    <script type="text/javascript">
+        document.write("<img src='/StatImage.aspx?Type=news&NewsID=68451' style='display:none'/>")
+        document.body.oncopy = function () { 
+        setTimeout( function () { 
+        var text = clipboardData.getData("text");
+        if (text) { 
+        text = text + "\r\n文章来自: 程序员俱乐部(www.cxyclub.cn) 详文参考："+location.href; clipboardData.setData("text", text);
+        } 
+        }, 100 ) 
+        }
+    </script><img src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/StatImage.htm" style="display:none">
+<!-- JiaThis Button BEGIN -->
+<script type="text/javascript" src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/jiathis_r.js" charset="utf-8"></script><script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ckepop.js" charset="utf-8"></script><script src="%E5%BE%AE%E4%BF%A1%E5%8E%9F%E7%94%9F%E6%94%AF%E4%BB%98%20Native%E6%89%AB%E7%A0%81%E6%94%AF%E4%BB%98%28%20V3.3.7%20%E7%89%88%E6%9C%AC%29_.NET_%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%B1%E4%B9%90%E9%83%A8_files/ckecenterpop.js" charset="utf-8"></script>
+<!-- JiaThis Button END -->
+
+
+
+
+
+
+</body></html>

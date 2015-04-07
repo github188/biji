@@ -1,0 +1,27 @@
+/* CSS Document */
+#nav { width:944px; height:18px; margin:0 auto; color:#525252; padding:8px 4px 0 12px; background-color:#F8F8F8; border-bottom:1px solid #E6E6E6; font-size:12px; font-family:Arial;}
+#nav a{text-decoration: none; color:#525252; padding:0 8px;}
+#nav a:hover{text-decoration:underline; color:#c00;}
+#nav .left { float:left;}
+#nav .right { float:right;}
+* html #subNav a{ margin:0 1px;}
+#subNav { width:960px; height:56px; margin:0 auto; font-family:"宋体";}
+#subNav a{ padding:0 2px;color:#282828;text-decoration: none; margin:0 2px 0 2px;}
+#subNav a:hover{ text-decoration:none; background-color:#606060; color:#FFF;}
+#subNav li { float:left;}
+#subNav h2 { font-weight:bold; float:left;}
+#subNav span { font-weight:bold;}
+#subNav .logo { padding:10px 0 0 8px; width:99px; height:39px; float:left;}
+#subNav .logo a{ color:#FFF; margin:0; border:0; padding:0; text-decoration:none;}
+#subNav .logo a:hover{ text-decoration:none;color:#FFF;}
+#subNav .menu1 { float:right; width:138px; height:37px; border-right:1px solid #BDBDBD; margin:13px 2px 0 0;}
+#subNav .menu2 { float:right; width:178px; height:37px; border-right:1px solid #BDBDBD; margin:13px 2px 0 4px;}
+#subNav .menu3 { float:right; width:176px; height:37px; border-right:1px solid #BDBDBD; margin:13px 2px 0 4px;}
+#subNav .menu4 { float:right; width:120px; height:37px; border-right:1px solid #BDBDBD; margin:13px 2px 0 4px;}
+#subNav .menu5 { float:right; width:186px; height:37px; margin:11px 0 0 5px;}
+#subNav .menufoot { margin-top:9px;}
+.banner { width:960px; height:90px; margin:0 auto;}
+
+/* 2010.08.13日添加 */
+#subNav .menu6 { margin:0;}
+/* 2010.08.13日结束 */
