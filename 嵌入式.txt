@@ -25810,6 +25810,42 @@ public class observer
    }
 }
 
+2)实现计时与倒计时
+public class timerTask extends Activity{ 
+  
+    private int recLen = 11; 
+    private TextView txtView; 
+    Timer timer = new Timer(); 
+  
+    public void onCreate(Bundle savedInstanceState){ 
+        super.onCreate(savedInstanceState); 
+           
+        setContentView(R.layout.timertask); 
+        txtView = (TextView)findViewById(R.id.txttime); 
+           
+        timer.schedule(task, 1000, 1000);       // timeTask 
+    }    
+  
+    TimerTask task = new TimerTask() { 
+        @Override 
+        public void run() { 
+  
+            runOnUiThread(new Runnable() {      // UI thread 
+                @Override 
+                public void run() { 
+                    recLen--; 
+                    txtView.setText(""+recLen); 
+                    if(recLen < 0){ 
+                        timer.cancel(); 
+                        txtView.setVisibility(View.GONE); 
+                    } 
+                } 
+            }); 
+        } 
+    }; 
+}
+
+
 10.时间函数
 1)获取当前时间
 Date now = new Date();
@@ -28762,6 +28798,20 @@ SELECT * FROM user WHERE name LIKE '%m%' OR password LIKE '%m%' LIMIT 10,5 ;
 查看有多少个数据库show database;
 查看目前数据库中有多少张表show tables
 
+*sqllite时间字段添加以及查询
+添加
+insert into vmc_order_pay
+(ordereID,payType,payStatus,RealStatus,smallNote,smallConi,smallAmount,
+smallCard,shouldPay,shouldNo,realNote,realCoin,realAmount,debtAmount,realCard,payTime) 
+values('0001',0,0,1,1,1,1,1,1,1,1,1,1,
+1,1,(datetime('now', 'localtime')))//这个用来添加当前时间
+
+查找时间范围内的数据
+例如：要搜索2015-05-20时间的数据，有三种方法
+select * FROM [vmc_order_pay] where payTime between '2015-05-19' and '2015-05-21'
+select * FROM [vmc_order_pay] where payTime between '2015-05-19 0:0:0' and '2015-05-20 16:45:48'
+select * FROM [vmc_order_pay] where payTime between datetime('now','localtime','-1 day')  and datetime('now','localtime','+0 day')
+
 
 *使用MySql:
 import java.sql.*;
@@ -30695,8 +30745,12 @@ import android.widget.TimePicker;
 TimePicker mytime= null;
 this.mytime = (TimePicker) super.findViewById(R.id.mytime);
 this.mytime.setIs24HourView(true);
+设置时间
 this.mytime.setCurrentHour(18);
 this.mytime.setCurrentMinute(34);
+
+得到时间
+mytime.getCurrentHour().toString()+":"+mytime.getCurrentMinute().toString()
 *DatePicker:日期选择器:android.widget.DatePicker
 <DatePicker
         android:id="@+id/mydate"
@@ -31603,6 +31657,21 @@ this.simpleada = new SimpleAdapter(this,this.listMap,R.layout.data_list,
     		new int[]{R.id._id,R.id._name});//list中的控件名称
 this.list.setAdapter(this.simpleada);
 
+如果一行有多列：
+for(int x=0;x<this.dataList.length;x++)
+{
+  	Map<String,String> map = new HashMap<String,String>();//定义Map集合，保存每一行数据
+   	map.put("_id", this.dataList[x][0]);//与data_list中的_id这一列加载数据
+    	map.put("_name", this.dataList[x][1]);//与data_list中的_name这一列加载数据
+	map.put("a", this.dataList[x][0]);//与data_list中的a这一列加载数据
+    map.put("b", this.dataList[x][0]);//与data_list中的b这一列加载数据	
+    this.listMap.add(map);//保存数据行
+}
+//将这个构架加载到data_list中            数据填充        控件布局
+this.simpleada = new SimpleAdapter(this,this.listMap,R.layout.data_list,
+    		new String[]{"_id","_name","a","b"},//Map中的key名称
+    		new int[]{R.id._id,R.id._name,R.id.a,R.id.b});//list中的控件名称
+
 3.更复杂的显示:android.widget.SimpleAdapter类
 1）定义一个模板布局管理器
 新建Layout/data_list
@@ -31717,6 +31786,266 @@ private class OnItemClickListenerList implements OnItemClickListener
 	}
     	
 }
+
+5.模拟报表控件
+1)创建listviewlayout.xml
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal" >
+    <View 
+        android:layout_width="0.5px" 
+        android:layout_height="fill_parent" 
+        android:background="#B8B8B8" 
+        android:visibility="visible" /> 
+   
+    <TextView 
+        android:id="@+id/id" 
+        android:layout_width="40dip" 
+        android:layout_height="55dip" 
+        android:textColor="#CD3700" 
+        android:textSize="20sp" /> 
+   
+    <View 
+        android:layout_width="0.5px" 
+        android:layout_height="fill_parent" 
+        android:background="#B8B8B8" 
+        android:visibility="visible" /> 
+   
+    <TextView 
+        android:id="@+id/job" 
+        android:layout_width="200dip" 
+        android:layout_height="wrap_content" 
+        android:textColor="#000000" 
+        android:textSize="17sp" /> 
+   
+    <View 
+        android:layout_width="0.5px" 
+        android:layout_height="fill_parent" 
+        android:background="#B8B8B8" 
+        android:visibility="visible" /> 
+   
+    <TextView 
+        android:id="@+id/addr" 
+        android:layout_width="150dip" 
+        android:layout_height="wrap_content" 
+        android:textColor="#000000" 
+        android:textSize="17sp" /> 
+   
+    <View 
+        android:layout_width="0.5px" 
+        android:layout_height="fill_parent" 
+        android:background="#B8B8B8" 
+        android:visibility="visible" /> 
+   
+    <TextView 
+        android:id="@+id/student" 
+        android:layout_width="100dip" 
+        android:layout_height="wrap_content" 
+        android:textColor="#000000" 
+        android:textSize="20sp" /> 
+   
+    <View 
+        android:layout_width="0.5px" 
+        android:layout_height="fill_parent" 
+        android:background="#B8B8B8" 
+        android:visibility="visible" /> 
+
+</LinearLayout>
+
+2)创建activity_main
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity" >
+
+    <LinearLayout 
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content" 
+        android:orientation="horizontal" > 
+   
+        <TextView 
+            android:layout_width="40dip" 
+            android:layout_height="30dp" 
+            android:text="序号" 
+            android:textSize="20sp" /> 
+   
+        <TextView 
+            android:id="@+id/job" 
+            android:layout_width="200dip" 
+            android:layout_height="30dp" 
+            android:text="岗位名称" 
+            android:textSize="20sp" /> 
+   
+        <TextView 
+            android:id="@+id/addr" 
+            android:layout_width="150dip" 
+            android:layout_height="30dp" 
+            android:text="详细地点" 
+            android:textSize="20sp" /> 
+   
+        <TextView 
+            android:id="@+id/student" 
+            android:layout_width="100dip" 
+            android:layout_height="30dp" 
+            android:text="工作学生" 
+            android:textSize="20sp" /> 
+   
+        <TextView 
+            android:id="@+id/isworking" 
+            android:layout_width="80dip" 
+            android:layout_height="30dp" 
+            android:text="备注" 
+            android:textSize="20sp" /> 
+    </LinearLayout> 
+   
+    <ListView 
+        android:id="@+id/lv" 
+        android:layout_width="fill_parent" 
+        android:layout_height="wrap_content" > 
+    </ListView> 
+
+</LinearLayout>
+
+3)DataHelper.java   创建数据库的文件
+public class DataHelper extends SQLiteOpenHelper {
+
+	@Override 
+    public synchronized void close() { 
+        // TODO Auto-generated method stub 
+        super.close(); 
+    } 
+   
+    public DataHelper(Context context, String name, CursorFactory factory, 
+            int version) { 
+        super(context, name, factory, version); 
+        // TODO Auto-generated constructor stub 
+   
+    } 
+   
+    @Override 
+    public void onCreate(SQLiteDatabase db) { 
+        // TODO Auto-generated method stub 
+   
+        String sql = "CREATE  TABLE JobChecker (_id INTEGER PRIMARY KEY , department VARCHAR, job VARCHAR,teacher VARCHAR,address VARCHAR,student VARCHAR,isworking VARCHAR)"; 
+        db.execSQL(sql); 
+   
+    } 
+   
+    @Override 
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) { 
+        // TODO Auto-generated method stub 
+    	//String sql = "insert into JobChecker (_id, department, job,teacher,address,student,isworking) values ()"; 
+    	db.execSQL("insert into JobChecker (_id, department, job,teacher,address,student,isworking) values (?,?,?,?,?,?,?)",
+		        new Object[] { "0001", "a", "a","a","a","a","a" });
+    	db.execSQL("insert into JobChecker (_id, department, job,teacher,address,student,isworking) values (?,?,?,?,?,?,?)",
+		        new Object[] { "0002", "b", "b","b","b","b","b" });
+    	db.execSQL("insert into JobChecker (_id, department, job,teacher,address,student,isworking) values (?,?,?,?,?,?,?)",
+		        new Object[] { "0003", "c", "c","c","c","c","c" });
+    	db.execSQL("insert into JobChecker (_id, department, job,teacher,address,student,isworking) values (?,?,?,?,?,?,?)",
+		        new Object[] { "0004", "d", "d","d","d","d","d" });
+    	db.execSQL("insert into JobChecker (_id, department, job,teacher,address,student,isworking) values (?,?,?,?,?,?,?)",
+		        new Object[] { "0005", "e", "e","e","e","e","e" });
+    	db.execSQL("insert into JobChecker (_id, department, job,teacher,address,student,isworking) values (?,?,?,?,?,?,?)",
+		        new Object[] { "0006", "f", "f","f","f","f","f" });
+    	db.execSQL("insert into JobChecker (_id, department, job,teacher,address,student,isworking) values (?,?,?,?,?,?,?)",
+		        new Object[] { "0007", "g", "g","g","g","g","g" });
+    }
+
+}
+
+4)MySimpleCursorAdapter.java文件
+public class MySimpleCursorAdapter extends SimpleCursorAdapter {
+	public MySimpleCursorAdapter(Context context, int layout, Cursor c, 
+            String[] from, int[] to) { 
+        super(context, layout, c, from, to); 
+        // TODO Auto-generated constructor stub 
+   
+    } 
+   
+    @Override 
+    public View getView(final int position, View convertView, ViewGroup parent) { 
+        // TODO Auto-generated method stub 
+        // listview每次得到一个item，都要view去绘制，通过getView方法得到view 
+        // position为item的序号 
+        View view = null; 
+        if (convertView != null) { 
+            view = convertView; 
+            // 使用缓存的view,节约内存 
+            // 当listview的item过多时，拖动会遮住一部分item，被遮住的item的view就是convertView保存着。 
+            // 当滚动条回到之前被遮住的item时，直接使用convertView，而不必再去new view() 
+   
+        } else { 
+            view = super.getView(position, convertView, parent); 
+   
+        } 
+   
+        int[] colors = { Color.WHITE, Color.rgb(219, 238, 244) };//RGB颜色 
+   
+        view.setBackgroundColor(colors[position % 2]);// 每隔item之间颜色不同 
+   
+        return super.getView(position, view, parent); 
+    } 
+}
+
+5)MainActivity.java
+public class MainActivity extends Activity {
+
+	SQLiteDatabase sqldb; 
+    public String DB_NAME = "DB.sqlite"; 
+    public String DB_TABLE = "num"; 
+    public int DB_VERSION = 2; 
+    final DataHelper helper = new DataHelper(this, DB_NAME, null, DB_VERSION); 
+    // DbHelper类在DbHelper.java文件里面创建的 
+    ListView lv; 
+   
+    @Override 
+    public void onCreate(Bundle savedInstanceState) { 
+        // TODO Auto-generated method stub 
+        super.onCreate(savedInstanceState); 
+        setContentView(R.layout.activity_main); 
+        sqldb = helper.getWritableDatabase(); 
+        lv = (ListView) findViewById(R.id.lv); 
+        updatelistview(); 
+    } 
+   
+    // 更新listview 
+    public void updatelistview() { 
+   
+        // 
+        Cursor cr = sqldb.query("JobChecker", null, null, null, null, null, 
+                null); 
+   
+        String id = cr.getColumnName(0);// 获取第1列 
+        String job = cr.getColumnName(2);// 获取第3列 
+        String address = cr.getColumnName(4);// 获取第5列 
+        String student = cr.getColumnName(5);// 获取第6列 
+        String[] ColumnNames = { id, job, address, student }; 
+   
+        ListAdapter adapter = new MySimpleCursorAdapter(this, 
+                R.layout.listviewlayout, cr, ColumnNames, new int[] { R.id.id, 
+                        R.id.job, R.id.addr, R.id.student }); 
+        // layout为listView的布局文件，包括三个TextView，用来显示三个列名所对应的值 
+        // ColumnNames为数据库的表的列名 
+        // 最后一个参数是int[]类型的，为view类型的id，用来显示ColumnNames列名所对应的值。view的类型为TextView 
+        lv.setAdapter(adapter); 
+   
+    } 
+   
+    @Override 
+    protected void onDestroy() {// 关闭数据库 
+        // TODO Auto-generated method stub 
+        super.onDestroy(); 
+        if (helper != null) { 
+            helper.close(); 
+        } 
+    } 
+
+}
+
 
 *树形组件android.widget.ExpandableListView:
 1.基本显示
@@ -32397,7 +32726,7 @@ public class ProgressBarActivity extends Activity {
  
 
 main.xml文件
-
+1.从xml加载资源文件
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
@@ -32424,6 +32753,9 @@ main.xml文件
         setContentView(R.layout.main);
 
       }
+	
+2)从代码加载资源文件
+ImageView.setImageResource(R.drawable.longshuai);	
 
 2、加载本地图片（其实主要是SdCard中图片）
 xml文件同上面的是一样的，并不需要修改
@@ -34974,6 +35306,44 @@ value值如果是一个数组的情况下
 
 添加权限
 <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+
+0.1)如果不需要解包整个json,只是提出里面的键值来用既可以了，只要简单的这样
+做就行了
+判断是否存在这个键值
+先用jsonObject.containsKey(key)判断，有再去取值
+
+获取键值：
+try {
+	String text = msg.obj.toString();
+	JSONObject jsonObject = new JSONObject(text); 
+	//根据key取出内容
+	JSONObject ev_head = (JSONObject) jsonObject.getJSONObject("EV_json");
+	String str_evType =  ev_head.getString("EV_type");					
+	//ToolClass.Log(ToolClass.INFO,"EV_JNI",str_evType);				    
+	if(str_evType.equals("EV_INITING"))//正在初始化
+	{
+		ToolClass.Log(ToolClass.INFO,"EV_JNI","API<<正在初始化");
+		EV_TYPE=EV_INITING;
+	}
+	else if(str_evType.equals("EV_ONLINE"))//str_evType.equals("EV_PAYOUT_RPT")
+	{
+		ToolClass.Log(ToolClass.INFO,"EV_JNI","API<<成功连接");
+		EV_TYPE=EV_ONLINE;
+		//往Activity线程发送信息
+//							Message childmsg=mainHandler.obtainMessage();
+//							childmsg.what=EV_ONLINE;
+//							mainHandler.sendMessage(childmsg);
+		//往接口回调信息
+		allSet.clear();
+		allSet.put("EV_TYPE", EV_ONLINE);
+		callBack.jniCallback(allSet);
+	}
+	else if(str_evType.equals("EV_OFFLINE"))
+	{
+		ToolClass.Log(ToolClass.INFO,"EV_JNI","API<<断开连接");
+		EV_TYPE=EV_OFFLINE;
+	}
 1)数据的封装
 （1）简单有一个节点的数据
 jsonTools.java文件
@@ -37675,7 +38045,7 @@ btn=(Button)findViewById(R.id.btn);
 		
 2.需要服务绑定Activity，用来服务与Activity之间的调用和返回(服务常绑定会出错，没有关系)
 public class timeservice extends Service {
-	private IBinder myBinder=new Binder()
+	private IBinder myBinder=new Binder()  //1.创建IBinder对象并复写里面方法
 	{
 		@Override
 		public String getInterfaceDescriptor() {
@@ -37689,7 +38059,7 @@ public class timeservice extends Service {
 	}
 	
 	@Override
-	public IBinder onBind(Intent intent) {
+	public IBinder onBind(Intent intent) {//2.返回IBinder对象给activity调用
 		// TODO Auto-generated method stub
 		Log.i("currenttime","service onBind");
 		return this.myBinder;
@@ -37735,30 +38105,10 @@ public class timeservice extends Service {
 
 }
 
-MainActivity文件调用服务
+MainActivity调用服务
 public class MainActivity extends Activity {
 	Button btn=null,btnstop=null,btnbind=null,btnunbund=null;
-	private ServiceConnection conn=new ServiceConnection()
-	{
-
-		@Override
-		public void onServiceConnected(ComponentName name, IBinder service) {
-			// TODO Auto-generated method stub
-			try {
-				Log.i("currenttime","service onBindSUC="+service.getInterfaceDescriptor());
-			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-
-		@Override
-		public void onServiceDisconnected(ComponentName name) {
-			// TODO Auto-generated method stub
-			Log.i("currenttime","service onBindFail");
-		}
-		
-	};
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -37780,9 +38130,10 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				stopService(new Intent(MainActivity.this,timeservice.class));
-				//startService(new Intent(MainActivity.this, CurrentTimeService.class));// 启动服务
+				//startService(new Intent(MainActivity.this, CurrentTimeService.class));// 停止服务
 			}
 		});
+		//绑定服务
 		btnbind=(Button)findViewById(R.id.btnbind);
 		btnbind.setOnClickListener(new View.OnClickListener() {
 			
@@ -37793,6 +38144,7 @@ public class MainActivity extends Activity {
 				bindService(intent, conn, Context.BIND_AUTO_CREATE);
 			}
 		});
+		//解绑服务
 		btnunbund=(Button)findViewById(R.id.btnunbund);
 		btnunbund.setOnClickListener(new View.OnClickListener() {
 			
@@ -37803,14 +38155,28 @@ public class MainActivity extends Activity {
 			}
 		});
 	}
+	//绑定的接口
+	private ServiceConnection conn=new ServiceConnection()
+	{
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			// TODO Auto-generated method stub
+			try {
+				Log.i("currenttime","service onBindSUC="+service.getInterfaceDescriptor());
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			// TODO Auto-generated method stub
+			Log.i("currenttime","service onBindFail");
+		}
+		
+	};
 }
 
 1)点击start服务，打印
@@ -37832,7 +38198,845 @@ public class MainActivity extends Activity {
 01-12 17:00:24.714: INFO/currenttime(18109): service unbind
 01-12 17:01:26.395: INFO/currenttime(18109): service destroy
 
-		
+5）返回到Activity,他会重新绑定
+
+3.操作系统服务：可以调用操作系统提供的服务作一些事情
+1)剪切板服务
+MainActivity
+protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		//取得剪切板服务
+		ClipboardManager clipboardManager=(ClipboardManager)super.getSystemService(Context.CLIPBOARD_SERVICE);
+		clipboardManager.setText("你好");
+	}
+	
+使用方法：长按，会出现粘贴的提示框，点击确定，就把你好粘贴进去了
+
+2)通过服务，取得正在运行的所有程序信息
+public class MainActivity extends Activity {
+	ListView cut=null;
+	ListAdapter adapter=null;
+	List<String> all=new ArrayList<String>();
+	ActivityManager activityManager=null;
+	List<ActivityManager.RunningTaskInfo> alltaskinfo;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		cut=(ListView)super.findViewById(R.id.cut);
+		//取得服务
+		activityManager=(ActivityManager)super.getSystemService(Context.ACTIVITY_SERVICE);
+		listactivity();
+	}
+	private void listactivity()
+	{
+		this.alltaskinfo=this.activityManager.getRunningTasks(30);//返回30条
+		Iterator<ActivityManager.RunningTaskInfo> iterinfo=this.alltaskinfo.iterator();
+		while(iterinfo.hasNext())
+		{
+			ActivityManager.RunningTaskInfo task=iterinfo.next();
+			this.all.add("id="+task.id+"[]"+task.baseActivity.getClassName());
+		}
+		this.adapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,this.all);
+		this.cut.setAdapter(adapter);
+	}
+	
+
+}
+
+添加权限
+<uses-permission android:name="android.permission.GET_TASKS"/>
+
+	
+4.PendingIntent与Intent的区别是，Intent定义后，就一定会调用他来跳转到一些
+Activity,或者service上。而PendingIntent是定义后，如果有产生某一个事件之后，才会调用这个PendingIntent来跳转。
+1)例子：发送通知Notifcation,这个组件是把一些提示用户操作的信息发送到手机
+上面的消息下拉框中
+Notifcation是一个通知，NotifcationManager是一个发送通知的操作类
+@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		//取得服务
+		NotificationManager notificationManager=(NotificationManager)super.getSystemService(Activity.NOTIFICATION_SERVICE);
+		Notification notification=new Notification(R.drawable.ic_launcher,"来自Noti的消息",
+				System.currentTimeMillis());//立即发送一个消息
+		//创建一个PendingIntent对象
+		PendingIntent conIntent=PendingIntent.getActivity(this, 0, super.getIntent(), PendingIntent.FLAG_UPDATE_CURRENT);
+		notification.setLatestEventInfo(this, "通知", "这是一个通知", conIntent);
+		notificationManager.notify("通知",R.drawable.ic_launcher,notification);
+	}
+ 
+实际运行情况：推送一个通知，只有当用户点击通知时，才触发一个事件，通过pendIntent跳转到他指定的页面，就是打开本activity程序	
+
+5.广播BroadcastReceiver：像电视信号，打开电视所有台的电视信号都在放，但只能选择一台可以看见
+service是一直在后台运行的，而广播是需要一些特定条件，才开始执行的。通过广播
+可以实现service程序的启动
+
+1)一个简单的广播例子,在activity中，通过按钮启动广播
+(1)创建一个广播组件
+public class MyBroadcastReceiveUtil extends BroadcastReceiver {
+	
+	public MyBroadcastReceiveUtil() {
+		super();
+		// TODO Auto-generated constructor stub
+		System.out.println("每次广播都会实例化一个广播组件进行操作");
+	}
+
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		// TODO Auto-generated method stub
+		Toast.makeText(context, "广播已经启动", Toast.LENGTH_SHORT).show();
+	}
+
+}
+
+(2）添加组件配置
+<application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="com.example.boardcast.MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <receiver
+            android:name="com.example.boardcast.MyBroadcastReceiveUtil"
+            android:enabled="true" >
+			//表示对一个指定的action操作时才启动广播，即可以通过activity来
+			手动启动广播
+            <intent-filter>
+                <action android:name="android.intent.action.EDIT" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+(3）main.xml文件
+<Button
+        android:id="@+id/mybut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="开始广播" />
+
+(4）MainActivity.java
+mybut = (Button) findViewById(R.id.mybut);
+mybut.setOnClickListener(new OnClickListener() {// 为退币按钮设置监听事件
+	@Override
+	public void onClick(View arg0) {
+		//操作过滤，只有EDIT的action他才执行，而EDIT在刚才配置组件时定义了过滤器intent-filter
+		Intent it=new Intent(Intent.ACTION_EDIT);
+		MainActivity.this.sendBroadcast(it);//开启广播
+	}
+});	
+
+这样点击按钮之后，就发送Intent给广播服务，由于有过滤器，所以广播服务收到
+这个之后，就启动服务了
+
+或者manifest.xml文件
+<intent-filter>
+	<action android:name="hello" />
+</intent-filter>
+activity.java文件
+Intent it=new Intent("hello");
+
+
+2)不通过intent-filter过滤，而通过代码手动注册广播
+（1）不配置receiver了
+<application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="com.example.boardcast.MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>        
+    </application>	
+	
+(2)MainActivity.java
+public class MainActivity extends Activity {
+	Button mybut=null;
+	MyBroadcastReceiveUtil broadUtil=null;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		mybut = (Button) findViewById(R.id.mybut);
+		mybut.setOnClickListener(new OnClickListener() {// 为退币按钮设置监听事件
+		    @Override
+		    public void onClick(View arg0) {
+		    	//操作过滤，action.MLDN
+		    	Intent it=new Intent("action.MLDN");
+		    	it.putExtra("msg", "value");
+		    	IntentFilter filter=new IntentFilter("action.MLDN");
+		    	MainActivity.this.broadUtil=new MyBroadcastReceiveUtil();
+		    	MainActivity.this.registerReceiver(broadUtil, filter);
+		    	MainActivity.this.sendBroadcast(it);//开启广播
+		    }
+		});
+	}
+	
+}
+
+3）修改广播处理类，因为不是针对于所有的Action进行广播，必须通过过滤的Action进行
+public class MyBroadcastReceiveUtil extends BroadcastReceiver {
+	
+	public MyBroadcastReceiveUtil() {
+		super();
+		// TODO Auto-generated constructor stub
+		System.out.println("每次广播都会实例化一个广播组件进行操作");
+	}
+
+	@Override
+	public void onReceive(Context context, Intent intent) {		
+		// TODO Auto-generated method stub
+		if("action.MLDN".equals(intent.getAction()))
+		{
+			String msg=intent.getStringExtra("msg");
+			Toast.makeText(context, "广播已经启动"+msg, Toast.LENGTH_SHORT).show();
+		}
+	}
+
+}
+
+4）通过BroadCast启动Service:服务可以通过Activity启动，也可以通过广播启动
+区别是Activity是从界面来启动服务，而BroadCast是在某些特定条件下启动服务，
+例如刚开机，或者某一应用程序执行
+例子是通过Activity启动广播，再通过广播启动服务
+（1）创建service服务文件
+public class MyService extends Service {
+
+	@Override
+	public IBinder onBind(Intent arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void onCreate() {
+		// TODO Auto-generated method stub
+		System.out.print("Service create");
+		super.onCreate();
+	}
+
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub
+		System.out.print("Service destroy");
+		super.onDestroy();
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		// TODO Auto-generated method stub
+		System.out.print("Service startcommand");
+		return Service.START_CONTINUATION_MASK;
+	}
+	
+}
+
+（2）添加配置文件到manifest.xml
+<service
+            android:name="com.example.boardcast.MyService"/>
+
+（3）MyBroadcastReceiveUtil文件
+public class MyBroadcastReceiveUtil extends BroadcastReceiver {
+	
+	@Override
+	public void onReceive(Context context, Intent intent) {		
+		// TODO Auto-generated method stub
+		if("action.MLDN".equals(intent.getAction()))
+		{
+			String msg=intent.getStringExtra("msg");
+			Toast.makeText(context, "广播已经启动"+msg, Toast.LENGTH_SHORT).show();
+			//启动服务
+			context.startService(new Intent(context,MyService.class));
+		}
+	}
+
+}
+
+(4)MainAcitivy文件
+public class MainActivity extends Activity {
+	Button mybut=null;
+	MyBroadcastReceiveUtil broadUtil=null;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		mybut = (Button) findViewById(R.id.mybut);
+		mybut.setOnClickListener(new OnClickListener() {// 为退币按钮设置监听事件
+		    @Override
+		    public void onClick(View arg0) {
+		    	//操作过滤，只有EDIT的action他才执行，而EDIT在刚才配置组件时定义了过滤器intent-filter
+		    	Intent it=new Intent("action.MLDN");
+		    	it.putExtra("msg", "value");
+		    	IntentFilter filter=new IntentFilter("action.MLDN");
+		    	MainActivity.this.broadUtil=new MyBroadcastReceiveUtil();
+		    	MainActivity.this.registerReceiver(broadUtil, filter);
+		    	MainActivity.this.sendBroadcast(it);//开启广播
+		    }
+		});
+	}
+	@Override
+	protected void onStop() {
+		//停止本activity时，自动注销广播
+		super.unregisterReceiver(MainActivity.this.broadUtil);
+		// TODO Auto-generated method stub
+		super.onStop();
+	}
+	
+}
+
+例子：闹钟
+（1）调用闹钟页面AlarmMessage.java,他的触动通过广播来完成
+public class AlarmMessage extends Activity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		new AlertDialog.Builder(this).setIcon(R.drawable.ic_launcher).setTitle("闹钟时间已到")
+		.setMessage("闹钟响起").setPositiveButton("关闭", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				AlarmMessage.this.finish();
+			}
+		}).show();
+	}
+	
+}
+
+（2）添加广播MyAlarmReceiver
+public class MyAlarmReceiver extends BroadcastReceiver {
+
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		// TODO Auto-generated method stub
+		Intent it=new Intent(context,AlarmMessage.class);
+		it.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		context.startActivity(it);
+	}
+
+}
+
+(3)设置一个操作界面，设置闹钟信息
+<TimePicker 
+	android:id="@+id/time"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	/>
+<TextView
+	android:id="@+id/msg"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="还没设置闹钟" />
+<Button 
+	android:id="@+id/set"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="设置闹钟"
+	/>
+<Button 
+	android:id="@+id/del"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:text="取消闹钟"
+	/>
+	
+MainActivity.java文件
+	public class MainActivity extends Activity {
+	AlarmManager alarm=null;//闹钟服务
+	Button set=null,del=null;
+	TimePicker time=null;
+	TextView msg=null;
+	int minute=0,hourOfDay=0;
+	Calendar calendar=Calendar.getInstance();
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		alarm=(AlarmManager)super.getSystemService(Context.ALARM_SERVICE);//取得闹钟服务
+		time = (TimePicker) findViewById(R.id.time);
+		time.setOnTimeChangedListener(new OnTimeChangedListener() {
+			
+			@Override
+			public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
+				// TODO Auto-generated method stub				
+				calendar.setTimeInMillis(System.currentTimeMillis());//设置当前时间
+				calendar.set(calendar.HOUR_OF_DAY, hourOfDay);
+				calendar.set(calendar.MINUTE, minute);
+				MainActivity.this.hourOfDay=hourOfDay;
+				MainActivity.this.minute=minute;
+			}
+		});
+		msg = (TextView) findViewById(R.id.msg);
+		set = (Button) findViewById(R.id.set);
+		set.setOnClickListener(new View.OnClickListener() {// 为退币按钮设置监听事件
+		    @Override
+		    public void onClick(View arg0) {
+		    	Intent intent=new Intent(MainActivity.this,MyAlarmReceiver.class);
+		    	intent.setAction("setalarm");
+		    	//一旦到时间之后，就跳转到由PendingIntent包装的Intent中，而这个Intent作用是
+		    	//跳转到一个广播之中
+		    	PendingIntent sender=PendingIntent.getBroadcast(MainActivity.this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		    	//设置闹钟服务
+		    	MainActivity.this.alarm.set(AlarmManager.RTC_WAKEUP, MainActivity.this.calendar.getTimeInMillis(), sender);
+		    	
+		    	MainActivity.this.msg.setText("闹钟响起时间"+MainActivity.this.hourOfDay+":"+MainActivity.this.minute);
+		    	Toast.makeText(MainActivity.this, "闹钟设置成功", Toast.LENGTH_LONG).show();
+		    	
+		    }
+		});
+		del = (Button) findViewById(R.id.del);
+		del.setOnClickListener(new View.OnClickListener() {// 为退币按钮设置监听事件
+		    @Override
+		    public void onClick(View arg0) {
+		    	if(MainActivity.this.alarm!=null)
+		    	{
+		    		Intent intent=new Intent(MainActivity.this,MyAlarmReceiver.class);
+			    	intent.setAction("setalarm");
+			    	//一旦到时间之后，就跳转到由PendingIntent包装的Intent中，而这个Intent作用是
+			    	//跳转到一个广播之中
+			    	PendingIntent sender=PendingIntent.getBroadcast(MainActivity.this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+			    	//删除闹钟服务
+			    	MainActivity.this.alarm.cancel(sender);
+			    	MainActivity.this.msg.setText("当前没有设置闹钟");
+			    	Toast.makeText(MainActivity.this, "闹钟删除成功", Toast.LENGTH_LONG).show();
+		    	}
+		    }
+		});
+	}
+	
+}
+
+(4)添加配置文件到manifest
+<activity
+	android:name="com.example.alarm.MainActivity"
+	android:label="@string/app_name" >
+	<intent-filter>
+		<action android:name="android.intent.action.MAIN" />
+
+		<category android:name="android.intent.category.LAUNCHER" />
+	</intent-filter>
+</activity>
+<activity android:name="com.example.alarm.AlarmMessage"></activity>
+<receiver
+	android:name="com.example.alarm.MyAlarmReceiver"
+	android:enabled="true" 
+	android:process=":remote">
+	<intent-filter>
+		<action android:name="setalarm" />
+	</intent-filter>
+</receiver>
+
+
+	
+
+*图表控件achartengine
+将插件achartengine-1.0.0.jar放到工程的libs目录下
+调用
+Button pie=(Button) findViewById(R.id.pie); 
+pie.setOnClickListener(new OnClickListener() {// 为退币按钮设置监听事件
+	@Override
+	public void onClick(View arg0) {
+		Intent intent = new Intent(MainActivity.this, Pie.class);// 使用Accountflag窗口初始化Intent
+		startActivity(intent);// 打开Accountflag
+	}
+});	
+Button stacked=(Button) findViewById(R.id.stacked); 
+stacked.setOnClickListener(new OnClickListener() {// 为退币按钮设置监听事件
+	@Override
+	public void onClick(View arg0) {
+		Intent intent = new Intent(MainActivity.this, stacked.class);// 使用Accountflag窗口初始化Intent
+		startActivity(intent);// 打开Accountflag
+	}
+});
+Button line=(Button) findViewById(R.id.line); 
+line.setOnClickListener(new OnClickListener() {// 为退币按钮设置监听事件
+	@Override
+	public void onClick(View arg0) {
+		Intent intent = new Intent(MainActivity.this, Line.class);// 使用Accountflag窗口初始化Intent
+		startActivity(intent);// 打开Accountflag
+	}
+});
+
+
+1)饼状图
+import org.achartengine.ChartFactory;
+import org.achartengine.model.CategorySeries;
+import org.achartengine.renderer.DefaultRenderer;
+import org.achartengine.renderer.SimpleSeriesRenderer;
+
+import android.app.Activity;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.view.View;
+
+public class Pie extends Activity{
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		double[] values = new double[] { 12, 14, 11, 10, 19 };
+        int[] colors = new int[] { Color.BLUE, Color.GREEN, Color.MAGENTA, Color.YELLOW, Color.CYAN };
+        DefaultRenderer renderer = buildCategoryRenderer(colors);
+        renderer.setZoomButtonsVisible(true);
+        renderer.setZoomEnabled(true);
+        renderer.setChartTitleTextSize(20);
+        //        Intent intent = ChartFactory.getPieChartIntent(this, buildCategoryDataset("Project budget", values), renderer, "Budget");
+        //        startActivity(intent);
+        View view = ChartFactory.getPieChartView(this, buildCategoryDataset("Project budget", values), renderer);
+        view.setBackgroundColor(Color.BLACK);
+        setContentView(view);
+	}
+	protected DefaultRenderer buildCategoryRenderer(int[] colors) {
+        DefaultRenderer renderer = new DefaultRenderer();
+        renderer.setLabelsTextSize(15);
+        renderer.setLegendTextSize(15);
+        renderer.setMargins(new int[] { 20, 30, 15, 0 });
+        for (int color : colors) {
+            SimpleSeriesRenderer r = new SimpleSeriesRenderer();
+            r.setColor(color);
+            renderer.addSeriesRenderer(r);
+        }
+        return renderer;
+    }
+
+    protected CategorySeries buildCategoryDataset(String title, double[] values) {
+        CategorySeries series = new CategorySeries(title);
+        int k = 0;
+        for (double value : values) {
+            series.add("Project " + ++k + " (" + value + ")", value);
+        }
+        return series;
+    }
+	
+}
+分析demo。
+
+代码中比较关键的地方其实是 ChartFactory.getPieChartView，它返回一个view，也就是我们需要显示的chart。那么我们看看这个方法（在doc上有开发说明）：
+
+public static final GraphicalView getPieChartView(android.content.Context context,
+                                                  CategorySeries dataset,
+                                                  DefaultRenderer renderer)
+
+Creates a pie chart intent that can be used to start the graphical view activity. 
+Parameters:
+context - the context
+dataset - the category series dataset (cannot be null)
+renderer - the series renderer (cannot be null)
+Returns:
+a pie chart view
+Throws:
+java.lang.IllegalArgumentException - if dataset is null or renderer is null or if the dataset number of items is different than the number of series renderer。
+所以需要两个非常重要的参数，也就是开始我们提到的dataset、renderer。具体是如何构造的见代码。
+
+这里需要值一提的是dataset中的item数应该和renderer中的SeriesRenderer数相等。每组数据应该对已一个renderer，也就是说每一组数据都应有自己独立的显示样式。
+
+
+2)柱状图：
+import java.util.ArrayList;
+import java.util.List;
+
+import org.achartengine.ChartFactory;
+import org.achartengine.chart.BarChart.Type;
+import org.achartengine.model.CategorySeries;
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.renderer.SimpleSeriesRenderer;
+import org.achartengine.renderer.XYMultipleSeriesRenderer;
+
+import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.Paint.Align;
+import android.os.Bundle;
+import android.view.View;
+
+public class stacked extends Activity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		String[] titles = new String[] { "2008", "2007" };
+        List<double[]> values = new ArrayList<double[]>();
+        values.add(new double[] { 14230, 12300, 14240, 15244, 15900, 19200, 22030, 21200, 19500, 15500, 12600, 14000 });
+        values.add(new double[] { 5230, 7300, 9240, 10540, 7900, 9200, 12030, 11200, 9500, 10500, 11600, 13500 });
+        int[] colors = new int[] { Color.BLUE, Color.CYAN };
+        XYMultipleSeriesRenderer renderer = buildBarRenderer(colors);
+        setChartSettings(renderer, "Monthly sales in the last 2 years", "Month", "Units sold", 0.5, 12.5, 0, 24000, Color.GRAY, Color.LTGRAY);
+        renderer.getSeriesRendererAt(0).setDisplayChartValues(true);
+        renderer.getSeriesRendererAt(1).setDisplayChartValues(true);
+        renderer.setXLabels(12);
+        renderer.setYLabels(10);
+        renderer.setXLabelsAlign(Align.LEFT);
+        renderer.setYLabelsAlign(Align.LEFT);
+        renderer.setPanEnabled(true, false);
+        renderer.setZoomEnabled(false);
+        renderer.setZoomRate(1.1f);
+        renderer.setBarSpacing(0.5f);
+        View view = ChartFactory.getBarChartView(this, buildBarDataset(titles, values), renderer, Type.DEFAULT); //Type.STACKED
+        view.setBackgroundColor(Color.BLACK);
+        setContentView(view);
+	}
+	 protected XYMultipleSeriesDataset buildBarDataset(String[] titles, List<double[]> values) {
+	        XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+	        int length = titles.length;
+	        for (int i = 0; i < length; i++) {
+	            CategorySeries series = new CategorySeries(titles[i]);
+	            double[] v = values.get(i);
+	            int seriesLength = v.length;
+	            for (int k = 0; k < seriesLength; k++) {
+	                series.add(v[k]);
+	            }
+	            dataset.addSeries(series.toXYSeries());
+	        }
+	        return dataset;
+	    }
+
+	    protected XYMultipleSeriesRenderer buildBarRenderer(int[] colors) {
+	        XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
+	        renderer.setAxisTitleTextSize(16);
+	        renderer.setChartTitleTextSize(20);
+	        renderer.setLabelsTextSize(15);
+	        renderer.setLegendTextSize(15);
+	        int length = colors.length;
+	        for (int i = 0; i < length; i++) {
+	            SimpleSeriesRenderer r = new SimpleSeriesRenderer();
+	            r.setColor(colors[i]);
+	            renderer.addSeriesRenderer(r);
+	        }
+	        return renderer;
+	    }
+
+	    protected void setChartSettings(XYMultipleSeriesRenderer renderer, String title, String xTitle, String yTitle, double xMin, double xMax, double yMin, double yMax, int axesColor, int labelsColor) {
+	        renderer.setChartTitle(title);
+	        renderer.setXTitle(xTitle);
+	        renderer.setYTitle(yTitle);
+	        renderer.setXAxisMin(xMin);
+	        renderer.setXAxisMax(xMax);
+	        renderer.setYAxisMin(yMin);
+	        renderer.setYAxisMax(yMax);
+	        renderer.setAxesColor(axesColor);
+	        renderer.setLabelsColor(labelsColor);
+	    }
+	
+}
+4、分析demo。
+
+①设置两组需要显示的数据（当然你可以写多组数据）。
+
+②设置renderer的一些样式。当然这里的样式设置比pie chart的设置要复杂一些，除了设置数据本身的样式意外还需要对坐标轴也做设置（当然不设置就是默认的样式）。具体renderer样式的设置这里就不做过多的介绍了，在官方文档中都是有的，或者google一些很多解释。
+
+ 
+
+5、总结。
+
+stacked Chart 比pie chart稍微复杂一点：①可以包括多组数据；②renderer要设置要复杂点。
+
+stacked Chart需要的dataset中需要一组或多组数据。总的来说根据demo来理解还是很容易的。
+
+
+3)折线图
+import java.util.ArrayList;
+import java.util.List;
+
+import org.achartengine.ChartFactory;
+import org.achartengine.chart.PointStyle;
+import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.model.XYSeries;
+import org.achartengine.renderer.XYMultipleSeriesRenderer;
+import org.achartengine.renderer.XYSeriesRenderer;
+
+import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.Paint.Align;
+import android.os.Bundle;
+import android.view.View;
+
+public class Line extends Activity {
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		String[] titles = new String[] { "Crete", "Corfu", "Thassos", "Skiathos" };
+        List<double[]> x = new ArrayList<double[]>();
+        for (int i = 0; i < titles.length; i++) {
+            x.add(new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 });
+        }
+        List<double[]> values = new ArrayList<double[]>();
+        values.add(new double[] { 12.3, 12.5, 13.8, 16.8, 20.4, 24.4, 26.4, 26.1, 23.6, 20.3, 17.2, 13.9 });
+        values.add(new double[] { 10, 10, 12, 15, 20, 24, 26, 26, 23, 18, 14, 11 });
+        values.add(new double[] { 5, 5.3, 8, 12, 17, 22, 24.2, 24, 19, 15, 9, 6 });
+        values.add(new double[] { 9, 10, 11, 15, 19, 23, 26, 25, 22, 18, 13, 10 });
+        int[] colors = new int[] { Color.BLUE, Color.GREEN, Color.CYAN, Color.YELLOW };
+        PointStyle[] styles = new PointStyle[] { PointStyle.CIRCLE, PointStyle.DIAMOND, PointStyle.TRIANGLE, PointStyle.SQUARE };
+        XYMultipleSeriesRenderer renderer = buildRenderer(colors, styles);
+        int length = renderer.getSeriesRendererCount();
+        for (int i = 0; i < length; i++) {
+            ((XYSeriesRenderer) renderer.getSeriesRendererAt(i)).setFillPoints(true);
+        }
+        setChartSettings(renderer, "Average temperature", "Month", "Temperature", 0.5, 12.5, -10, 40, Color.LTGRAY, Color.LTGRAY);
+        renderer.setXLabels(12);
+        renderer.setYLabels(10);
+        renderer.setShowGrid(true);
+        renderer.setXLabelsAlign(Align.RIGHT);
+        renderer.setYLabelsAlign(Align.RIGHT);
+
+        renderer.setZoomButtonsVisible(true);
+        renderer.setPanLimits(new double[] { -10, 20, -10, 40 });
+        renderer.setZoomLimits(new double[] { -10, 20, -10, 40 });
+
+        View view = ChartFactory.getLineChartView(this, buildDataset(titles, x, values), renderer);
+        view.setBackgroundColor(Color.BLACK);
+        setContentView(view);
+	}
+	private XYMultipleSeriesRenderer buildRenderer(int[] colors, PointStyle[] styles) {
+        XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
+        setRenderer(renderer, colors, styles);
+        return renderer;
+    }
+
+    private void setRenderer(XYMultipleSeriesRenderer renderer, int[] colors, PointStyle[] styles) {
+        renderer.setAxisTitleTextSize(16);
+        renderer.setChartTitleTextSize(20);
+        renderer.setLabelsTextSize(15);
+        renderer.setLegendTextSize(15);
+        renderer.setPointSize(5f);
+        renderer.setMargins(new int[] { 20, 30, 15, 20 });
+        int length = colors.length;
+        for (int i = 0; i < length; i++) {
+            XYSeriesRenderer r = new XYSeriesRenderer();
+            r.setColor(colors[i]);
+            r.setPointStyle(styles[i]);
+            renderer.addSeriesRenderer(r);
+        }
+    }
+
+    private void setChartSettings(XYMultipleSeriesRenderer renderer, String title, String xTitle, String yTitle, double xMin, double xMax, double yMin, double yMax, int axesColor, int labelsColor) {
+        renderer.setChartTitle(title);
+        renderer.setXTitle(xTitle);
+        renderer.setYTitle(yTitle);
+        renderer.setXAxisMin(xMin);
+        renderer.setXAxisMax(xMax);
+        renderer.setYAxisMin(yMin);
+        renderer.setYAxisMax(yMax);
+        renderer.setAxesColor(axesColor);
+        renderer.setLabelsColor(labelsColor);
+    }
+
+    private XYMultipleSeriesDataset buildDataset(String[] titles, List<double[]> xValues, List<double[]> yValues) {
+        XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+        addXYSeries(dataset, titles, xValues, yValues, 0);
+        return dataset;
+    }
+
+    private void addXYSeries(XYMultipleSeriesDataset dataset, String[] titles, List<double[]> xValues, List<double[]> yValues, int scale) {
+        int length = titles.length;
+        for (int i = 0; i < length; i++) {
+            XYSeries series = new XYSeries(titles[i], scale);
+            double[] xV = xValues.get(i);
+            double[] yV = yValues.get(i);
+            int seriesLength = xV.length;
+            for (int k = 0; k < seriesLength; k++) {
+                series.add(xV[k], yV[k]);
+            }
+            dataset.addSeries(series);
+        }
+    }
+4、分析demo。
+
+ 首先代码看上去貌似很多，不过简单易懂。总结下来不外乎就几个方面：
+
+①生成坐标数据。（当然你也可以根据自己的需要生成一组或多组数据，为了数据之间的对比所以文中写了多组数据）。
+
+②生成渲染器。渲染器需要设置哪些可以根据需要而定，当然前提是你得知道它每个参数的意义，文中是比较全面的设置。
+
+③设置数据和渲染器。
+
+大概就只做了这些工作，至于具体的实现方法你可以自己阅读一下。	
+
+*数据库
+具体的请看书
+Android数据库升级、降级、创建(onCreate() onUpgrade() onDowngrade()）的注意点
+public abstract void onCreate(SQLiteDatabase db)
+
+数据库被首次创建时，会调用这个方法。这时创建数据库表和表初始化的地方。
+
+参数：
+
+db：要创建的数据库。
+
+ 
+
+public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion)
+
+当数据库需要被降级时，调用这个方法。这个方法与onUpgrade(SQLiteDatabase, int, int)方法非常相似，但是它是在当前版本比请求的版本新的时候，才会被调用。但是这个方法不是抽象的，因此它不是强制要求客户实现它的。如果这个方法没有被重写，默认的实现会拒绝降级处理，并抛出SQLiteException异常。
+
+这个方法是在事务中执行的。如果有异常被抛出，所有的改变都会被回滚。
+
+参数：
+
+db：指定要降级的数据库
+
+oldVersion：旧的数据库版本
+
+newVersion：新的数据库版本
+
+ 
+
+public void onOpen(SQLiteDatabase db)
+
+数据库被打开时，会调用这个方法。在升级数据库之前，这个方法的实现应该检查数据库是否是只读的（调用isReadOnly()方法）。
+
+数据库连接被配置且数据库策略被创建、升级或必要的降级之后，这个方法会被调用。如果数据库连接必须在策略被创建、升级或降级前做某些设置，那么就要在onConfigure(SQLiteDatabase)方法中来做这些事情。
+
+参数：
+
+db：被打开的数据库。
+
+ 
+
+public abstract void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
+
+当数据库需要升级时，会调用这个方法。应该使用这个方法来实现删除表、添加表或者做一些需要升级新的策略版本的事情。
+
+SQLite ALTER TABLE的文档可以在以下网址中找到：
+
+http://sqlite.org/lang_altertable.html
+
+如果要重新创建表，调用oncreat的方法，只要在这里面添加这一行代码
+onCreate(db);就可以了
+
+如果要给表添加一个新列，那么使用使用ALTER TABLE能够把新列插入到表中。如果要重命名或删除列，那么你能够使用ALTER TABLE能够重命名旧表，然后，创建一个新表，并把旧表中内容复制到新表中。
+
+这个方法是事务中执行的，如果有异常被抛出，所有的改变都会被自动的回滚。
+
+参数：
+
+db：指定要降级的数据库
+
+oldVersion：旧的数据库版本
+
+newVersion：新的数据库版本
+
+ 		
 
 *摄像头拍照：
 SurfaceView提供了一个高速的刷新空间，作视频播放使用
