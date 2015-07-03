@@ -30641,6 +30641,31 @@ setOnItemClickListener设置选项单击事件
         android:entries="@array/city_label"//使用资源文件到Spinner中
 />
 
+(3)设置字体大小的配置文件layout/viewspinner.xml
+<?xml version="1.0" encoding="utf-8"?>
+<TextView  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"  
+    android:gravity="left"  
+    android:paddingLeft="8dip"  
+    android:textStyle="bold"  
+    android:textSize="40sp" 
+    android:singleLine="true"  
+    android:layout_width="match_parent"  
+    android:layout_height="wrap_content"  
+    android:ellipsize="marquee" />
+
+(4)activity中
+private Spinner spinordergridtongji=null;
+private String [] mStringArray; 
+private ArrayAdapter<String> mAdapter ;	
+
+spinordergridtongji= (Spinner) findViewById(R.id.spinordergridtongji); 
+mStringArray=getResources().getStringArray(R.array.city);
+//使用自定义的ArrayAdapter
+mAdapter = new ArrayAdapter<String>(this,R.layout.viewspinner,mStringArray);
+spinordergridtongji.setAdapter(mAdapter);// 为ListView列表设置数据源
+
+
 2)通过android.widget.ArrayAdapter类
 读取xml中设置的列表项
 (1)新建一个资源文件，例如values/city.xml代表城市的资源文件
@@ -30671,10 +30696,23 @@ protected void onCreate(Bundle savedInstanceState) {
         
     }
 
+	
 3)通过List集合设置列表项
 (1)新建一个资源文件，例如values/city.xml代表城市的资源文件
 (2)使用资源文件到Spinner中，注意，不用再加载资源文件，只是一个空的资源列表
-(3)Activity里面进行配置
+(3)设置字体大小的配置文件layout/viewspinner.xml
+<?xml version="1.0" encoding="utf-8"?>
+<TextView  xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"  
+    android:gravity="left"  
+    android:paddingLeft="8dip"  
+    android:textStyle="bold"  
+    android:textSize="40sp" 
+    android:singleLine="true"  
+    android:layout_width="match_parent"  
+    android:layout_height="wrap_content"  
+    android:ellipsize="marquee" />
+(4)Activity里面进行配置
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -30703,8 +30741,10 @@ private Spinner myspinner = null;
         
         this.myspinner = (Spinner) super.findViewById(R.id.myspin);
         this.myspinner.setPrompt("@string/city_st");//提示信息
-        //准备好下拉列表框的内容
+        //方法一.准备好下拉列表框的内容,使用系统默认字体大小
         this.arrayadapter = new ArrayAdapter<CharSequence>(this, android.R.layout.simple_spinner_item,this.dataEdu);
+		//方法二.准备好下拉列表框的内容,使用自定义字体大小
+		this.arrayadapter = new ArrayAdapter<CharSequence>(this, R.layout.viewspinner,this.dataEdu);
         this.myspinner.setAdapter(this.arrayadapter);//设置显示信息
     }
 
@@ -30919,6 +30959,14 @@ this.mydate.updateDate(2014, 1, 23);
 字体大小：
 android:textColor="#FF0000"
 android:textSize="55dp"
+改变颜色的几种方法
+1、利于系统自带的颜色类
+如TextView1.setTextColor(android.graphics.Color.RED);
+//2014.12.9
+布局文件中：android:textColor="@android:color/white"
+2、数字颜色表示法
+TextView1.setTextColor(0xffff00ff);
+
 
 wrap_content：组件的大小以能装入其内容即可； 
 fill_parent：组件会显示得和其父组件一样大，并填充剩余的空间（在 API Level 8中命名为 match_parent）。
@@ -31098,7 +31146,7 @@ TableLayout layout=new TableLayout(this);//定义表格布局
 RelativeLayout用到的一些重要的属性：
 
 第一类:属性值为true或false
-android:layout_centerHrizontal 水平居中
+android:layout_centerHorizontal 水平居中
 android:layout_centerVertical 垂直居中
 android:layout_centerInparent 相对于父元素完全居中
 android:layout_alignParentBottom 贴紧父元素的下边缘
@@ -31449,6 +31497,7 @@ private class OnItemSelectedListenercity implements OnItemSelectedListener
 3.直接得到选项的值
 dialogspincabtype.getSelectedItem();//得到选项值
 dialogspincabtype.getSelectedItemId()//得到选项id索引
+spinbillmanagerbill.getSelectedItemPosition()//得到选项数字位置
 
 
 *日期和时间选择器接口DatePicker,TimePicker:
@@ -38586,7 +38635,7 @@ MainActivity.java文件
 		});
 		msg = (TextView) findViewById(R.id.msg);
 		set = (Button) findViewById(R.id.set);
-		set.setOnClickListener(new View.OnClickListener() {// 为退币按钮设置监听事件
+		set.setOnClickListener(new View.OnClickListener() {// 设置闹钟服务
 		    @Override
 		    public void onClick(View arg0) {
 		    	Intent intent=new Intent(MainActivity.this,MyAlarmReceiver.class);
@@ -38644,7 +38693,1087 @@ MainActivity.java文件
 	</intent-filter>
 </receiver>
 
+例子：开机自启动
+（1）界面Activity,BootStartDemo.java文件
+public class BootStartDemo extends Activity {
+    /** Called when the activity is first created. */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // 无title
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        // 全屏
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(R.layout.main);
+        new Thread() {
+            public void run() {
+                try {
+                    /*  10秒后关闭页面*/
+                    sleep(10000);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    finish(); // 关闭页面
+                }
+            }
+        }.start();
+ 
+    }
+}
+这段代码很简单，当Activity 启动时，会显示TextView，用它显示你想显示的字样，并且这个页面只显示10秒后消失。
 
+(2)接收广播消息：BootBroadcastReceiver.java
+public class BootBroadcastReceiver extends BroadcastReceiver {
+    static final String action_boot="android.intent.action.BOOT_COMPLETED";
+ 
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        if (intent.getAction().equals(action_boot)){
+            Intent ootStartIntent=new Intent(context,BootStartDemo.class);
+            ootStartIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(ootStartIntent);
+        }
+ 
+    }
+ 
+}
+该类继续自 BroadcastReceiver，覆载方法 onReceive 中，检测接收到的 Intent 是否符合
+BOOT_COMPLETED，如果符合，则启动BootStartDemo这个Activity。
+
+
+(3)AndroidManifest.xml ：
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 这是一个开机自启动程序 -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+      package="com.ajie.bootstartdemo"
+      android:versionCode="1"
+      android:versionName="1.0">
+    <application android:icon="@drawable/icon" android:label="@string/app_name">
+        <activity android:name=".BootStartDemo"
+                  android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    <span style="color: #ff00ff;">
+	<receiver android:name=".BootBroadcastReceiver">
+        <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED" />
+        <category android:name="android.intent.category.HOME" />
+        </intent-filter>
+    </receiver>
+    </span>    
+    </application>
+<span style="color: #ff00ff;"><strong>
+<!--开机自启动的权限 -->
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"></uses-permission></strong>
+</span></manifest>
+
+6.当需要将service中的结果一次发送给多个activity时，我们又该如何实现呢？经过多个项目的积累，总结了三种实现的方式。分别是 回调接口、广播接收者，观察者模式 。其中，广播接收者应用最普遍
+1)回调接口的方式 ，与单个service与单个activity通信类似，只是将service中的接口变为接口的集合，每个需要通信的activity都实现接口，然后在获取结果后，循环调用集合中的实现类，来与多个activity进行通信，代码如下：
+Service类：
+
+
+package com.example.servicecallback;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.util.Log;
+
+public class ContentService extends Service {
+
+  //回调接口的集合
+  private List<Callback> list;
+
+  @Override
+  public IBinder onBind(Intent arg0) {
+    // TODO Auto-generated method stub
+    return new LocalBinder();
+  }
+
+  @Override
+  public void onCreate() {
+    // TODO Auto-generated method stub
+    super.onCreate();
+    list = new ArrayList<Callback>();
+  }
+
+  public final class LocalBinder extends Binder {
+    public ContentService getService() {
+      return ContentService.this;
+    }
+  }
+
+  /**
+   * 回调接口
+   * @author Ivan Xu
+   *
+   */
+  public interface Callback {
+    public void getPerson(Person person);
+  }
+
+  /**
+   * 往回调接口集合中添加一个实现类
+   * @param callback
+   */
+  public void addCallback(Callback callback) {
+    list.add(callback);
+  }
+
+  public void asyncSendPerson(final String name) {
+    // 休息5秒，模拟异步任务
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        // TODO Auto-generated method stub
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+          // TODO Auto-generated catch block
+          e.printStackTrace();
+        }
+        handler.sendMessage(handler.obtainMessage(0, name));
+      }
+    }).start();
+  }
+
+  private Handler handler = new Handler() {
+    @Override
+    public void handleMessage(Message msg) {
+      // TODO Auto-generated method stub
+      String name = (String) msg.obj;
+      Log.i("ContentService", "---name-->" + name);
+      Person person = new Person();
+      person.setName(name);
+      Log.i("ContentService", "---list.size()-->" + list.size());
+      Log.i("ContentService", "---person-->" + person.toString());
+      //遍历集合，通知所有的实现类，即activity
+      for (int i = 0; i < list.size(); i++) {
+        list.get(i).getPerson(person);
+      }
+    }
+  };
+}
+View Code
+
+第一个activity：
+
+
+package com.example.servicecallback;
+
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.TextView;
+import com.example.servicecallback.ContentService.Callback;
+import com.example.servicecallback.ContentService.LocalBinder;
+
+public class MainActivity extends Activity implements Callback {
+
+  private MyServiceConn conn;
+  private ContentService service;
+  private TextView mContent;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+
+    conn=new MyServiceConn();
+    bindService(new Intent(this, ContentService.class), conn,
+        BIND_AUTO_CREATE);
+
+    mContent = (TextView) findViewById(R.id.content);
+
+    this.findViewById(R.id.button1).setOnClickListener(
+        new OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            // TODO Auto-generated method stub
+            startActivity(new Intent(MainActivity.this,
+                OtherActivity.class));
+          }
+        });
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    // Inflate the menu; this adds items to the action bar if it is present.
+    getMenuInflater().inflate(R.menu.main, menu);
+    return true;
+  }
+
+  public class MyServiceConn implements ServiceConnection {
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+      service = ((LocalBinder) binder).getService();
+      //将当前activity添加到接口集合中
+      service.addCallback(MainActivity.this);
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+      // TODO Auto-generated method stub
+      service = null;
+    }
+  }
+
+  @Override
+  protected void onDestroy() {
+    // TODO Auto-generated method stub
+    super.onDestroy();
+    unbindService(conn);
+  }
+
+  /**
+   * 获取回调的内容，更新UI
+   */
+  @Override
+  public void getPerson(Person person) {
+    // TODO Auto-generated method stub
+    mContent.setText(person.toString());
+  }
+}
+View Code
+
+第二个activity：
+
+
+package com.example.servicecallback;
+
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.util.Log;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import com.example.servicecallback.ContentService.Callback;
+import com.example.servicecallback.ContentService.LocalBinder;
+import com.example.servicecallback.MainActivity.MyServiceConn;
+
+public class OtherActivity extends Activity implements Callback {
+
+  private ContentService service;
+  private TextView mContent;
+  private Button mSubmit;
+  private EditText mEditText;
+  private ServiceConnection conn;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    // TODO Auto-generated method stub
+    super.onCreate(savedInstanceState);
+
+    setContentView(R.layout.other);
+
+    mEditText = (EditText) findViewById(R.id.edittext);
+    mSubmit = (Button) findViewById(R.id.button1);
+    mContent = (TextView) findViewById(R.id.content);
+
+    mSubmit.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        // TODO Auto-generated method stub
+        String name = mEditText.getText().toString();
+        service.asyncSendPerson(name);
+      }
+    });
+
+    
+    conn=new MyServiceConn();
+    bindService(new Intent(OtherActivity.this, ContentService.class), conn,
+        BIND_AUTO_CREATE);
+
+  }
+
+  public final class MyServiceConn implements ServiceConnection {
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+      // TODO Auto-generated method stub
+      service = ((LocalBinder) binder).getService();
+      //将当前activity添加到接口集合中
+      service.addCallback(OtherActivity.this);
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+      // TODO Auto-generated method stub
+      service = null;
+    }
+  }
+
+  @Override
+  protected void onDestroy() {
+    // TODO Auto-generated method stub
+    super.onDestroy();
+    unbindService(conn);
+  }
+
+  /**
+   * 获取回调的内容，更新UI
+   */
+  @Override
+  public void getPerson(Person person) {
+    // TODO Auto-generated method stub
+    mContent.setText(person.toString());
+  }
+}
+
+2).通过广播接收者 ，在service中执行完耗时操作后，将结果以广播的形式发送，在所有的activity中注册广播，接收到结果后更新UI，这种方式比较简单，也是笔者比较推荐的方式。因为耗时的操作结果不需要以handler的方式发送到主线程，可以直接在子线程中发送广播，接收者始终运行在主线程中。
+
+(1)简单的service发送广播给activity接收，其中的ServiceConnection也可以不用做
+Service类：
+package com.example.servicecallback;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.IBinder;
+
+public class ContentService extends Service {
+
+
+  @Override
+  public IBinder onBind(Intent arg0) {
+    // TODO Auto-generated method stub
+    return new LocalBinder();
+  }
+
+  @Override
+  public void onCreate() {
+    // TODO Auto-generated method stub
+    super.onCreate();
+  }
+
+  public final class LocalBinder extends Binder {
+    public ContentService getService() {
+      return ContentService.this;
+    }
+  }
+
+  public void asyncSendPerson(final String name) {
+    // 休息5秒，模拟异步任务
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        //可以在子线程中直接发送广播
+        sendContentBroadcast(name);
+      }
+    }).start();
+  }
+
+  /**
+   * 发送广播
+   * @param name
+   */
+  protected void sendContentBroadcast(String name) {
+    // TODO Auto-generated method stub
+    Intent intent=new Intent();
+    intent.setAction("com.example.servicecallback.content");
+    intent.putExtra("name", name);
+    sendBroadcast(intent);
+  }
+}
+View Code
+
+第一个activity：
+
+
+package com.example.servicecallback;
+
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.TextView;
+
+public class MainActivity extends Activity {
+
+  private MyServiceConn conn;
+  private TextView mContent;
+  private ContentReceiver mReceiver;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+
+    conn = new MyServiceConn();
+    bindService(new Intent(this, ContentService.class), conn,
+        BIND_AUTO_CREATE);
+
+    mContent = (TextView) findViewById(R.id.content);
+
+    this.findViewById(R.id.button1).setOnClickListener(
+        new OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            // TODO Auto-generated method stub
+            startActivity(new Intent(MainActivity.this,
+                OtherActivity.class));
+          }
+        });
+
+    
+    doRegisterReceiver();
+  }
+
+  /**
+   * 注册广播接收者
+   */
+  private void doRegisterReceiver() {
+    mReceiver=new ContentReceiver();
+    IntentFilter filter = new IntentFilter(
+        "com.example.servicecallback.content");
+    registerReceiver(mReceiver, filter);
+  }
+
+  public class MyServiceConn implements ServiceConnection {
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+      // service = ((LocalBinder) binder).getService();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+      // TODO Auto-generated method stub
+      // service = null;
+    }
+  }
+
+  @Override
+  protected void onDestroy() {
+    // TODO Auto-generated method stub
+    super.onDestroy();
+    unbindService(conn);
+    if (mReceiver!=null) {
+      unregisterReceiver(mReceiver);
+    }
+  }
+
+  public class ContentReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      String name = intent.getStringExtra("name");
+      Person person = new Person();
+      person.setName(name);
+      mContent.setText(person.toString());
+    }
+  }
+}
+View Code
+
+另一个activity：
+
+
+package com.example.servicecallback;
+
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import com.example.servicecallback.ContentService.LocalBinder;
+
+public class OtherActivity extends Activity {
+
+  private ContentService service;
+  private TextView mContent;
+  private Button mSubmit;
+  private EditText mEditText;
+  private ServiceConnection conn;
+  private ContentReceiver mReceiver;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    setContentView(R.layout.other);
+
+    mEditText = (EditText) findViewById(R.id.edittext);
+    mSubmit = (Button) findViewById(R.id.button1);
+    mContent = (TextView) findViewById(R.id.content);
+
+    mSubmit.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        String name = mEditText.getText().toString();
+        service.asyncSendPerson(name);
+      }
+    });
+
+    
+    conn=new MyServiceConn();
+    bindService(new Intent(OtherActivity.this, ContentService.class), conn,
+        BIND_AUTO_CREATE);
+
+    doRegisterReceiver();
+  }
+
+  private void doRegisterReceiver() {
+    mReceiver=new ContentReceiver();
+    IntentFilter filter = new IntentFilter(
+        "com.example.servicecallback.content");
+    registerReceiver(mReceiver, filter);
+  }
+  
+  public final class MyServiceConn implements ServiceConnection {
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+      service = ((LocalBinder) binder).getService();
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+      service = null;
+    }
+  }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    unbindService(conn);
+    if (mReceiver!=null) {
+      unregisterReceiver(mReceiver);
+    }
+  }
+
+  public class ContentReceiver extends BroadcastReceiver {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      String name = intent.getStringExtra("name");
+      Person person = new Person();
+      person.setName(name);
+      mContent.setText(person.toString());
+    }
+  }
+}
+
+
+(2)扩展：
+service可以发送信息给activity,activity也可以发送信息给service,本例子没有使用ServiceConnection绑定，并且
+注意观察注释的顺序点
+
+service类：
+public class EVServerService extends Service {
+	boolean isStop=false;
+    SendReceiver receiver;
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO Auto-generated method stub
+		Log.i("EV_JNI","Service bind");
+		return null;
+	}
+	
+	@Override
+	public void onCreate() {
+		// TODO Auto-generated method stub
+		Log.i("EV_JNI","Service create");
+		//timer = new Timer(true);
+		//9.注册接收器
+		receiver=new SendReceiver();
+		IntentFilter filter=new IntentFilter();
+		filter.addAction("android.intent.action.send");
+		this.registerReceiver(receiver,filter);
+		super.onCreate();
+	}
+
+	@Override
+	public void onDestroy() {
+		// TODO Auto-generated method stub		
+		Log.i("EV_JNI","Service destroy");
+		isStop=true;//即使service销毁线程也不会停止，所以这里通过设置isStop来停止线程
+		//10.解除注册接收器
+		this.unregisterReceiver(receiver);
+		super.onDestroy();
+	}
+	
+	@Override
+	@Deprecated
+	public void onStart(Intent intent, int startId) {
+		// TODO Auto-generated method stub
+		super.onStart(intent, startId);
+		Log.i("EV_JNI","Service start");
+		
+		new Thread(){//1.新建线程，每隔1秒发送一次广播，同时把i放进intent传出
+			public void run(){
+				int i=0;
+				while(!isStop){
+					Intent intent=new Intent();
+					intent.putExtra("i", i);
+					i++;
+					intent.setAction("android.intent.action.test");//action与接收器相同
+					sendBroadcast(intent);
+					Log.i("EV_JNI","ser="+String.valueOf(i));
+					try {
+						sleep(1000);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+		}.start();
+	}
+	//8.创建activity的接收器广播，用来接收内容
+	public class SendReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO Auto-generated method stub
+						Bundle bundle=intent.getExtras();
+						int a=bundle.getInt("i");
+						Log.i("EV_JNI","actreceiver="+a);					
+						//处理接收到的内容
+				
+					}
+
+	}
+
+}
+
+MainActivity页面
+public class MainActivity extends Activity {
+	MyReceiver receiver;
+	Button btn=null,btnint=null;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		//3.启动服务
+		startService(new Intent(MainActivity.this,EVServerService.class));		
+		//4.注册接收器
+		receiver=new MyReceiver();
+		IntentFilter filter=new IntentFilter();
+		filter.addAction("android.intent.action.test");
+		this.registerReceiver(receiver,filter);
+		
+		//7.发送指令广播给service
+		btn = (Button) findViewById(R.id.btn); 
+		btn.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent=new Intent();
+				intent.putExtra("i", 100);
+				intent.setAction("android.intent.action.send");//action与接收器相同
+				sendBroadcast(intent);
+				Log.i("EV_JNI","actsend="+String.valueOf(100));
+			}
+		});
+		btnint = (Button) findViewById(R.id.btnint); 
+		btnint.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent = new Intent(MainActivity.this, mainact2.class);// 使用Accountflag窗口初始化Intent
+                startActivity(intent);// 打开Accountflag
+                
+			}
+		});
+	}
+	//2.创建service的接收器广播，用来接收内容
+	public class MyReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO Auto-generated method stub
+						Bundle bundle=intent.getExtras();
+						int a=bundle.getInt("i");
+						Log.i("EV_JNI","onreceiver="+a);					
+						//处理接收到的内容
+				
+					}
+
+	}
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		//5.解除注册接收器
+		MainActivity.this.unregisterReceiver(receiver);
+		//6.结束服务
+		stopService(new Intent(MainActivity.this, EVServerService.class));
+	}
+	
+	
+
+}
+
+调试信息：
+接收到service的信息
+07-01 17:49:46.717: I/EV_JNI(12741): ser=1
+07-01 17:49:46.757: I/EV_JNI(12741): onreceiver=0
+07-01 17:49:47.717: I/EV_JNI(12741): ser=2
+07-01 17:49:47.717: I/EV_JNI(12741): onreceiver=1
+发送给service信息
+07-01 17:49:50.507: I/EV_JNI(12741): actsend=100
+07-01 17:49:50.507: I/EV_JNI(12741): actreceiver=100
+
+
+跳转到下一个activity
+public class mainact2 extends Activity {
+	Button btn=null;
+	MyReceiver receiver;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.main2);
+		//12.注册接收器
+		receiver=new MyReceiver();
+		IntentFilter filter=new IntentFilter();
+		filter.addAction("android.intent.action.test");
+		this.registerReceiver(receiver,filter);
+		//14.发送指令广播给service
+		btn = (Button) findViewById(R.id.btn); 
+		btn.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent intent=new Intent();
+				intent.putExtra("i", 200);
+				intent.setAction("android.intent.action.send");//action与接收器相同
+				sendBroadcast(intent);
+				Log.i("EV_JNI","actsend="+String.valueOf(200));
+			}
+		});
+	}
+	//11.创建service的接收器广播，用来接收内容
+	public class MyReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// TODO Auto-generated method stub
+						Bundle bundle=intent.getExtras();
+						int a=bundle.getInt("i");
+						Log.i("EV_JNI","onreceiver2="+a);					
+						//处理接收到的内容
+				
+					}
+
+	}
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		//13.解除注册接收器
+		mainact2.this.unregisterReceiver(receiver);		
+	}
+}
+调试信息：
+接收到service的信息
+07-01 17:53:25.527: I/EV_JNI(12741): ser=219
+07-01 17:53:25.527: I/EV_JNI(12741): onreceiver=218
+07-01 17:53:25.537: I/EV_JNI(12741): onreceiver2=218
+07-01 17:53:26.537: I/EV_JNI(12741): ser=220
+07-01 17:53:26.537: I/EV_JNI(12741): onreceiver=219
+07-01 17:53:26.537: I/EV_JNI(12741): onreceiver2=219
+发送给service信息
+07-01 17:53:28.537: I/EV_JNI(12741): actsend=200
+07-01 17:53:28.547: I/EV_JNI(12741): actreceiver=200
+
+
+返回到第一个activity
+07-01 17:54:42.827: I/EV_JNI(12741): ser=296
+07-01 17:54:42.827: I/EV_JNI(12741): onreceiver=295
+07-01 17:54:43.837: I/EV_JNI(12741): ser=297
+07-01 17:54:43.837: I/EV_JNI(12741): onreceiver=296
+
+
+
+
+3)使用观察者模式 ，service为被观察者，所以的activity为观察者，当service中的内容发生改变时，通知所有的activity来更新，代码如下
+Service类：
+package com.example.servicecallback;
+
+import java.util.Observable;
+import java.util.Observer;
+
+import android.app.Service;
+import android.content.Intent;
+import android.os.Binder;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+
+public class ContentService extends Service {
+
+  //被观察者
+  private MyObservable mObservable;
+
+  @Override
+  public IBinder onBind(Intent arg0) {
+    return new LocalBinder();
+  }
+
+  @Override
+  public void onCreate() {
+    super.onCreate();
+    mObservable = new MyObservable();
+  }
+
+  public final class LocalBinder extends Binder {
+    public ContentService getService() {
+      return ContentService.this;
+    }
+  }
+
+  public void asyncSendPerson(final String name) {
+    // 休息5秒，模拟异步任务
+    new Thread(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          Thread.sleep(5000);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        handler.sendMessage(handler.obtainMessage(0, name));
+      }
+    }).start();
+  }
+
+  /**
+   * 添加观察者
+   * @param observer
+   */
+  public void addObserver(Observer observer) {
+    mObservable.addObserver(observer);
+  }
+
+  private Handler handler = new Handler() {
+    @Override
+    public void handleMessage(Message msg) {
+      String name = (String) msg.obj;
+      Person person = new Person();
+      person.setName(name);
+      //通知更新
+      mObservable.notifyChanged(person);
+    }
+  };
+
+  public class MyObservable extends Observable {
+    
+    public void notifyChanged(Object object) {
+      this.setChanged();
+      this.notifyObservers(object);
+    }
+  }
+}
+View Code
+
+第一个activity：
+
+
+package com.example.servicecallback;
+
+import java.util.Observable;
+import java.util.Observer;
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.TextView;
+
+import com.example.servicecallback.ContentService.LocalBinder;
+
+public class MainActivity extends Activity implements Observer {
+
+  private MyServiceConn conn;
+  private TextView mContent;
+  private ContentService mService;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+
+    conn = new MyServiceConn();
+    bindService(new Intent(this, ContentService.class), conn,
+        BIND_AUTO_CREATE);
+
+    mContent = (TextView) findViewById(R.id.content);
+
+    this.findViewById(R.id.button1).setOnClickListener(
+        new OnClickListener() {
+          @Override
+          public void onClick(View v) {
+            startActivity(new Intent(MainActivity.this,
+                OtherActivity.class));
+          }
+        });
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.main, menu);
+    return true;
+  }
+
+  public class MyServiceConn implements ServiceConnection {
+
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+      mService = ((LocalBinder) binder).getService();
+      //将当前activity添加为观察者
+      mService.addObserver(MainActivity.this);
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+      mService = null;
+    }
+  }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    unbindService(conn);
+  }
+
+  //更新UI
+  @Override
+  public void update(Observable observable, Object data) {
+    Person person = (Person) data;
+    mContent.setText(person.toString());
+  }
+
+}
+View Code
+
+第二个activity：
+
+
+package com.example.servicecallback;
+
+import java.util.Observable;
+import java.util.Observer;
+
+import android.app.Activity;
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+
+import com.example.servicecallback.ContentService.LocalBinder;
+
+public class OtherActivity extends Activity implements Observer {
+
+  private ContentService service;
+  private TextView mContent;
+  private Button mSubmit;
+  private EditText mEditText;
+  private ServiceConnection conn;
+
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    setContentView(R.layout.other);
+
+    mEditText = (EditText) findViewById(R.id.edittext);
+    mSubmit = (Button) findViewById(R.id.button1);
+    mContent = (TextView) findViewById(R.id.content);
+
+    mSubmit.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        String name = mEditText.getText().toString();
+        service.asyncSendPerson(name);
+      }
+    });
+
+    conn = new MyServiceConn();
+    bindService(new Intent(OtherActivity.this, ContentService.class), conn,
+        BIND_AUTO_CREATE);
+
+  }
+
+  public final class MyServiceConn implements ServiceConnection {
+    @Override
+    public void onServiceConnected(ComponentName name, IBinder binder) {
+      service = ((LocalBinder) binder).getService();
+      //将当前activity添加为观察者
+      service.addObserver(OtherActivity.this);
+    }
+
+    @Override
+    public void onServiceDisconnected(ComponentName name) {
+      service = null;
+    }
+  }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    unbindService(conn);
+  }
+
+  //更新UI
+  @Override
+  public void update(Observable observable, Object data) {
+    // TODO Auto-generated method stub
+    Person person=(Person) data;
+    
+    mContent.setText(person.toString());
+  }
+}
 	
 
 *图表控件achartengine
@@ -39036,6 +40165,28 @@ oldVersion：旧的数据库版本
 
 newVersion：新的数据库版本
 
+*往页面里面添加多个布局文件
+//这个是上面的柱状图布局文件
+View view = ChartFactory.getBarChartView(this, buildBarDataset(titles, values), renderer, Type.DEFAULT); //Type.STACKED
+view.setBackgroundColor(Color.BLACK);              
+
+//新建一个布局文件  
+final LinearLayout layout2 = new LinearLayout(this);
+layout2.setOrientation(LinearLayout.VERTICAL);
+Button bt1 = new Button(this);        
+bt1.setText("按钮退出");  
+layout2.addView(bt1); //添加按钮
+layout2.addView(view);//添加柱状图
+
+setContentView(layout2);
+//按钮事件
+bt1.setOnClickListener(new View.OnClickListener() {
+
+@Override
+public void onClick(View v) {
+	// TODO Auto-generated method stub
+	finish();
+}
  		
 
 *摄像头拍照：
@@ -39570,3 +40721,33 @@ android:visibility="gone"
 mlistview1.setVisibility(View.GONE);//mlistview1处于隐藏状态
 mlistview1.setVisibility(View.INVISIBLE);//mlistview1处于不可见状态
 mlistview1.setVisibility(View.VISIBLE);//mlistview1处于可见状态
+
+4.判断应用是否在运行 
+ActivityManager activityManager = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
+List<RunningTaskInfo> list = activityManager.getRunningTasks(100);
+String MY_PKG_NAME = "com.example.evconsole";
+int isopen=0;//1代表正在运行，0代表没在运行
+for (RunningTaskInfo info : list) 
+{	        			 
+	 Log.i("EV_JNI","appName:"+info.topActivity.getClassName()+"-->pack:"+info.topActivity.getPackageName());
+	 if (info.topActivity.getPackageName().equals(MY_PKG_NAME)||info.baseActivity.getPackageName().equals(MY_PKG_NAME)) 
+	 {	        				  
+		  isopen=1;
+		  break;
+	 }
+}
+if(isopen==1)s
+{
+	Log.i("EV_JNI", "applicationrun");
+}
+else
+{
+	Log.i("EV_JNI", "applicationstop");
+	//1.开启应用程序
+	Intent intent=new Intent(DogService.this,MaintainActivity.class);
+	intent.setAction(Intent.ACTION_MAIN);  
+	intent.addCategory(Intent.CATEGORY_LAUNCHER);  
+	intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);  
+	intent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);  
+	DogService.this.startActivity(intent);	
+}
