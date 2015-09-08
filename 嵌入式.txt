@@ -31278,7 +31278,24 @@ protected void onCreate(Bundle savedInstanceState)
 
 
 3.进行横屏和竖屏的切换
-1)程序中修改
+1)、禁止横竖屏转换
+(1)系统XML文件:AndroidMainfest.xml
+转屏幕是一个系统服务，就需要一些系统权限支持
+<activity
+            android:name="com.example.buttonclick.MainActivity"
+            android:label="@string/app_name"
+            //设当前系统为竖屏显示
+            android:screenOrientation="portrait" >
+
+//改变系统权限允许改变配置信息的权限
+<uses-permission 
+	    android:name = "android.permission.CHANGE_CONFIGURATION"
+	/>
+	
+android:screenOrientation="landscape"，为横屏显示。
+android:screenOrientation="nosensor",彻底禁止翻转
+
+(2)在原先AndroidMainfest.xml中已经配置好了情况下，要在程序中修改
 	public void onClick(View v)
 	{
 	//String info = txt1.getText().toString();
@@ -31301,57 +31318,260 @@ protected void onCreate(Bundle savedInstanceState)
 		//变为横屏								MainActivity.this.setRequestedOrientation		(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 	}	
 }
+另外，android中每次屏幕的切换动会重启Activity，所以应该在Activity销毁前保存当前活动的状态，在Activity再次Create的时候载入配置，那样，进行中的游戏就不会自动重启了！			
+2)横竖屏切换
+(1)
+如果要让软件在横竖屏之间切换，由于横竖屏的高宽会发生转换，有可能会要求不同的布局。
+在res目录下建立layout-land和layout-port目录,相应的layout文件名不变，比如main.xml。layout-land是横屏的layout,layout-port是竖屏的layout，其他的不用管，横竖屏切换时程序为调用Activity的onCreate方法，从而加载相应的布局。
+例如：
+res\layout-land
+    activity_main.xml
+res\layout-port
+    activity_main.xml
+res\layout
+
+MainActivity.java文件
+protected void onCreate(Bundle savedInstanceState) {
+	super.onCreate(savedInstanceState);
+	setContentView(R.layout.activity_main);
+	Log.i("EV_JNI","程序开始");
+	Button btn=(Button)findViewById(R.id.btn);
+	btn.setOnClickListener(new View.OnClickListener() {
 			
-2)系统XML文件:AndroidMainfest.xml
-转屏幕是一个系统服务，就需要一些系统权限支持
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			if(MainActivity.this.getRequestedOrientation()==ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+			{
+				Log.i("EV_JNI","无法进行画面选转");
+			}
+			//如果是横屏
+			else if(MainActivity.this.getRequestedOrientation()==ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+			{
+				Log.i("EV_JNI","现在是横屏->转为竖屏");
+				//变为竖屏										
+				MainActivity.this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			}
+			//如果是竖屏
+			else if(MainActivity.this.getRequestedOrientation()==ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+			{
+				Log.i("EV_JNI","现在是竖屏->转为横屏");
+				//变为横屏								
+				MainActivity.this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+			}
+		}
+	});
+}	
+
+(2)在上面那个方法中，运行时
+打印：08-31 14:13:36.039: I/EV_JNI(32343): 程序开始
+当点击一下切换按钮，他由横屏转为竖屏，并打印
+08-31 14:14:08.349: I/EV_JNI(32343): 现在是横屏->转为竖屏
+08-31 14:14:08.489: I/EV_JNI(32343): 程序开始
+当点击一下切换按钮，他由竖屏转为横屏，并打印
+08-31 14:14:43.419: I/EV_JNI(32343): 现在是竖屏->转为横屏
+08-31 14:14:43.599: I/EV_JNI(32343): 程序开始
+
+说明：Activity每次横竖屏切换都会重新调用onPause-> onStop-> onDestory-> onCreate->onStart->onResume，为此涉及到内容和数据的保存和读取，否则转屏之前的内容就会消失了。很多时候这样的结果让程序繁琐
+
+解决方法：
+Android提供了在manifest中设置android:configChanges属性，从而让Activity不延续上述的重建流程。在Android工程的Mainfest.xml中配置Activity：android:configChanges="keyboardHidden|orientation"，横竖屏切换之后就不会去执行OnCreat函数了，而是会去调用onConfigurationChanged（）
+
+AndroidMainfest.xml
 <activity
             android:name="com.example.buttonclick.MainActivity"
             android:label="@string/app_name"
             //设当前系统为竖屏显示
-            android:screenOrientation="portrait" >
-
-//改变系统权限允许改变配置信息的权限
-<uses-permission 
-	    android:name = "android.permission.CHANGE_CONFIGURATION"
-	/>
-
-4.进行横屏和竖屏的切换时
-1）当系统设置改变时，还需要触发一些事件
-复写一个方法:source->override/Im.. Methods->onConfigurationChanged
-
-public class MainActivity extends Activity {
-....刚才上面的代码
+            android:screenOrientation="landscape"
+            //表示两种操作都可以触发事件
+            android:configChanges="orientation|keyboardHidden"
+ >
+ 
+MainActivity.java文件
 @Override
-	//当系统设置改变时，还需要触发一些事件,复写一个方法
-	public void onConfigurationChanged(Configuration newConfig)
-	{
-		// TODO Auto-generated method stub
-		super.onConfigurationChanged(newConfig);
-		System.out.println(newConfig.orientation);
-		//如果是横屏
-		if(newConfig.orientation==Configuration.ORIENTATION_LANDSCAPE)
-		{
-			txt1.setText("现在是横屏2");			
+protected void onCreate(Bundle savedInstanceState) {
+	super.onCreate(savedInstanceState);
+	setContentView(R.layout.activity_main);
+	Log.i("EV_JNI","程序开始");
+	Button btn=(Button)findViewById(R.id.btn);
+	btn.setOnClickListener(new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			if(MainActivity.this.getRequestedOrientation()==ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+			{
+				Log.i("EV_JNI","无法进行画面选转");
+			}
+			//如果是横屏
+			else if(MainActivity.this.getRequestedOrientation()==ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+			{
+				Log.i("EV_JNI","现在是横屏->转为竖屏");
+				//变为竖屏										
+				MainActivity.this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+			}
+			//如果是竖屏
+			else if(MainActivity.this.getRequestedOrientation()==ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+			{
+				Log.i("EV_JNI","现在是竖屏->转为横屏");
+				//变为横屏								
+				MainActivity.this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+			}
 		}
-		//如果是竖屏
-		else if(newConfig.orientation==Configuration.ORIENTATION_PORTRAIT)
-		{
-			txt1.setText("现在是横屏2");			
+	});
+}
+
+运行时
+08-31 14:27:08.459: I/EV_JNI(10597): 程序开始
+当点击一下切换按钮，他由横屏转为竖屏，并打印
+08-31 14:27:50.559: I/EV_JNI(10597): 现在是横屏->转为竖屏
+08-31 14:27:50.709: I/EV_JNI(10597): 现在变成是竖屏
+08-31 14:27:50.769: I/EV_JNI(10597): 程序开始
+当点击一下切换按钮，他由竖屏转为横屏，并打印
+08-31 14:28:11.009: I/EV_JNI(10597): 现在是竖屏->转为横屏
+08-31 14:28:11.129: I/EV_JNI(10597): 现在变成是横屏
+08-31 14:28:11.189: I/EV_JNI(10597): 程序开始
+
+(3)假如布局资源不按照如上设置，则可以通过java代码来判断当前是横屏还是竖屏然后来加载相应的xml布局文件。因为当屏幕变为横屏的时候,系统会重新呼叫当前Activity的onCreate方法,你可以把以下方法放在你的onCreate中来检查当前的方向,然后可以让你的setContentView来载入不同的layout xml。
+if(this.getResources().getConfiguration().orientation==Configuration.ORIENTATION_LANDSCAPE)
+{  
+     Log.i("info", "landscape"); // 横屏 
+}  else if(this.getResources().getConfiguration().orientation==Configuration.ORIENTATION_PORTRAIT)
+ {  
+    Log.i("info", "portrait"); // 竖屏 
+ }
+3)自适应转换
+（1）
+如果想让它启动的时候是横屏的话就横屏表示，纵屏的话就纵屏表示，然后手机切换横竖屏就不能用了
+此处的screenOrientation有如下选项： 
+==================================================================
+= unspecified 默认值，由系统判断状态自动切换 
+= landscape 横屏 
+= portrait 竖屏 
+= user 用户当前设置的orientation值 
+= behind 下一个要显示的Activity的orientation值 
+= sensor 使用传感器 传感器的方向 
+= nosensor 不使用传感器 基本等同于unspecified
+
+此处的configChanges有如下选项： 如果需要多个选项 用"|"隔开 
+==================================================================
+= orientation 屏幕在纵向和横向间旋转 
+= keyboardHidden 键盘显示或隐藏 
+= fontScale 用户变更了首选的字体大小 
+= locale 用户选择了不同的语言设定 
+= keyboard 键盘类型变更，例如手机从12键盘切换到全键盘 
+= touchscreen或navigation 键盘或导航方式变化，一般不会发生这样的事件 
+1、不设置Activity的android:configChanges时，切屏会重新调用各个生命周期，切横屏时会执行一次，切竖屏时会执行两次 
+2、设置Activity的android:configChanges="orientation"时，切屏还是会重新调用各个生命周期，切横、竖屏时只会执行一次 
+3、设置Activity的android:configChanges="orientation|keyboardHidden"时，切屏不会重新调用各个生命周期，只会执行onConfigurationChanged方法
+
+AndroidMainfest.xml
+<activity
+            android:name="com.example.pingmu.MainActivity"
+            android:label="@string/app_name"
+			//当前系统按重力传感器自动切换横屏和竖屏
+            android:screenOrientation="sensor" 
+            android:configChanges="keyboardHidden|orientation">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+MainActivity.java文件
+public class MainActivity extends Activity {
+	int orientation=0;
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		Log.i("EV_JNI","程序开始");
+		//取得屏幕的长和宽，进行比较设置横竖屏的变量
+		Display display = getWindowManager().getDefaultDisplay();  
+		 int width = display.getWidth();  
+		int height = display.getHeight();  
+		if (width > height) {  
+		      orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;  //横屏
+		} else {  
+		      orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;  //竖屏
 		}
+		//设置横屏还是竖屏的布局策略
+		MainActivity.this.setRequestedOrientation(orientation);
+		
+		Button btn=(Button)findViewById(R.id.btn);
+		btn.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				if(MainActivity.this.getRequestedOrientation()==ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED)
+				{
+					Log.i("EV_JNI","无法进行画面选转");
+				}
+				//如果是横屏
+				else if(MainActivity.this.getRequestedOrientation()==ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+				{
+					Log.i("EV_JNI","现在是横屏->转为竖屏");
+					//变为竖屏										
+					MainActivity.this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+				}
+				//如果是竖屏
+				else if(MainActivity.this.getRequestedOrientation()==ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+				{
+					Log.i("EV_JNI","现在是竖屏->转为横屏");
+					//变为横屏								
+					MainActivity.this.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+				}
+			}
+		});
 	}
 
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		// TODO Auto-generated method stub
+		super.onConfigurationChanged(newConfig);
+		if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE)
+		{
+            	// land do nothing is ok
+			Log.i("EV_JNI","现在变成是横屏");
+	    } 
+		else if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+	    {
+	            // port do nothing is ok
+			Log.i("EV_JNI","现在变成是竖屏");  
+	    }		
+	}
+	
 }
 
 
-2）系统XML文件:AndroidMainfest.xml
+（2）但是这样的话你切到别的画面的时候再回到原画面，它就仍然是横的或者是纵的。怎么让它从别的屏幕回来后，又重新横竖屏布局呢？
+只要在OnResume()中在设定下就行了，但是这个只支持横竖屏只有一个layout的。横竖屏分别对应layout的还不知道该怎么解决。
+protected void onResume() {  
+2.      orientation = ActivityInfo.SCREEN_ORIENTATION_USER;  
+3.      this.setRequestedOrientation(orientation);  
+4.      Display display = getWindowManager().getDefaultDisplay();  
+5.      int width = display.getWidth();  
+6.      int height = display.getHeight();  
+7.      if (width > height) {  
+8.          orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;  
+9.      } else {  
+10.         orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;  
+11.     }  
+12.     super.onResume();  
+13. }  
+
+4.弹出小键盘后，不遮住页面
+AndroidManifest.xml 中设置 android:windowSoftInputMode="stateUnspecified|adjustPan" 不挤压屏幕，反之为把界面挤压上去。
+例如：
 <activity
-            android:name="com.example.buttonclick.MainActivity"
-            android:label="@string/app_name"
-            //设当前系统为竖屏显示
-            android:screenOrientation="portrait"
-            //表示两种操作都可以触发事件
-            android:configChanges="orientation|keyboard"
- >
+	android:name="com.easivend.app.business.BusHuo"
+	android:label="@string/app_name"
+	android:windowSoftInputMode="stateUnspecified|adjustPan"
+	android:screenOrientation="sensor"
+	android:configChanges="keyboardHidden|orientation">
+</activity>
 
 5.CheckBox触发事件：让EditText明文显示或者密码显示
 private class onClickListenerChk implements OnClickListener
@@ -34598,6 +34818,57 @@ public class MainActivity extends Activity {
 	}
 }
 
+4.线程池
+1)四种线程
+(1)
+根据需要创建新线程的线程池，有几个线程进来就创建几个缓存，直到系统溢出也不会报警。
+当执行第二个任务时第一个任务已经完成，会复用执行第一个任务的线程，而不用每次新建线程。
+终止并从缓存中移除那些已有 60 秒钟未被使用的线程。
+final ExecutorService pool = Executors.newCachedThreadPool();
+(2)
+创建一个定长线程池，可控制线程最大并发数，超出的线程会在队列中等待。普遍用于服务器
+线程并发操作
+final ExecutorService pool = Executors.newFixedThreadPool(2);
+(3)
+newScheduledThreadPool创建一个定长线程池，支持定时及周期性任务执行。
+延迟执行示例代码如下：
+ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
+scheduledThreadPool.schedule(new Runnable() {
+ 
+	@Override
+	public void run() {
+		System.out.println("delay 3 seconds");
+	}
+}, 3, TimeUnit.SECONDS);
+
+定期执行示例代码如下：
+scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+ 
+	@Override
+	public void run() {
+		System.out.println("delay 1 seconds, and excute every 3 seconds");
+	}
+}, 1, 3, TimeUnit.SECONDS);
+
+(4)创建一个单线程化的线程池，它只会用唯一的工作线程来执行任务，保证所有任务按照指定顺序(FIFO, LIFO, 优先级)执行
+final ExecutorService pool = Executors.newSingleThreadExecutor();
+
+2)线程池的执行
+thread1=new Thread(child,"child Thread");
+		 thread2=new Thread(new childthread2(),"child Thread");
+		 thread3=new Thread(new childthread3(),"child Thread");
+		 thread4=new Thread(new childthread4(),"child Thread");
+		pool.execute(thread1);
+		pool.execute(thread2);
+		pool.execute(thread3);
+		pool.execute(thread4);
+
+销毁
+pool.shutdown();关闭，即当前线程执行完毕之后就不再接收新的线程了
+pool.shutdownNow();	立即关闭，但是不一定能关闭的掉
+
+
+	
  
 *数据存储
 1.SharedPreferences:类似属性文件Properties,作为资源文件保存配置信息
@@ -37651,7 +37922,149 @@ public void sendwei() {
 	     
 
 	}
+
+5.微信退款，需要附加p12证书到ssl中，连接的时候添加ssl
+需要导入包httpclient-4.3.4.jar
+注意，是使用HttpsURLConnection  conn = (HttpsURLConnection) url.openConnection();
 	
+public void sendpayoutwei() throws Exception{
+	final String SDCARD_DIR=File.separator+"sdcard"+File.separator+"cert";
+	final String NOSDCARD_DIR=File.separator+"cert";
+	File fileName=null;
+	String  sDir =null,str=null;
+	
+	
+	//首先判断sdcard是否插入
+  String status = Environment.getExternalStorageState();
+  if (status.equals(Environment.MEDIA_MOUNTED)) 
+  {
+	 sDir = SDCARD_DIR;;
+  } 
+  else
+  {
+	  sDir = NOSDCARD_DIR;
+  }
+ 
+ 
+  fileName=new File(sDir+File.separator+"apiclient_cert.p12");
+ //如果存在，才读文件
+  if(fileName.exists())
+  {
+	
+	//指定读取证书格式为PKCS12
+	KeyStore keyStore = KeyStore.getInstance("PKCS12");
+	//读取本机存放的PKCS12证书文件
+	FileInputStream instream = new FileInputStream(sDir+File.separator+"apiclient_cert.p12");
+	try {
+		//指定PKCS12的密码(商户ID)10052966
+		keyStore.load(instream, "10052966".toCharArray());
+		} finally {
+		instream.close();
+		}
+		SSLContext sslcontext = SSLContexts.custom()
+		.loadKeyMaterial(keyStore, "10052966".toCharArray()).build();
+//    		//指定TLS版本
+//    		SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
+//    		sslcontext,new String[] { "TLSv1" },null,
+//    		SSLConnectionSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER);
+//    		//设置httpclient的SSLSocketFactory
+//    		CloseableHttpClient httpclient = HttpClients.custom()
+//    		.setSSLSocketFactory(sslsf)
+//    		.build();
+		SSLSocketFactory ssl=sslcontext.getSocketFactory(); 
+		//ssl=null;
+  
+	
+	
+	Map<String, String> sPara = new HashMap<String, String>();
+	
+	sPara.put("appid","wx37a5d49081f487c4");
+	sPara.put("mch_id","10052966");
+	sPara.put("nonce_str","960f228109051b9969f76c82bde183ac");	 		 
+	sPara.put("out_trade_no", "1400755868");//卖家支付宝帐户
+	sPara.put("out_refund_no", "2400755868");//卖家支付宝帐户
+	sPara.put("total_fee", "1");//卖家支付宝帐户
+	sPara.put("refund_fee", "1");//卖家支付宝帐户
+	sPara.put("op_user_id", "10052966");//卖家支付宝帐户
+	String key="1bd78d29964553116c7c405dd87b2072";
+	String sign=buildRequestPara(sPara,key);
+	
+	StringBuilder xml = new StringBuilder();
+	xml.append("<xml>");
+	xml.append("<appid>wx37a5d49081f487c4</appid>");
+	xml.append("<mch_id>10052966</mch_id>");
+	xml.append("<nonce_str>960f228109051b9969f76c82bde183ac</nonce_str>");
+	xml.append("<out_trade_no>1400755868</out_trade_no>");
+	xml.append("<out_refund_no>2400755868</out_refund_no>");
+	xml.append("<total_fee>1</total_fee>");
+	xml.append("<refund_fee>1</refund_fee>");
+	xml.append("<op_user_id>10052966</op_user_id>");
+	xml.append("<sign><![CDATA["+sign+"]]></sign>");
+	xml.append("</xml>");	
+	
+	try {
+	byte[] xmlbyte = xml.toString().getBytes("UTF-8");
+	
+	Log.i("EV_JNI","Send5="+xml);
+	
+	URL url = new URL("https://api.mch.weixin.qq.com/secapi/pay/refund");
+	
+	
+	HttpsURLConnection  conn = (HttpsURLConnection) url.openConnection();
+	if(ssl!=null)
+	{
+		conn.setSSLSocketFactory(ssl);
+	}
+	conn.setConnectTimeout(5000);
+	conn.setDoOutput(true);// 允许输出
+	conn.setDoInput(true);
+	conn.setUseCaches(false);// 不使用缓存
+	conn.setRequestMethod("POST");
+	conn.setRequestProperty("Connection", "Keep-Alive");// 维持长连接
+	conn.setRequestProperty("Charset", "UTF-8");
+	conn.setRequestProperty("Content-Length",
+			String.valueOf(xmlbyte.length));
+	conn.setRequestProperty("Content-Type", "text/xml; charset=UTF-8");
+	conn.setRequestProperty("X-ClientType", "2");//发送自定义的头信息
+	
+	conn.getOutputStream().write(xmlbyte);
+	conn.getOutputStream().flush();
+	conn.getOutputStream().close();
+	
+	
+	if (conn.getResponseCode() != 200)
+		throw new RuntimeException("请求url失败");
+	
+	InputStream is = conn.getInputStream();// 获取返回数据
+	  
+	
+	// 使用输出流来输出字符(可选)
+	ByteArrayOutputStream out = new ByteArrayOutputStream();
+	byte[] buf = new byte[1024];
+	int len;
+	while ((len = is.read(buf)) != -1) {
+		out.write(buf, 0, len);
+	}
+	strpicString = out.toString("UTF-8");
+	out.close();
+	
+	result=strpicString;
+	//txt.setText(strpicString); // 清空内容编辑框	
+	Log.i("EV_JNI","rec1="+result);
+	Message m = handler.obtainMessage(); // 获取一个Message
+	m.what=2;
+	handler.sendMessage(m); // 发送消息
+	
+	} catch (Exception e) {
+	// TODO Auto-generated catch block
+	//System.out.println(e);
+		Log.i("EV_JNI","recerr="+e);
+	}      
+	
+  }
+	
+	
+}	
 
 *Android 二维码 生成和识别ZXing
 今天讲一下目前移动领域很常用的技术——二维码。现在大街小巷、各大网站都有二维码的踪迹，不管是IOS、Android、WP都有相关支持的软件。之前我就想了解二维码是如何工作，最近因为工作需要使用相关技术，所以做了初步了解。今天主要是讲解如何使用ZXing库，生成和识别二维码。这篇文章实用性为主，理论性不会讲解太多，有兴趣可以自己查看源码。
