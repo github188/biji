@@ -30803,6 +30803,62 @@ DatePicker mydate= null;
 this.mydate = (DatePicker) super.findViewById(R.id.mydate);
 this.mydate.updateDate(2014, 1, 23);
 
+*视频播放器VideoView
+原来的他不支持全屏播放，如果要，需要自己定义一个控件
+
+MyVideoView.java
+package com.easivend.view;
+
+import android.content.Context;  
+import android.util.AttributeSet;
+import android.widget.VideoView;
+
+public class MyVideoView extends VideoView {
+	public MyVideoView(Context context, AttributeSet attrs, int defStyle) {  
+        super(context, attrs, defStyle);  
+    }  
+  
+    public MyVideoView(Context context, AttributeSet attrs) {  
+        super(context, attrs);  
+    }  
+  
+    public MyVideoView(Context context) {  
+        super(context);  
+    }  
+    
+    //重點在此，override這個 function 才可以正常滿版!
+    @Override  
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {  
+        // TODO Auto-generated method stub  
+  
+        int width = getDefaultSize(0, widthMeasureSpec);  
+        int height = getDefaultSize(0, heightMeasureSpec);  
+        setMeasuredDimension(width, height);  
+    }
+}
+
+xml布局文件
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+    <com.easivend.view.MyVideoView
+        android:id="@+id/video"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"  />
+    <ImageView  
+	        android:id="@+id/ivads"  
+	        android:layout_width="match_parent"   
+	        android:layout_height="match_parent"   
+	        android:src="@drawable/quhuo"
+	        android:gravity="center"  	
+	     />
+
+</RelativeLayout>
+
+activity.java文件
+MyVideoView videoView=(MyVideoView)view.findViewById(R.id.video);
+
 //**********
 //布局管理器
 //**********
