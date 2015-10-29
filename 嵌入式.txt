@@ -33475,98 +33475,237 @@ LayoutInflater的用法有三种：
     View layout = inflater.inflate(R.layout.main, null); 	
 
 *拖拉图片组件Gallery:android.widget.Gallery
+1.SimpleAdapter和BaseAdapter的区别
+SimpleAdapter
+可以显示比较复杂的列表，包括每行显示图片、文字等，但不能对列表进行后期加工（在java代码中加工），
+也是只是单纯的负责显示（当然可以设计复杂点的布局来显示复杂列表），例如，每行显示不同背景等。
+List<Map<String,Object>> mData= new ArrayList<Map<String,Object>>();;  
+for(int i =0; i < lengh; i++) {      
+    Map<String,Object> item = new HashMap<String,Object>();      
+    item.put("image", R.drawable.portrait);      
+    item.put("title", mListTitle[i]);      
+    item.put("text", mListStr[i]);      
+    mData.add(item);       
+}      
+SimpleAdapter adapter = new SimpleAdapter(  
+                this,  
+                mData,  
+                R.layout.item,      
+                new String[]{"image","title","text"},  
+                new int[]{R.id.image,R.id.title,R.id.text});  
+
+BaseAdapter
+可以实现复杂的列表布局，由于BaseAdapter是一个抽象类，使用该类需要自己写一个适配器继承该类，
+正是由于继承了该类，需要我们重写一些方法，让我们可以在代码里控制列表的样式，更加灵活。
+private class MyListAdapter extends BaseAdapter{    
+        private Context mContext;    
+        private int[] colors=new int[]{0xff626569,0xff4f5257 };    
+         public MyListAdapter(Context context){    
+             mContext=context;    
+         }    
+        @Override    
+        public int getCount() {    
+            // TODO Auto-generated method stub    
+            return mListText.length;    
+        }    
+    
+        @Override    
+        public Object getItem(int position) {    
+            // TODO Auto-generated method stub    
+            return position;    
+        }    
+    
+        @Override    
+        public long getItemId(int position) {    
+            // TODO Auto-generated method stub    
+            return position;    
+        }    
+    
+        @Override    
+        public View getView(int position, View convertView, ViewGroup parent) {    
+            ImageView image=null;  //这些控件可以单独封装成一个类（Holder），便与优化  
+            TextView title=null;    
+            TextView  content=null;    
+            if(convertView==null){    
+                convertView=LayoutInflater.from(mContext).inflate(R.layout.colorlist, null);    
+                image=(ImageView) convertView.findViewById(R.id.color_image);    
+                title=(TextView) convertView.findViewById(R.id.color_title);    
+                content=(TextView) convertView.findViewById(R.id.color_text);    
+            }   
+            int colorPos=position%colors.length;    
+            convertView.setBackgroundColor(colors[colorPos]);    
+            title.setText(mListTitle[position]);    
+            content.setText(mListText[position]);    
+            image.setImageResource(R.drawable.portrait);    
+                
+            return convertView;    
+        }    
+            
+    }    
+  
+--------------------------下面样例列表页的控件单独封装成了一个类（Holder），便与优化-----  
+  
+  
+ public class MyBaseAdapter extends BaseAdapter{  
+       
+           private LayoutInflater mInflater;  
+            public MyAdapter(Context context){  
+               this.mInflater = LayoutInflater.from(context);  
+          }  
+            @Override  
+           public int getCount() {  
+                // TODO Auto-generated method stub  
+                return mData.size();  
+            }  
+       
+            @Override  
+            public Object getItem(int arg0) {  
+                // TODO Auto-generated method stub  
+                return null;  
+           }  
+       
+            @Override  
+            public long getItemId(int arg0) {  
+                // TODO Auto-generated method stub  
+                return 0;  
+            }  
+       
+            @Override  
+            public View getView(int position, View convertView, ViewGroup parent) {  
+                   
+                ViewHolder holder = null;  
+                if (convertView == null) {  
+                    holder=new ViewHolder();   
+                    convertView = mInflater.inflate(R.layout.vlist2, null);  
+                    holder.img = (ImageView)convertView.findViewById(R.id.img);  
+                    holder.title = (TextView)convertView.findViewById(R.id.title);  
+                    holder.info = (TextView)convertView.findViewById(R.id.info);  
+                    holder.viewBtn = (Button)convertView.findViewById(R.id.view_btn);  
+                    convertView.setTag(holder);  
+                       
+                }else {                       
+                    holder = (ViewHolder)convertView.getTag();  
+                }  
+                holder.img.setBackgroundResource((Integer)mData.get(position).get("img"));  
+                holder.title.setText((String)mData.get(position).get("title"));  
+                holder.info.setText((String)mData.get(position).get("info"));  
+                //给每一个列表后面的按钮添加响应事件  
+                holder.viewBtn.setOnClickListener(new View.OnClickListener() {  
+                    @Override  
+                    public void onClick(View v) {  
+                        showInfo();                  
+                    }  
+                });  
+  
+                return convertView;  
+            }  
+        ------------  
+        public final class ViewHolder{  
+            public ImageView img;  
+            public TextView title;  
+            public TextView info;  
+            public Button viewBtn;  
+        }  
+
+2.使用baseadapter适配器
+ProGalleryAdapter.java
+public class ProGalleryAdapter extends BaseAdapter {
+	private Context context;
+	private int[] imageId = new int[] { R.drawable.one, R.drawable.two,
+			R.drawable.three, R.drawable.four, R.drawable.five};//定义并初始化保存图片id的数组
+	//构造函数
+	public ProGalleryAdapter(Context context)
+	{
+		this.context=context;
+	}
+	/*
+	 * 功能：获得当前选项的ID
+	 */
+	@Override
+	public long getItemId(int position) {
+		// TODO Auto-generated method stub
+		return this.imageId[position];
+	}
+	/*
+	 * 功能：获得当前选项
+	 */
+	@Override
+	public Object getItem(int position) {
+		// TODO Auto-generated method stub
+		return this.imageId[position];
+	}
+	/*
+	 * 获得数量
+	 */
+	@Override
+	public int getCount() {
+		// TODO Auto-generated method stub
+		return this.imageId.length;
+	}
+	/*
+	 * 主要方法，填充图片
+	 */
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+		// TODO Auto-generated method stub
+		ImageView imageView;
+		//设置布局
+		if(convertView==null)
+		{
+			imageView=new ImageView(this.context);
+			imageView.setScaleType(ImageView.ScaleType.CENTER);//设置缩放方式
+			imageView.setLayoutParams(new Gallery.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+			imageView.setBackgroundColor(0xFFFFFFFF);
+			imageView.setPadding(5, 0, 5, 0);//设置ImageView的内边距			
+		}
+		else
+		{
+			imageView = (ImageView) convertView;
+		}
+		imageView.setImageResource(imageId[position]);//设置要显示的图片
+		return imageView;
+	}
+
+}
+
 activity_main.xml
 <Gallery
-	    android:id="@+id/gallery1"
+	    android:id="@+id/gallery"
+	    android:gravity="center_vertical"
 		android:spacing="5px"
-		android:unselectedAlpha="0.6"
-	    android:layout_width="match_parent"
+		android:unselectedAlpha="0.5"		
+	    android:layout_width="fill_parent"
 	    android:layout_height="wrap_content" />
-
-strings.xml		
-<declare-styleable name="Gallery">
-        <attr name="android:galleryItemBackground" />
-    </declare-styleable>	
 
 MainActivity.java
 public class MainActivity extends Activity {
-	TextView txtView=null;
 	Gallery gallery=null;
-	private int[] imageId = new int[] { R.drawable.img01, R.drawable.img02,
-			R.drawable.img03, R.drawable.img04, R.drawable.img05};//定义并初始化保存图片id的数组
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);		
+		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		gallery = (Gallery) findViewById(R.id.gallery1);
-		
-		//BaseAdapter就Android应用程序中经常用到的基础数据适配器
-		BaseAdapter adapter = new BaseAdapter()
-		{
-			
-			@Override
-			public View getView(int position, View convertView, ViewGroup parent) {
-				ImageView imageView;
-				if(convertView==null)
-				{
-					imageView=new ImageView(MainActivity.this);
-					imageView.setScaleType(ImageView.ScaleType.FIT_XY);//设置缩放方式
-					imageView.setLayoutParams(new Gallery.LayoutParams(180, 135));
-        			TypedArray typedArray = obtainStyledAttributes(R.styleable.Gallery);
-        			imageView.setBackgroundResource(typedArray.getResourceId(
-        							R.styleable.Gallery_android_galleryItemBackground,0));
-        			imageView.setPadding(5, 0, 5, 0);//设置ImageView的内边距
-				}
-				else
-				{
-					imageView = (ImageView) convertView;
-				}
-				imageView.setImageResource(imageId[position]);//设置要显示的图片
-				return imageView;
-			}
-			/*
-        	 * 功能：获得当前选项的ID
-        	 */
-			@Override
-			public long getItemId(int position) {
-				// TODO Auto-generated method stub
-				return position;
-			}
-			/*
-        	 * 功能：获得当前选项
-        	 */
-			@Override
-			public Object getItem(int position) {
-				// TODO Auto-generated method stub
-				return position;
-			}
-			/*
-        	 * 获得数量
-        	 */
-			@Override
-			public int getCount() {
-				// TODO Auto-generated method stub
-				return imageId.length;
-			}
-		};
-		
+		gallery = (Gallery) findViewById(R.id.gallery);
+		final ProGalleryAdapter adapter=new ProGalleryAdapter(MainActivity.this);
 		gallery.setAdapter(adapter);//将适配器adapter与控件gallery关联
-		gallery.setSelection(imageId.length/2);//中间的图片选中
+		gallery.setSelection(adapter.getCount()/2);//中间的图片选中
 		//添加单机事件监听
-		gallery.setOnItemClickListener(new OnItemClickList());
-	}
+		gallery.setOnItemClickListener(new OnItemClickListener() {
 
-	private class OnItemClickList implements OnItemClickListener
-	{
-
-		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position,
-				long id) {
-			// TODO Auto-generated method stub
-			Toast.makeText(MainActivity.this, "您的第"+id+"张图片", Toast.LENGTH_SHORT).show();
-		}
-		
+			@Override
+			public void onItemClick(AdapterView<?> parent, View view, int position,
+					long id) {
+				// TODO Auto-generated method stub
+				Toast.makeText(MainActivity.this, "您的第"+id+"张图片", Toast.LENGTH_SHORT).show();
+			}
+			
+			
+		});		
 	}
+	
+}
+
+3.复杂的要显示文字等等的，可以看GridView部分
+	
     
 *GridView
 1.这个是简单只加载图片，具体可以参考BaseAdapter的使用，若要加载图片和其他信息，可以参考书本
