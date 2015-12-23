@@ -37907,7 +37907,8 @@ try {
 	
 	
 	HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-	conn.setConnectTimeout(5000);
+	conn.setConnectTimeout(9000);//设置连接主机超时（单位：毫秒）
+    conn.setReadTimeout(3000);//设置从主机读取数据超时（单位：毫秒）
 	conn.setDoOutput(true);// 允许输出
 	conn.setDoInput(true);
 	conn.setUseCaches(false);// 不使用缓存
@@ -39273,6 +39274,31 @@ public void sendpayoutwei() throws Exception{
 	
 	
 }	
+
+6.超时时间的设置
+1)urlConnection
+urlConnection = (HttpURLConnection) url.openConnection();  
+   
+urlConnection.setRequestMethod(method);  
+urlConnection.setConnectTimeout(9000);//设置连接主机超时（单位：毫秒）
+urlConnection.setReadTimeout(3000);//设置从主机读取数据超时（单位：毫秒）
+urlConnection.setDoOutput(true);  // 允许输出
+urlConnection.setDoInput(true);  // 允许输入
+urlConnection.setUseCaches(false);// 不使用缓存 
+
+2)DefaultHttpClient:（单位：毫秒）
+请求超时
+httpclient.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000); 
+读取超时
+httpclient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
+
+3)HttpClient（单位：毫秒）
+HttpClient httpClient=new HttpClient(); 
+链接超时
+httpClient.getHttpConnectionManager().getParams().setConnectionTimeout(60000);  
+读取超时
+httpClient.getHttpConnectionManager().getParams().setSoTimeout(60000)
+
 
 *Android 二维码 生成和识别ZXing
 今天讲一下目前移动领域很常用的技术——二维码。现在大街小巷、各大网站都有二维码的踪迹，不管是IOS、Android、WP都有相关支持的软件。之前我就想了解二维码是如何工作，最近因为工作需要使用相关技术，所以做了初步了解。今天主要是讲解如何使用ZXing库，生成和识别二维码。这篇文章实用性为主，理论性不会讲解太多，有兴趣可以自己查看源码。
@@ -42026,20 +42052,24 @@ java
 ndk-build
 分别看是否配置成功
 
-4)使用NDK编译程序
+2.使用cygwin自带的示例
+1)使用NDK编译程序
 现在我们用安装好的NDK来编译一个NDK提供的sample程序hello-jni（我的目录位于：D:\android\ndk\samples\hello-jni）。
 
-第一步：运行Cygwin，配置环境变量后可输入“cd $ndk/samples/hello-jni/”，未配置则输入命令“cd /cygdrive/d/android/ndk/samples/hello-jni”，进入到“hello-jni”工程目录。
+第一步：运行Cygwin，
+配置环境变量后可输入“cd $ndk/samples/hello-jni/”，
+未配置则输入命令“cd /cygdrive/d/android/ndk/samples/hello-jni”，进入到“hello-jni”工程目录。
 
 第二步：编译。输入命令“ndk-build”命令即可编译。ndk-build是调用ndk的编译程序。
 
-5）导入NDK的hello-jni示例到Eclipse中
+2）导入NDK的hello-jni示例到Eclipse中
 第一步：在Eclipse中新建一个Android工程HelloJni。在Create Android Project时勾选“Create project from existing source”，Location中填“D:\Java\android-ndk-r8\samples\hello-jni” （注意：在选择API level时需要选择1.5或更高的版本）。
 第二步：直接以Android Aplication运行。这里要注意，你之前在使用NDK编译程序时要把这个hello-jni编译过并产生了.so文件，此处才能运行起来。
-
-6)修改hello-jni.c文件之后
+3)编译运行程序，下载到android中运行
+4)修改hello-jni.c文件之后
+源文件存放在hello-jni\jni\hello-jni.c中，so文件存放在\hello-jni\libs\armeabi\libhello-jni.so中
 重新ndk-build,然后eclipse重新project->cliean,然后将原来手机上的程序删除，
-再重新生成程序
+再重新生成程序，下载到android中运行
 
 2.新建JNI工程
 1)使用Java编写HelloWorld 的Android应用程序
@@ -42080,14 +42110,14 @@ public class JNIinte {
 　　退回到classes一级目录：/HelloWorld/bin/classes/
 执行如下命令：
 　　 javah -classpath . com.example.testj3.JNIinte
-　　生成文件h:com_example_testj3_JNIinte.h
+　　在class目录旁边就会生成文件h:com_example_testj3_JNIinte.h
 
 3)在eclipse实现这个h文件的JNI原生函数C源文件
 （1）右击工程->Android Tools->Add Native Support->名称使用刚才调用的库名称
 "HelloJNI"
 （2）删除系统生成的HelloJNI.cpp文件，这个是c++文件，我们用不上     
 （3）新建新的文件com_example_testj3_JNIinte.c	 
-把.h文件中关于这个函数的声明拷贝过来，并予以实现
+把.h文件中关于这个函数的声明拷贝过来，存放到/HelloWorld/jni/下并予以实现
 #include <jni.h>
 #include <string.h>
 JNIEXPORT jstring JNICALL Java_com_example_testj3_JNIinte_printJNI
@@ -42101,12 +42131,1246 @@ JNIEXPORT jstring JNICALL Java_com_example_testj3_JNIinte_printJNI
 LOCAL_MODULE    := HelloJNI
 LOCAL_SRC_FILES := com_example_testj3_JNIinte.c
 
-4） 使用NDK编译程序生成so库
+其中LOCAL_MODULE    := HelloJNI代表public class JNIinte ，
+LOCAL_SRC_FILES := com_example_testj3_JNIinte.c是库文件路径，因为目前使用相对路径，
+因此.c文件要放在/HelloWorld/jni/中，即与Android.mk文件同一个路径下
+
+4） 使用NDK编译程序生成so库：
+使用cygwin进入
+$ cd /cygdrive/d/android/javaprj/HelloWorld
+$ ndk-build
+编译本工程
+如果失败会弹出错误，如果成功，会生成.so库
+Android NDK: WARNING: APP_PLATFORM android-18 is larger than android:minSdkVersion 8 in ./AndroidManifest.xml
+[armeabi] Compile thumb  : JNIinteJNI <= com_example_jnit_JNIinte.c
+[armeabi] SharedLibrary  : libJNIinteJNI.so
+[armeabi] Install        : libJNIinteJNI.so => libs/armeabi/libJNIinteJNI.so
+
+Helloworld的eclipse按下f5刷新一下，生成的so文件会放在\HelloWorld\libs\armeabi中
+
 5）关闭C++的检查
 Project->Properties->c++ General->Code Analysis:
 选择Use project settings
 取消勾选Syntax and semantic errors
 
+6)貌似这个工程以后，直接修改.c文件后，编译器会自动编译，而不用cygwin,可以试一下
+
+3.jni的核心API
+其中将Java的String转为C的字符串
+portName = (char *)(*env)->GetStringUTFChars(env,jportName, NULL);
+在c/c++本地代码中访问java的String对象
+.在java中，使用的字符串String对象是Unicode码，即每个字符不论是中文还是英文或是符号，一个字符总是占用两个字节。
+在c/c++本地代码中创建java的String对象
+.java通过JNI接口可以将java的字符串转换到c/c++中的宽字符串(wchar_t *),或是传回一个UTF-8的字符串（char *）到c/c++。反过来，c/c++可以通过一个宽字符串，或是一个UTF-8编码的字符串来创建一个java端的String对象。
+GetStringChars/GetStringUTFChars
+.这两个函数用来取得与某个jstring对象相关的java字符串。分别可以取得UTF-16编码的宽字符串（jchar*）跟UTF-8编码的字符串（char*）。
+Const jchar* GetStringChars(jstring str, jboolean* copied)
+Const char* GetStringUTFChars(jstring str, jboolean* copied)
+第一个参数传入一个指向java中的String对象的jstring变量
+第二个参数传入的是一个jboolean的指针。
+这两个函数分别都会有两个不同的动作：
+第一个参数：
+1、 开新内存，然后把java中的String拷贝到这个内存中，然后返回这个内存地址的指针。
+2、 直接返回指向java中string的内存的指针，这个时候千万不要改变这个内存的内容，这将破坏String在java中始终是常量这个原则。
+第二个参数：是用来标示是否对java的string对象进行了拷贝的。
+如果传入的这个jboolean指针不是null,则他会给该指针指向的内存传入JNI_TRUE或JNI_FALSE标示是否进行了拷贝。
+传入null标示不关心是否拷贝字符串，它就不会给jboolean*指向的内存赋值。
+使用这两个函数取得的字符串，在不使用的时候，要使用ReleaseStringChars/ReleaseStringUTFChars来释放拷贝的内存，或是释放对java的String对象的引用。
+ReleaseStringChars(jstring jstr, const jchar* str);
+ReleaseStringUTFChars(jstring jstr, const char* str);
+第一个参数指定一个jstring变量，即是要释放的本地字符串的来源。
+第二个参数就是要释放的本地字符串
+GetStringCritical:是为了增加直接传回指向java字符串的指针的可能性（而不是拷贝），jdk1.2出来了新的函数：GetStringCritical/ReleaseStringCritical。
+Const jchar* GetStringCritical(jstring str, jboolean* copied)
+Void realeaseStringCritical(jstring jstr, const jchar* str);
+在GetStringCritical/RealeaseStringCritical之间是一个关键区。在这关键区之中绝对不能呼叫JNI的其他函数和会造成当前线程中断或是会让当前线程等待的任何本地代码，否则将造成关键区代码执行区间垃圾回收器停止运作，任何触发垃圾回收器的线程也会暂停。其他的触发垃圾回收器的线程不能前进直到当前线程结束而激活垃圾回收器。
+在关键区中千万不雅出现中断操作，或是在jvm中分配任何新对象。否则会造成jvm死锁。
+虽说这个函数会增加直接传回指向java字符串的指针的可能性，不过还是会根据情况传回拷贝过的字符串。
+不支持GetStringUTFCritical,没有这样的函数。由于java字符串用的是UTF16,要转成UTF8编码的字符串始终需要进行一个拷贝。所以没有这样的函数。
+GetStringRegion/GetStringUTFRegion
+.java1.2出来的函数，这个函数的动作，是把java字符串的内容直接拷贝到c/c++的字符数组中。在呼叫这个函数之前必须有一个c/c++分配出来的字符串，然后传入到这个函数中进行字符串的拷贝。
+由于c/c++中分配内存开销相对小，而且java中的String内容拷贝的开销可以忽略，更好的一点是此函数不分配内存，不会抛出OutOfMemoeryError异常。
+//拷贝java字符串并以UTF-8编码传入buffer.
+GetStringUTFRegion(String str, jsize start, jsize len, char* buffer);
+//拷贝java字符串并以UTF-16编码传入buffer
+GetStringRegion(jstring str, jsize start, jsize len, jchar* buffer);
+
+
+其他的字符串函数：
+.jstring NewString(const jchar* str, jszie len); 宽字符串（c/c++中的普通的字符串）
+.jstring NewStringUTF(const char* str);
+.jsize GetStringLength(jstring str);
+.jsize GetStringUTFLength(jstring str);
+例如：红线圈住的是对应的方法应用。Message是定义在java类中，在此省略了代码
+
+
+
+
+ 
+处理数组：数组分为两种（基本类型的数组、对象类型的数组）
+一个能通用于两种不同类型数组的函数：GetArrayLength(jarray array)
+处理--基本类型的数组：
+.处理基本类型的数组跟处理字符串类似，也有很相似的函数。
+.Get<TYPE>ArrayElements(<TYPE>Array arr, jboolean* isCopied);这类的函数可以把java基本类型的数组转换到c/c++中的数组。有两种处理方式,一是拷贝一份传回本地代码，另一个是把指向java数组的指针传回到本地代码。处理完本地化的数组后，通过Release<TYPE>ArrayElements来释放数组。
+.Release<TYPE>ArrayElements(<TYPE>Array arr, <TYPE>* array, jint mode);用这个函数可以选择将如何处理java跟c++的数组。是提交，还是撤销等，内存释放还是不释放。mode可以去下面的值：0(对java的数组进行更新并释放c/c++的数组)
+JNI_COMMIT（对java的数组进行更新但不释放c/c++的数组）
+JNI_ABORT (对java的数组不进行更新，释放c/c++的数组)
+.GetPrimitiveArrayCritical(jarray arr, jboolean* isCopied);
+ ReleasePrimitiveArrayCritical(jarray arr, void* array, jint mode);它们也是jdk1.2出来的，为了增加直接传回指向java数组的指针而加入的函数。同样的，也会有同GetStringCritical的死锁的问题。
+.Get<TYPE>ArrayRegion(<TYPE>Array arr, jsize start, jsize len,<TYPE>* buffer);在c/c++预先开辟一段内存，然后把java基本类型的数组拷贝到这段内存中。跟GetStringRegion原理类似。
+.Set<TYPE>ArrayRegion(<TYPE>Array arr, jsize start, jsize len, const<TYPE>* buffer);把java基本类型的数组中的指定范围的元素用c/c++的数组中的元素来赋值。
+.<TYPE>Array New<TYPE>Array(jsize size);指定一个长度然后返回相应的java基本类型的数组。
+ 
+处理—对象类型的数组【Object[]】: 
+JNI没有提供直接把java的对象类型数组（Object[]）直接转到c/c++中的jobject[]数组的函数;而是直接通过GetObjectArrayElement (JNIEnv *env, jobjectArray array, jsize index)/ SetObjectArrayElement (JNIEnv *env, jobjectArray array, jsize index, jobject val)这样的函数来对java的Object[]数组进行操作。
+.使用上述的函数也不用释放任何资源。
+.NewObjectArray(jsize len, jclass clazz, jobject init)可以通过指定长度跟初始值来创建某个类的数组。
+int[] arrays = {1,2,3,4,5,6,7,8,9,0};
+public native void callCppFunction();
+public static void main(String[] args) {
+MainTest obj = new MainTest();
+obj.callCppFunction();//这里会去访问数组。
+for(int each: obj.arrays) {
+System.out.println(each);
+}
+}
+
+
+全局引用/局部引用/弱全局引用
+.从java虚拟机创建的对象传到本地c/c++代码时会产生引用。根据java的垃圾回收机制，只要引用存在就不会触发该引用指向的java对象的垃圾回收。
+.这些引用在JNI中分为三种：
+局部引用(Local Reference);最常见的引用类型。基本上通过JNI返回来的引用都是局部引用。
+例如使用NewObject就会返回创建出来的实例的局部引用。局部引用只在该Native函数中有效。所有在该函数中产生的局部引用，都会在函数返回的时候自动释放。也可以使用deleteLocalRef函数手动释放该引用。
+注意：既然局部引用能够在函数返回时自动释放，为什么还需要deleteRef()函数呢？
+实际上局部引用存在，就会防止其指向的对象被垃圾回收。尤其是当一个局部引用指向一个庞大的对象，或是在一个循环中生成了局部引用，最好的做法就是在使用完该对象后，或在该循环尾部把这个引用释放掉，以确保在垃圾回收器被触发的时候被回收。
+在局部引用的有效期中，可以传递到别的本地函数中，要强调的是它的有效期仍然只在一次的java本地函数调用中，所以千万不能用c++全局变量保存它或是把它定义为c++静态局部变量。
+全局引用(Global Reference);
+全局引用可以跨越当前线程，在多个native函数中有效，不过需要编程人员手动来释放该引用。全局引用存在期间会防止在java的垃圾回收器中回收。
+与局部引用不同的是，全局引用过的创建不是由JNI自动创建的，全局引用是需要调用NewGlobalRef函数，而释放它需要使用ReleaseGlobalRef函数。
+弱全局引用(Weak Global Reference);
+其是jdk1.2出来的功能，与全局引用相似，创建跟删除都需要编程人员手动来进行。这种引用与全局引用一样可以在多个本地代码有效，也跨越多线程有效。不一样的是，这种夹棍不会阻止垃圾回收器回收这个引用所指向的对象。
+使用NewWeakGlobalRef跟ReleaseGlobalRef来产生和接触引用。
+关于的一些函数：jobject NewGlobalRef（jobject obj）;
+   Jobject NewLocalRef(jobject obj);
+   Jobject NewWeakGlobalRef(jobject obj);
+   Void  DeleteGlobalRef(jobject obj);
+Void  DeleteLocalRef(jobject obj);
+Void  DeleteWeakGlobalRef(jobject obj);
+Jboolean IsSameObject(jobject obj1, jobject obj2);这个函数对于弱全局引用还有一个特别的功能：把null传入要比较的对象中，就能够判断弱全局引用所指向的java对象是否被回收。《java native interface》
+缓存JfieldID/jmethodID
+ .取得jfieldID和jmethodID的时候会通过该属性/方法名称上签名来查询相应的jfieldID/jmethodID.这种查询相对来说开销较大。其实，可以将这些FieldID/MethodID缓存起来，这样只需查询一次，以后就是使用缓存起来的FieldID/MethodID了。
+介绍两种缓存方式的实现：
+1、 在用的时候缓存：
+.在native code中使用static局部变量来保存已经查询过的id,这样就不会在每次的函数调用是查询，而只要第一次查询成功后就保存起来了。
+.不过在这种情况下不得不考虑多线程同时呼叫此函数时可能会造成同时查询的情况。不过这种情况下没必要担心，所以是无害即是线程安全的。因为返回同一个ID值
+    Static fieldID fieldID_string = null;
+Jclass clazz = env->GetObjectClass(obj);
+If(fieldID_string == null)
+{fieldID_string = envo->GetFieldID(clazz, “string”, “Ljava/lang/String;”);
+…
+2、 在java类初始化是缓存
+.更好的方法就是在任何native函数调用钱把id全部存起来。
+.可以在第一次加载这个类的时候首先调用本地代码初始化所有的jfieldID/jmethodID,这样的话就可以省去多次得确定ID是否存在的语句，当然，这些jfieldID/jmethodID是定义在c/c++的全局。
+.当java类卸载或重新加载的时候也会重新呼叫给本地代码来重新计算缓存的ID集。
+（篇二完，后期篇是关于JNI异常处理/多线程/c/c++如何启动jvm(上面都没有涉及，在后期博客会更新，因为看英文的书籍，翻译和理解又慢点。）
+
+
+*Android硬件抽象层（HAL）
+1.adb
+ADB的全称为Android Debug Bridge，就是连接Android手机与PC端的桥梁，可以让用户在电脑上对手机进行全面的操作。
+给出常用几个的说明：
+1). 查看设备
+
+adb devices
+
+这个命令是查看当前连接的设备, 连接到计算机的android设备或者模拟器将会列出显示
+
+Android系列教程(六) adb操作命令详解
+
+2).安装软件
+
+adb install
+
+adb install :这个命令将指定的apk文件安装到设备上
+
+Android系列教程(六) adb操作命令详解
+
+3). 卸载软件
+
+adb uninstall <软件名>
+
+adb uninstall -k <软件名>
+
+如果加 -k 参数,为卸载软件但是保留配置和缓存文件.
+
+4). 进入设备或模拟器的shell：
+
+adb shell
+
+通过上面的命令，就可以进入设备或模拟器的shell环境中，在这个Linux Shell中，你可以执行各种Linux的命令，另外如果只想执行一条shell命令，可以采用以下的方式：
+
+adb shell [command]
+
+如：adb shell dmesg会打印出内核的调试信息。
+
+5). 发布端口
+
+可以设置任意的端口号，做为主机向模拟器或设备的请求端口。如：
+
+adb forward tcp:5555 tcp:8000
+
+6). 从电脑上发送文件到设备
+
+adb push <本地路径> <远程路径>
+
+用push命令可以把本机电脑上的文件或者文件夹复制到设备(手机)
+
+7). 从设备上下载文件到电脑
+
+adb pull <远程路径> <本地路径>
+
+用pull命令可以把设备(手机)上的文件或者文件夹复制到本机电脑
+
+8)、查看bug报告
+
+adb bugreport
+
+9)、记录无线通讯日志
+
+一般来说，无线通讯的日志非常多，在运行时没必要去记录，但我们还是可以通过命令，设置记录：
+
+adb shell
+
+logcat -b radio
+
+10)、获取设备的ID和序列号
+
+adb get-product
+
+adb get-serialno
+
+adb shell
+
+举一个最常用的例子：提取，并推送framework-res.apk。
+
+提取系统上的framework-res.apk
+
+进入“命令提示符”后，我们先执行一次"adb devices"，确认是否已经连上
+
+然后，再执行"adb remount"
+
+接着，我们就可以提取了，按照上面第七点的格式输入执行"adb pull /system/framework/framework-res.apk D:"
+
+当然后面的路径，D:是随你自己喜欢的，但是要注意空格
+
+
+adb devices adb remount adb pull /system/framework/framework-res.apk D: 复制代码即可
+
+这样D:上就会多了framework-res.apk这文件了
+
+从新推送"framework-res.apk"
+
+我们用到推送的指令，仿照上面第六点输入执行 "adb push D:framework-res.apk /system/framework"
+
+这里我们不要忘了还要修改权限，执行"adb shell chmod 644 /system/framework/framework-res.apk"
+
+当然，我们还需要重启一下，执行"adb reboot"
+
+如何使用adb工具详细教程？
+adb devices adb remount adb adb push D:framework-res.apk /system/framework adb shell chmod 644 /system/framework/framework-res.apk 复制代码即可
+
+好了!至于其他的adb指令大家可以模仿着这个来用!!
+
+*蓝牙bluetooth  BluetoothAdapter类：代表了一个本地的蓝牙适配器。他是所有蓝牙交互的的入口点。利用它你可以发现其他蓝牙设备，查询绑定了的设备，使用已知的MAC地址实例化一个蓝牙设备和建立一个BluetoothServerSocket（作为服务器端）来监听来自其他设备的连接。
+BluetoothDevice类：代表了一个远端的蓝牙设备，使用它请求远端蓝牙设备连接或者获取远端蓝牙设备的名称、地址、种类和绑定状态。（其信息是封装在bluetoothsocket中）。
+Bluetoothsocket类：代表了一个蓝牙套接字的接口（类似于tcp中的套接字），他是应用程序通过输入、输出流与其他蓝牙设备通信的连接点。
+Blueboothserversocket类：代表打开服务连接来监听可能到来的连接请求（属于server端），为了连接两个蓝牙设备必须有一个设备作为服务器打开一个服务套接字。当远端设备发起连接连接请求的时候，并且已经连接到了的时候，Blueboothserversocket类将会返回一个bluetoothsocket。
+Bluetoothclass类：描述了一个蓝牙设备的一般特点和能力。他的只读属性集定义了设备的主、次设备类和一些相关服务。然而，他并没有准确的描述所有该设备所支持的蓝牙文件和服务，而是作为对设备种类来说的一个小小暗示。 
+
+示例：
+1.开启和搜索蓝牙
+配置权限
+<uses-permission android:name="android.permission.BLUETOOTH" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />  
+<uses-permission android:name="android.permission.READ_CONTACTS"/>  
+	
+BluetoothMsg.java文件，用于蓝牙属性
+public class BluetoothMsg {
+	 /** 
+     * 蓝牙连接类型 
+     * @author Andy 
+     * 
+     */  
+    public enum ServerOrCilent{  
+        NONE,  
+        SERVICE,  
+        CILENT  
+    };  
+    //蓝牙连接方式  
+    public static ServerOrCilent serviceOrCilent = ServerOrCilent.NONE;  
+    //连接蓝牙地址  
+    public static String BlueToothAddress = null,lastblueToothAddress=null;  
+    //通信线程是否开启  
+    public static boolean isOpen = false;  
+}
+
+
+public class MainActivity extends Activity  implements OnItemClickListener
+{
+	private BluetoothAdapter blueadapter=null;  
+    private DeviceReceiver mydevice=new DeviceReceiver();  
+    private List<String> deviceList=new ArrayList<String>();  
+    private ListView deviceListview;  
+    private Button btserch;  
+    private ArrayAdapter<String> adapter;  
+    private boolean hasregister=false; 
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main);
+		
+		setView();//初始化控件  
+        setBluetooth(); //打开蓝牙设备
+	}
+	
+	private void setView(){  
+	      
+        deviceListview=(ListView)findViewById(R.id.devicelist);  
+        adapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, deviceList);  
+        deviceListview.setAdapter(adapter);  
+        deviceListview.setOnItemClickListener(this);  
+        btserch=(Button)findViewById(R.id.start_seach);  
+        btserch.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				if(blueadapter.isDiscovering()){  
+	                blueadapter.cancelDiscovery();  
+	                btserch.setText("repeat search1");  
+	            }else{  
+	                findAvalibleDevice(); //遍历已经存在的设备 
+	                blueadapter.startDiscovery();//2.搜索蓝牙设备
+	                btserch.setText("stop search1");  
+	            }  
+			}
+		});  
+          
+    } 
+	/** 
+     * Setting Up Bluetooth 
+     * //1.打开蓝牙设备
+     */  
+    private void setBluetooth(){  
+         blueadapter=BluetoothAdapter.getDefaultAdapter();  
+           首先通过调用静态方法getDefaultAdapter()获取蓝牙适配器bluetoothadapter，以后你就可以使用该对象了。如果返回为空，the story is over。
+            if(blueadapter!=null){  //Device support Bluetooth  
+                //确认开启蓝牙  
+                if(!blueadapter.isEnabled()){  
+                    //请求用户开启  
+                    Intent intent=new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);  
+                    startActivityForResult(intent, RESULT_FIRST_USER);  
+                    //使蓝牙设备可见，方便配对  （默认打开120秒，可以将时间延长至最多300秒）
+                    Intent in=new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);  
+                    in.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);  
+                    startActivity(in);  
+                    //直接开启，不经过提示  
+                    blueadapter.enable();  
+                }  
+            }  
+            else{   //Device does not support Bluetooth  
+                  
+                AlertDialog.Builder dialog = new AlertDialog.Builder(this);  
+                dialog.setTitle("No bluetooth devices");  
+                dialog.setMessage("Your equipment does not support bluetooth, please change device");  
+                  
+                dialog.setNegativeButton("cancel",  
+                        new DialogInterface.OnClickListener() {  
+                            @Override  
+                            public void onClick(DialogInterface dialog, int which) {  
+                                  
+                            }  
+                        });  
+                dialog.show();  
+            }  
+    }
+    
+	扫描的过程是一个很耗费资源的过程，一旦你找到你需要的设备之后，在发起连接请求之前，确保你的程序调用cancelDiscovery()方法停止扫描。显然，如果你已经连接上一个设备，启动扫描会减少你的通信带宽。
+    //5.用于点击列表，弹出触发事件
+    @Override  
+    public void onItemClick(AdapterView<?> arg0, View arg1, int pos, long arg3) {  
+          
+        Log.e("msgParent", "Parent= "+arg0);  
+        Log.e("msgView", "View= "+arg1);  
+        Log.e("msgChildView", "ChildView= "+arg0.getChildAt(pos-arg0.getFirstVisiblePosition()));  
+          
+            final String msg = deviceList.get(pos);  
+              
+            if(blueadapter!=null&&blueadapter.isDiscovering()){  
+                blueadapter.cancelDiscovery();  
+                btserch.setText("repeat search2");  
+            }  
+              
+            AlertDialog.Builder dialog = new AlertDialog.Builder(this);// 定义一个弹出框对象  
+            dialog.setTitle("Confirmed connecting device");  
+            dialog.setMessage(msg);  
+            dialog.setPositiveButton("connect",  
+                    new DialogInterface.OnClickListener() {  
+                        @Override  
+                        public void onClick(DialogInterface dialog, int which) {  
+                            BluetoothMsg.BlueToothAddress=msg.substring(msg.length()-17);  
+                              
+                            if(BluetoothMsg.lastblueToothAddress!=BluetoothMsg.BlueToothAddress){  
+                                BluetoothMsg.lastblueToothAddress=BluetoothMsg.BlueToothAddress;  
+                            }  
+                              
+                            Intent in=new Intent(MainActivity.this,BluetoothActivity.class);  
+                            startActivity(in);  
+                          
+                        }  
+                    });  
+            dialog.setNegativeButton("cancel",  
+                    new DialogInterface.OnClickListener() {  
+                        @Override  
+                        public void onClick(DialogInterface dialog, int which) {  
+                            BluetoothMsg.BlueToothAddress = null;  
+                        }  
+                    });  
+            dialog.show();  
+    }  
+      
+  
+    在建立连接之前你必须先查询配对好了的蓝牙设备集（你周围的蓝牙设备可能不止一个），以便你选取哪一个设备进行通信，例如你可以你可以查询所有配对的蓝牙设备，并使用一个数组适配器将其打印显示出来：建立一个蓝牙连接只需要MAC地址就已经足够了。
+    /** 
+     * Finding Devices 
+     */  
+    private void findAvalibleDevice(){  
+        //获取可配对蓝牙设备  
+        Set<BluetoothDevice> device=blueadapter.getBondedDevices();  
+          
+        if(blueadapter!=null&&blueadapter.isDiscovering()){  
+            deviceList.clear();  
+            adapter.notifyDataSetChanged();  
+        }  
+        if(device.size()>0){ //存在已经配对过的蓝牙设备,遍历显示  
+            for(Iterator<BluetoothDevice> it=device.iterator();it.hasNext();){  
+                BluetoothDevice btd=it.next();  
+                deviceList.add(btd.getName()+'\n'+btd.getAddress());  
+                adapter.notifyDataSetChanged();  
+            }  
+        }else{  //不存在已经配对过的蓝牙设备,给出提示  
+            deviceList.add("No can be matched to use bluetooth");  
+            adapter.notifyDataSetChanged();  
+        }  
+    } 
+    
+    /** 
+     * 3.蓝牙搜索状态广播监听 
+     * @author Andy 
+     * 
+     */  
+	 使用bluetoothadapter类里的方法，你可以查找远端设备（不过蓝牙查找的范围好像是在十米以内吧）或者查询在你手机上已经匹配（或者说绑定）的其他手机了。当然需要确定对方蓝牙设备已经开启或者已经开启了“被发现使能“功能（对方设备是可以被发现的是你能够发起连接的前提条件）。如果该设备是可以被发现的，会反馈回来一些对方的设备信息，比如名字、MAC地址等，利用这些信息，你的设备就可以选择去向对方初始化一个连接。
+如果你是第一次与该设备连接，那么一个配对的请求就会自动的显示给用户。当设备配对好之后，他的一些基本信息（主要是名字和MAC）被保存下来并可以使用蓝牙的API来读取。使用已知的MAC地址就可以对远端的蓝牙设备发起连接请求。
+  匹配好的设备和连接上的设备的不同点：匹配好只是说明对方设备发现了你的存在，并拥有一个共同的识别码，并且可以连接。连接上：表示当前设备共享一个RFCOMM信道并且两者之间可以交换数据。也就是是说蓝牙设备在建立RFCOMM信道之前，必须是已经配对好了的。
+ 怎么查询匹配好的设备：
+ 在建立连接之前你必须先查询配对好了的蓝牙设备集（你周围的蓝牙设备可能不止一个），以便你选取哪一个设备进行通信
+ 
+ 扫描设备，只需要简单的调用startDiscovery()方法，这个扫描的过程大概持续是12秒，应用程序为了ACTION_FOUND动作需要注册一个BroadcastReceiver来接受设备扫描到的信息。对于每一个设备，系统都会广播ACTION_FOUND动作。例如：
+     
+    private class DeviceReceiver extends BroadcastReceiver{  
+  
+        @Override  
+        public void onReceive(Context context, Intent intent) {  
+            String action =intent.getAction();  
+            if(BluetoothDevice.ACTION_FOUND.equals(action)){    //搜索到新设备  
+                BluetoothDevice btd=intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);  
+                //搜索没有配过对的蓝牙设备  
+                 if (btd.getBondState() != BluetoothDevice.BOND_BONDED) {  
+                     deviceList.add(btd.getName()+'\n'+btd.getAddress());  
+                     adapter.notifyDataSetChanged();  
+                 }  
+            }  
+             else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)){   //搜索结束  
+                   
+                    if (deviceListview.getCount() == 0) {  
+                        deviceList.add("No can be matched to use bluetooth");  
+                        adapter.notifyDataSetChanged();  
+                    }  
+                    btserch.setText("repeat search3");  
+                }  
+        }     
+    } 
+    //2.注册蓝牙接收广播  
+	/*startDiscovery()方法是一个异步方法，调用后会立即返回。该方法会进行对其他蓝牙设备的搜索，该过程会持续12秒。该方法调用后，搜索过程实际上是在一个System Service中进行的，所以可以调用cancelDiscovery()方法来停止搜索（该方法可以在未执行discovery请求时调用）。
+	请求Discovery后，系统开始搜索蓝牙设备，在这个过程中，系统会发送以下三个广播：
+    ACTION_DISCOVERY_START：开始搜索
+	ACTION_DISCOVERY_FINISHED：搜索结束
+	ACTION_FOUND：找到设备，这个Intent中包含两个extra fields：EXTRA_DEVICE和EXTRA_CLASS，分别包含BluetooDevice和BluetoothClass。
+	我们可以自己注册相应的BroadcastReceiver来接收响应的广播，以便实现某些功能
+	*/
+    @Override  
+    protected void onStart() 
+    { 
+        if(!hasregister)
+        {  
+            hasregister=true;  
+            IntentFilter filterStart=new IntentFilter(BluetoothDevice.ACTION_FOUND);      
+            IntentFilter filterEnd=new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);      
+            registerReceiver(mydevice, filterStart);  
+            registerReceiver(mydevice, filterEnd);  
+        }         
+        super.onStart();  
+    }  
+    //4.之后解除绑定
+    @Override  
+    protected void onDestroy() 
+    {  
+        if(blueadapter!=null&&blueadapter.isDiscovering())
+        {  
+            blueadapter.cancelDiscovery();  
+        }  
+        if(hasregister)
+        {  
+            hasregister=false;  
+            unregisterReceiver(mydevice);  
+        }  
+        //直接开启，不经过提示  
+        blueadapter.disable();  
+        super.onDestroy();  
+    } 
+
+
+}
+
+
+2.连接设备：
+
+  在你的应用程序中，想建立两个蓝牙设备之间的连接，你必须实现客户端和服务器端的代码（因为任何一个设备都必须可以作为服务端或者客户端）。一个开启服务来监听，一个发起连接请求（使用服务器端设备的MAC地址）。当他们都拥有一个蓝牙套接字在同一RFECOMM信道上的时候，可以认为他们之间已经连接上了。服务端和客户端通过不同的方式或其他们的蓝牙套接字。当一个连接监听到的时候，服务端获取到蓝牙套接字。当客户可打开一个FRCOMM信道给服务器端的时候，客户端获取到蓝牙套接字。
+
+ 注意：在此过程中，如果两个蓝牙设备还没有配对好的，android系统会通过一个通知或者对话框的形式来通知用户。RFCOMM连接请求会在用户选择之前阻塞。如下图：
+
+
+1)服务端的连接：
+
+ 当你想要连接两台设备时，一个必须作为服务端（通过持有一个打开的bluetoothserversocket），目的是监听外来连接请求，当监听到以后提供一个连接上的bluetoothsocket给客户端，当客户端从bluetoothserversocket得到bluetoothsocket以后就可以销毁bluetoothserversocket，除非你还想监听更多的连接请求。
+BluetoothActivity.java
+public class BluetoothActivity extends Activity 
+{
+	/* 一些常量，代表服务器的名称 */  
+    public static final String PROTOCOL_SCHEME_RFCOMM = "btspp";  
+      
+    private ListView mListView;  
+    private Button sendButton;  
+    private Button disconnectButton;  
+    private EditText editMsgView;  
+    private ArrayAdapter<String> mAdapter;  
+    private List<String> msgList=new ArrayList<String>();  
+    Context mContext;  
+      
+    private BluetoothServerSocket mserverSocket = null;  
+    private ServerThread startServerThread = null;  
+    private clientThread clientConnectThread = null;  
+    private BluetoothSocket socket = null;  
+    private BluetoothDevice device = null;  
+    private readThread mreadThread = null;;   
+    private BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter(); 
+    
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.chat);
+		mContext = this;
+		init();
+	}
+	
+	//初始化
+	private void init() {            
+        
+        mAdapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, msgList);  
+        mListView = (ListView) findViewById(R.id.list);  
+        mListView.setAdapter(mAdapter);  
+        mListView.setFastScrollEnabled(true);  
+        editMsgView= (EditText)findViewById(R.id.MessageText);    
+        editMsgView.clearFocus();  
+        
+        //发送数据
+        sendButton= (Button)findViewById(R.id.btn_msg_send);  
+        sendButton.setOnClickListener(new OnClickListener() {  
+            @Override  
+            public void onClick(View arg0) {  
+              
+                String msgText =editMsgView.getText().toString();  
+                if (msgText.length()>0) {  
+                    sendMessageHandle(msgText);   
+                    editMsgView.setText("");  
+                    editMsgView.clearFocus();  
+                    //close InputMethodManager  
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);   
+                    imm.hideSoftInputFromWindow(editMsgView.getWindowToken(), 0);  
+                }else  
+                Toast.makeText(mContext, "发送内容不能为空！", Toast.LENGTH_SHORT).show();  
+            }  
+        });  
+          
+        disconnectButton= (Button)findViewById(R.id.btn_disconnect);  
+        disconnectButton.setOnClickListener(new OnClickListener() {  
+            @Override  
+            public void onClick(View arg0) {  
+                // TODO Auto-generated method stub  
+                if (BluetoothMsg.serviceOrCilent == BluetoothMsg.ServerOrCilent.CILENT)   
+                {  
+                    shutdownClient();  
+                }  
+                else if (BluetoothMsg.serviceOrCilent == BluetoothMsg.ServerOrCilent.SERVICE)   
+                {  
+                    shutdownServer();  
+                }  
+                BluetoothMsg.isOpen = false;  
+                BluetoothMsg.serviceOrCilent=BluetoothMsg.ServerOrCilent.NONE;  
+                Toast.makeText(mContext, "已断开连接！", Toast.LENGTH_SHORT).show();  
+            }  
+        });       
+    } 
+	
+	//加载页面时，自动启动服务端线程和客户端线程
+	@Override  
+    protected void onResume() {  
+        //作为客户端使用  
+        BluetoothMsg.serviceOrCilent=BluetoothMsg.ServerOrCilent.SERVICE;  
+          
+         if(BluetoothMsg.isOpen)  
+            {  
+                Toast.makeText(mContext, "连接已经打开，可以通信。如果要再建立连接，请先断开！", Toast.LENGTH_SHORT).show();  
+                return;  
+            }  
+            if(BluetoothMsg.serviceOrCilent==BluetoothMsg.ServerOrCilent.CILENT)  
+            {  
+                String address = BluetoothMsg.BlueToothAddress;  
+                if(!address.equals("null"))  
+                {  
+                    device = mBluetoothAdapter.getRemoteDevice(address);      
+                    clientConnectThread = new clientThread();  
+                    clientConnectThread.start();  
+                    BluetoothMsg.isOpen = true;  
+                }  
+                else  
+                {  
+                    Toast.makeText(mContext, "address is null !", Toast.LENGTH_SHORT).show();  
+                }  
+            }  
+            else if(BluetoothMsg.serviceOrCilent==BluetoothMsg.ServerOrCilent.SERVICE)  
+            {                     
+                startServerThread = new ServerThread();  
+                startServerThread.start();  
+                BluetoothMsg.isOpen = true;  
+            }  
+        super.onResume();  
+    } 
+	
+	//主ui显示分线程发送来的提示信息
+	private Handler LinkDetectedHandler = new Handler() {  
+        @Override  
+        public void handleMessage(Message msg) {  
+            //Toast.makeText(mContext, (String)msg.obj, Toast.LENGTH_SHORT).show();  
+            if(msg.what==1)  
+            {  
+                msgList.add((String)msg.obj);  
+            }  
+            else  
+            {  
+                msgList.add((String)msg.obj);  
+            }  
+            mAdapter.notifyDataSetChanged();  
+            mListView.setSelection(msgList.size() - 1);  
+        }  
+    };  
+	//1.开启服务器  
+    private class ServerThread extends Thread {   
+        @Override  
+        public void run() {  
+                      
+            try {  
+                /* 创建一个蓝牙服务器  
+                 * 参数分别：服务器名称、UUID  
+                 * 首先通过调用listenUsingRfcommWithServiceRecord(String, UUID)方法来获
+                 * 取bluetoothserversocket对象，参数string代表了该服务的名称，UUID代
+                 * 表了和客户端连接的一个标识（128位格式的字符串ID，相当于pin码），
+                 * UUID必须双方匹配才可以建立连接。其次调用accept（）方法来监听可能
+                 * 到来的连接请求，当监听到以后，返回一个连接上的蓝牙套接
+                 * 字bluetoothsocket。 */   
+                mserverSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(PROTOCOL_SCHEME_RFCOMM,  
+                        UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));         
+                  
+                Log.d("server", "wait cilent connect...");  
+                  
+                Message msg = new Message();  
+                msg.obj = "请稍候，正在等待客户端的连接...";  
+                msg.what = 0;  
+                LinkDetectedHandler.sendMessage(msg);  
+                  
+                /* 接受客户端的连接请求 */  
+                socket = mserverSocket.accept();  
+                Log.d("server", "accept success !");  
+                  
+                Message msg2 = new Message();  
+                String info = "客户端已经连接上！可以发送信息。";  
+                msg2.obj = info;  
+                msg.what = 0;  
+                LinkDetectedHandler.sendMessage(msg2);  
+                //启动接受数据  
+                mreadThread = new readThread();  
+                mreadThread.start();  
+            } catch (IOException e) {  
+                e.printStackTrace();  
+            }  
+        }  
+    };  
+    /* 2.停止服务器 */  
+    private void shutdownServer() {  
+        new Thread() {  
+            @Override  
+            public void run() {  
+                if(startServerThread != null)  
+                {  
+                    startServerThread.interrupt();  
+                    startServerThread = null;  
+                }  
+                if(mreadThread != null)  
+                {  
+                    mreadThread.interrupt();  
+                    mreadThread = null;  
+                }                 
+                try {                     
+                    if(socket != null)  
+                    {  
+                        socket.close();  
+                        socket = null;  
+                    }  
+                    if (mserverSocket != null)  
+                    {  
+                        mserverSocket.close();/* 关闭服务器 */  
+                        mserverSocket = null;  
+                    }  
+                } catch (IOException e) {  
+                    Log.e("server", "mserverSocket.close()", e);  
+                }  
+            };  
+        }.start();  
+    }
+    
+  //3.开启客户端  
+    /*使用bluetoothdevice对象里的方法createRfcommSocketToServiceRecord(UUID)
+     * 来获取bluetoothsocket。UUID就是匹配码。然后，调用connect（）方法来。
+     * 如果远端设备接收了该连接，他们将在通信过程中共享RFFCOMM信道，并
+     * 且connect（）方法返回。
+     * */
+    private class clientThread extends Thread {           
+        @Override  
+        public void run() {  
+            try {  
+                //创建一个Socket连接：只需要服务器在注册时的UUID号  
+                // socket = device.createRfcommSocketToServiceRecord(BluetoothProtocols.OBEX_OBJECT_PUSH_PROTOCOL_UUID);  
+                socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));  
+                //连接  
+                Message msg2 = new Message();  
+                msg2.obj = "请稍候，正在连接服务器:"+BluetoothMsg.BlueToothAddress;  
+                msg2.what = 0;  
+                LinkDetectedHandler.sendMessage(msg2);  
+                  
+                socket.connect();  
+                  
+                Message msg = new Message();  
+                msg.obj = "已经连接上服务端！可以发送信息。";  
+                msg.what = 0;  
+                LinkDetectedHandler.sendMessage(msg);  
+                //启动接受数据  
+                mreadThread = new readThread();  
+                mreadThread.start();  
+            }   
+            catch (IOException e)   
+            {  
+                Log.e("connect", "", e);  
+                Message msg = new Message();  
+                msg.obj = "连接服务端异常！断开连接重新试一试。";  
+                msg.what = 0;  
+                LinkDetectedHandler.sendMessage(msg);  
+            }   
+        }  
+    };
+    
+    /* 4.停止客户端连接 */  
+    private void shutdownClient() {  
+        new Thread() {  
+            @Override  
+            public void run() {  
+                if(clientConnectThread!=null)  
+                {  
+                    clientConnectThread.interrupt();  
+                    clientConnectThread= null;  
+                }  
+                if(mreadThread != null)  
+                {  
+                    mreadThread.interrupt();  
+                    mreadThread = null;  
+                }  
+                if (socket != null) {  
+                    try {  
+                        socket.close();  
+                    } catch (IOException e) {  
+                        // TODO Auto-generated catch block  
+                        e.printStackTrace();  
+                    }  
+                    socket = null;  
+                }  
+            };  
+        }.start();  
+    }
+    
+    //5.ui线程发送数据  
+    private void sendMessageHandle(String msg)   
+    {         
+        if (socket == null)   
+        {  
+            Toast.makeText(mContext, "没有连接", Toast.LENGTH_SHORT).show();  
+            return;  
+        }  
+        try {                 
+            OutputStream os = socket.getOutputStream();   
+            os.write(msg.getBytes());  
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }             
+        msgList.add(msg);  
+        mAdapter.notifyDataSetChanged();  
+        mListView.setSelection(msgList.size() - 1);  
+    }  
+    //6.读取数据  
+    private class readThread extends Thread {   
+        @Override  
+        public void run() {  
+              
+            byte[] buffer = new byte[1024];  
+            int bytes;  
+            InputStream mmInStream = null;  
+              
+            try {  
+                mmInStream = socket.getInputStream();  
+            } catch (IOException e1) {  
+                // TODO Auto-generated catch block  
+                e1.printStackTrace();  
+            }     
+            while (true) {  
+                try {  
+                    // Read from the InputStream  
+                    if( (bytes = mmInStream.read(buffer)) > 0 )  
+                    {  
+                        byte[] buf_data = new byte[bytes];  
+                        for(int i=0; i<bytes; i++)  
+                        {  
+                            buf_data[i] = buffer[i];  
+                        }  
+                        String s = new String(buf_data);  
+                        Message msg = new Message();  
+                        msg.obj = s;  
+                        msg.what = 1;  
+                        LinkDetectedHandler.sendMessage(msg);  
+                    }  
+                } catch (IOException e) {  
+                    try {  
+                        mmInStream.close();  
+                    } catch (IOException e1) {  
+                        // TODO Auto-generated catch block  
+                        e1.printStackTrace();  
+                    }  
+                    break;  
+                }  
+            }  
+        }  
+    }  
+    
+}
+
+2)客户端连接
+BluetoothActivity.java
+public class BluetoothActivity extends Activity 
+{
+	/* 一些常量，代表服务器的名称 */  
+    public static final String PROTOCOL_SCHEME_RFCOMM = "btspp";  
+      
+    private ListView mListView;  
+    private Button sendButton;  
+    private Button disconnectButton;  
+    private EditText editMsgView;  
+    private ArrayAdapter<String> mAdapter;  
+    private List<String> msgList=new ArrayList<String>();  
+    Context mContext;  
+      
+    private BluetoothServerSocket mserverSocket = null;  
+    private ServerThread startServerThread = null;  
+    private clientThread clientConnectThread = null;  
+    private BluetoothSocket socket = null;  
+    private BluetoothDevice device = null;  
+    private readThread mreadThread = null;;   
+    private BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter(); 
+    
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.chat);
+		mContext = this;
+		init();
+	}
+	
+	//初始化
+	private void init() {            
+        
+        mAdapter=new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, msgList);  
+        mListView = (ListView) findViewById(R.id.list);  
+        mListView.setAdapter(mAdapter);  
+        mListView.setFastScrollEnabled(true);  
+        editMsgView= (EditText)findViewById(R.id.MessageText);    
+        editMsgView.clearFocus();  
+        
+        //发送数据
+        sendButton= (Button)findViewById(R.id.btn_msg_send);  
+        sendButton.setOnClickListener(new OnClickListener() {  
+            @Override  
+            public void onClick(View arg0) {  
+              
+                String msgText =editMsgView.getText().toString();  
+                if (msgText.length()>0) {  
+                    sendMessageHandle(msgText);   
+                    editMsgView.setText("");  
+                    editMsgView.clearFocus();  
+                    //close InputMethodManager  
+                    InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);   
+                    imm.hideSoftInputFromWindow(editMsgView.getWindowToken(), 0);  
+                }else  
+                Toast.makeText(mContext, "发送内容不能为空！", Toast.LENGTH_SHORT).show();  
+            }  
+        });  
+          
+        disconnectButton= (Button)findViewById(R.id.btn_disconnect);  
+        disconnectButton.setOnClickListener(new OnClickListener() {  
+            @Override  
+            public void onClick(View arg0) {  
+                // TODO Auto-generated method stub  
+                if (BluetoothMsg.serviceOrCilent == BluetoothMsg.ServerOrCilent.CILENT)   
+                {  
+                    shutdownClient();  
+                }  
+                else if (BluetoothMsg.serviceOrCilent == BluetoothMsg.ServerOrCilent.SERVICE)   
+                {  
+                    shutdownServer();  
+                }  
+                BluetoothMsg.isOpen = false;  
+                BluetoothMsg.serviceOrCilent=BluetoothMsg.ServerOrCilent.NONE;  
+                Toast.makeText(mContext, "已断开连接！", Toast.LENGTH_SHORT).show();  
+            }  
+        });       
+    } 
+	
+	//加载页面时，自动启动服务端线程和客户端线程
+	@Override  
+    protected void onResume() {  
+        //作为客户端使用  
+        BluetoothMsg.serviceOrCilent=BluetoothMsg.ServerOrCilent.CLIENT;  
+          
+         if(BluetoothMsg.isOpen)  
+            {  
+                Toast.makeText(mContext, "连接已经打开，可以通信。如果要再建立连接，请先断开！", Toast.LENGTH_SHORT).show();  
+                return;  
+            }  
+            if(BluetoothMsg.serviceOrCilent==BluetoothMsg.ServerOrCilent.CILENT)  
+            {  
+                String address = BluetoothMsg.BlueToothAddress;  
+                if(!address.equals("null"))  
+                {  
+                    device = mBluetoothAdapter.getRemoteDevice(address);      
+                    clientConnectThread = new clientThread();  
+                    clientConnectThread.start();  
+                    BluetoothMsg.isOpen = true;  
+                }  
+                else  
+                {  
+                    Toast.makeText(mContext, "address is null !", Toast.LENGTH_SHORT).show();  
+                }  
+            }  
+            else if(BluetoothMsg.serviceOrCilent==BluetoothMsg.ServerOrCilent.SERVICE)  
+            {                     
+                startServerThread = new ServerThread();  
+                startServerThread.start();  
+                BluetoothMsg.isOpen = true;  
+            }  
+        super.onResume();  
+    } 
+	
+	//主ui显示分线程发送来的提示信息
+	private Handler LinkDetectedHandler = new Handler() {  
+        @Override  
+        public void handleMessage(Message msg) {  
+            //Toast.makeText(mContext, (String)msg.obj, Toast.LENGTH_SHORT).show();  
+            if(msg.what==1)  
+            {  
+                msgList.add((String)msg.obj);  
+            }  
+            else  
+            {  
+                msgList.add((String)msg.obj);  
+            }  
+            mAdapter.notifyDataSetChanged();  
+            mListView.setSelection(msgList.size() - 1);  
+        }  
+    };  
+	//1.开启服务器  
+    private class ServerThread extends Thread {   
+        @Override  
+        public void run() {  
+                      
+            try {  
+                /* 创建一个蓝牙服务器  
+                 * 参数分别：服务器名称、UUID  
+                 * 首先通过调用listenUsingRfcommWithServiceRecord(String, UUID)方法来获
+                 * 取bluetoothserversocket对象，参数string代表了该服务的名称，UUID代
+                 * 表了和客户端连接的一个标识（128位格式的字符串ID，相当于pin码），
+                 * UUID必须双方匹配才可以建立连接。其次调用accept（）方法来监听可能
+                 * 到来的连接请求，当监听到以后，返回一个连接上的蓝牙套接
+                 * 字bluetoothsocket。 */   
+                mserverSocket = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(PROTOCOL_SCHEME_RFCOMM,  
+                        UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));         
+                  
+                Log.d("server", "wait cilent connect...");  
+                  
+                Message msg = new Message();  
+                msg.obj = "请稍候，正在等待客户端的连接...";  
+                msg.what = 0;  
+                LinkDetectedHandler.sendMessage(msg);  
+                  
+                /* 接受客户端的连接请求 */  
+                socket = mserverSocket.accept();  
+                Log.d("server", "accept success !");  
+                  
+                Message msg2 = new Message();  
+                String info = "客户端已经连接上！可以发送信息。";  
+                msg2.obj = info;  
+                msg.what = 0;  
+                LinkDetectedHandler.sendMessage(msg2);  
+                //启动接受数据  
+                mreadThread = new readThread();  
+                mreadThread.start();  
+            } catch (IOException e) {  
+                e.printStackTrace();  
+            }  
+        }  
+    };  
+    /* 2.停止服务器 */  
+    private void shutdownServer() {  
+        new Thread() {  
+            @Override  
+            public void run() {  
+                if(startServerThread != null)  
+                {  
+                    startServerThread.interrupt();  
+                    startServerThread = null;  
+                }  
+                if(mreadThread != null)  
+                {  
+                    mreadThread.interrupt();  
+                    mreadThread = null;  
+                }                 
+                try {                     
+                    if(socket != null)  
+                    {  
+                        socket.close();  
+                        socket = null;  
+                    }  
+                    if (mserverSocket != null)  
+                    {  
+                        mserverSocket.close();/* 关闭服务器 */  
+                        mserverSocket = null;  
+                    }  
+                } catch (IOException e) {  
+                    Log.e("server", "mserverSocket.close()", e);  
+                }  
+            };  
+        }.start();  
+    }
+    
+  //3.开启客户端  
+    /*使用bluetoothdevice对象里的方法createRfcommSocketToServiceRecord(UUID)
+     * 来获取bluetoothsocket。UUID就是匹配码。然后，调用connect（）方法来。
+     * 如果远端设备接收了该连接，他们将在通信过程中共享RFFCOMM信道，并
+     * 且connect（）方法返回。
+     * */
+    private class clientThread extends Thread {           
+        @Override  
+        public void run() {  
+            try {  
+                //创建一个Socket连接：只需要服务器在注册时的UUID号  
+                // socket = device.createRfcommSocketToServiceRecord(BluetoothProtocols.OBEX_OBJECT_PUSH_PROTOCOL_UUID);  
+                socket = device.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"));  
+                //连接  
+                Message msg2 = new Message();  
+                msg2.obj = "请稍候，正在连接服务器:"+BluetoothMsg.BlueToothAddress;  
+                msg2.what = 0;  
+                LinkDetectedHandler.sendMessage(msg2);  
+                  
+                socket.connect();  
+                  
+                Message msg = new Message();  
+                msg.obj = "已经连接上服务端！可以发送信息。";  
+                msg.what = 0;  
+                LinkDetectedHandler.sendMessage(msg);  
+                //启动接受数据  
+                mreadThread = new readThread();  
+                mreadThread.start();  
+            }   
+            catch (IOException e)   
+            {  
+                Log.e("connect", "", e);  
+                Message msg = new Message();  
+                msg.obj = "连接服务端异常！断开连接重新试一试。";  
+                msg.what = 0;  
+                LinkDetectedHandler.sendMessage(msg);  
+            }   
+        }  
+    };
+    
+    /* 4.停止客户端连接 */  
+    private void shutdownClient() {  
+        new Thread() {  
+            @Override  
+            public void run() {  
+                if(clientConnectThread!=null)  
+                {  
+                    clientConnectThread.interrupt();  
+                    clientConnectThread= null;  
+                }  
+                if(mreadThread != null)  
+                {  
+                    mreadThread.interrupt();  
+                    mreadThread = null;  
+                }  
+                if (socket != null) {  
+                    try {  
+                        socket.close();  
+                    } catch (IOException e) {  
+                        // TODO Auto-generated catch block  
+                        e.printStackTrace();  
+                    }  
+                    socket = null;  
+                }  
+            };  
+        }.start();  
+    }
+    
+    //5.ui线程发送数据  
+    private void sendMessageHandle(String msg)   
+    {         
+        if (socket == null)   
+        {  
+            Toast.makeText(mContext, "没有连接", Toast.LENGTH_SHORT).show();  
+            return;  
+        }  
+        try {                 
+            OutputStream os = socket.getOutputStream();   
+            os.write(msg.getBytes());  
+        } catch (IOException e) {  
+            e.printStackTrace();  
+        }             
+        msgList.add(msg);  
+        mAdapter.notifyDataSetChanged();  
+        mListView.setSelection(msgList.size() - 1);  
+    }  
+    //6.读取数据  
+    private class readThread extends Thread {   
+        @Override  
+        public void run() {  
+              
+            byte[] buffer = new byte[1024];  
+            int bytes;  
+            InputStream mmInStream = null;  
+              
+            try {  
+                mmInStream = socket.getInputStream();  
+            } catch (IOException e1) {  
+                // TODO Auto-generated catch block  
+                e1.printStackTrace();  
+            }     
+            while (true) {  
+                try {  
+                    // Read from the InputStream  
+                    if( (bytes = mmInStream.read(buffer)) > 0 )  
+                    {  
+                        byte[] buf_data = new byte[bytes];  
+                        for(int i=0; i<bytes; i++)  
+                        {  
+                            buf_data[i] = buffer[i];  
+                        }  
+                        String s = new String(buf_data);  
+                        Message msg = new Message();  
+                        msg.obj = s;  
+                        msg.what = 1;  
+                        LinkDetectedHandler.sendMessage(msg);  
+                    }  
+                } catch (IOException e) {  
+                    try {  
+                        mmInStream.close();  
+                    } catch (IOException e1) {  
+                        // TODO Auto-generated catch block  
+                        e1.printStackTrace();  
+                    }  
+                    break;  
+                }  
+            }  
+        }  
+    }  
+    
+}
+
+
+3.发送文件
+1)单文件发送，调用系统组件
+  //单个
+  File f = new File(msg);
+  //调用android分享窗口
+  Intent intent = new Intent();
+  intent.setAction(Intent.ACTION_SEND);
+  intent.setType("application/octet-stream");
+  intent.setClassName("com.android.bluetooth" , "com.android.bluetooth.opp.BluetoothOppLauncherActivity");
+  intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(f));				          
+  intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+  startActivity(intent);
+2)多文件发送，调用系统组件
+    private void listFiles() 
+	{  
+		//遍历这个文件夹里的所有文件
+		File file = new File(ReadAdsFile());
+		File[] files = file.listFiles();
+		if (files.length > 0) 
+		{  
+			uris=new ArrayList<Uri>();
+			for (int i = 0; i < files.length; i++) 
+			{
+			  if(!files[i].isDirectory())
+			  {		
+				  deviceList.add(files[i].toString());				  	
+				  uris.add(Uri.fromFile(new File(files[i].toString())));
+			  }
+			}
+			Intent intent = new Intent();
+			intent.setAction(Intent.ACTION_SEND_MULTIPLE);
+			intent.setType("application/octet-stream");
+			intent.setClassName("com.android.bluetooth" , "com.android.bluetooth.opp.BluetoothOppLauncherActivity");
+			intent.putExtra(Intent.EXTRA_STREAM, uris);
+			intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			startActivity(intent);			
+		}
+		
+		
+	}
 
 *Baidu地图
 1.下载和配置
@@ -42372,3 +43636,6 @@ else
 	intent.addFlags(Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);  
 	DogService.this.startActivity(intent);	
 }
+
+
+
