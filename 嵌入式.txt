@@ -31496,6 +31496,19 @@ if(this.getResources().getConfiguration().orientation==Configuration.ORIENTATION
  {  
     Log.i("info", "portrait"); // 竖屏 
  }
+ 
+(4)适配不同的屏幕
+有4种普遍尺寸：小(small)，普通(normal)，大(large)，超大(xlarge)
+适配大屏幕的layout：res\layout-large\
+适配横屏大屏幕res\layout-large-land
+
+(5)创建不同的bitmap
+xhdpi: 2.0
+hdpi: 1.5
+mdpi: 1.0 (基准)
+ldpi: 0.75
+这意味着，如果针对xhdpi的设备生成了一张200x200的图像，那么应该为hdpi生成150x150,为mdpi生成100x100, 和为ldpi生成75x75的图片资源
+
 3)自适应转换
 （1）
 如果想让它启动的时候是横屏的话就横屏表示，纵屏的话就纵屏表示，然后手机切换横竖屏就不能用了
@@ -31617,6 +31630,46 @@ protected void onResume() {
 11.     }  
 12.     super.onResume();  
 13. }  
+
+4.适配不同的语言
+1)默认文件比如res/values/strings.xml，用于保存字符串值
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title">My Application</string>
+    <string name="hello_world">Hello World!</string>
+</resources>
+
+添加不同区域语言的字符串值到相应的文件:
+英语(默认区域语言)，/values/strings.xml:
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title">My Application</string>
+    <string name="hello_world">Hello World!</string>
+</resources>
+西班牙语，/values-es/strings.xml:
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title">Mi Aplicación</string>
+    <string name="hello_world">Hola Mundo!</string>
+</resources>
+法语，/values-fr/strings.xml:
+
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title">Mon Application</string>
+    <string name="hello_world">Bonjour le monde !</string>
+</resources>
+
+2)使用字符资源
+textView.setText(R.string.hello_world);
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/hello_world" />
+	
+	
 
 4.弹出小键盘后，不遮住页面
 AndroidManifest.xml 中设置 android:windowSoftInputMode="stateUnspecified|adjustPan" 不挤压屏幕，反之为把界面挤压上去。
@@ -39486,7 +39539,73 @@ public void handleMessage(Message message) {
 *ContentProvider组件:不同程序之间需要数据交换，就需要将文本数据或者数据库数据保存到这个
 组件中。例如打电话的应用调用电话本的应用
 将不同的应用程序的数据的操作标准统一起来，并且提供给其他程序
-太难，以后有用到再看
+1原理
+1)、ContentProvider使用表的形式来组织数据
+　　 无论数据的来源是什么，ContentProvider都会认为是一种表，然后把数据组织成表格
+2)、ContentProvider提供的方法
+　　 query：查询
+　　 insert：插入
+　　 update：更新
+　　 delete：删除
+　　 getType：得到数据类型
+　　 onCreate：创建数据时调用的回调函数
+3)、每个ContentProvider都有一个公共的URI，这个URI用于表示这个ContentProvider所提供的数据。Android所提供的ContentProvider都存放在android.provider包当中
+
+2.获取系统提供的ContentProvider，例如联系人，通话记录等
+ContentResolver resolver = getContentResolver();
+//获取联系人
+Cursor cursor=resolver.query(ContactsContract.RawContacts.CONTENT_URI, null, null, null, null);
+String str=null;
+while(cursor.moveToNext())
+{
+	String s1=cursor.getString(0);
+	String s2=cursor.getString(16);
+	String s3=cursor.getString(17);
+	str+="("+s1+s2+s3+")";
+} 
+//txt.setText(str);
+Log.i("txt", str);
+
+3.手工构建Uri
+1)原理
+content://com.example.transportation/trains/122
+  标识        包名               这张数据表名 数据id
+
+2)例：
+String uristr="content://com.android.contacts/raw_contacts";
+Uri uri=Uri.parse(uristr);
+ContentResolver resolver = getContentResolver();
+//获取联系人
+Cursor cursor=resolver.query(uri, null, null, null, null);
+ 
+3)UriMatcher 是Uri路径匹配判断是否正确
+boolean match=false;
+UriMatcher um=new UriMatcher(-1);
+um.addURI("content://com.android.contacts","raw_contacts",1);//匹配到这个程度，返回1
+um.addURI("content://com.android.contacts","raw_contacts/#",2);//匹配到这个程度，返回2,其中#是通配符，代表数字 
+int code=um.match(uri);
+if(code==1||code==2)
+	reutn true;
+else
+	return false;
+
+4)提取uri中id部分
+long per=ContentUris.parseId(uri);
+
+4.ContentResolver操作
+//1.添加一个联系人，并得到id的值
+ContentValues value1=new ContentValues();
+ value1.put("display_name","zhang3");
+ Uri newuri=resolver.insert(uri, value1); 
+ long newid=ContentUris.parseId(newuri); 
+ //2.删除
+ resolver.delete(uri, "display_name is null", null);
+ //3.修改
+ ContentValues value2=new ContentValues();
+ value2.put("display_name","zhang3");
+ resolver.update(uri, value2, "display_name=? and type=?", new String[]{"zhaoliu","dd"});	
+
+ 
 
 *Intent组件:一个程序由多个Activity组成，由Intent进行多个Activity的通讯
 1.基本操作
@@ -40690,6 +40809,23 @@ public class OtherActivity extends Activity implements Callback {
 }
 
 2).通过广播接收者 ，在service中执行完耗时操作后，将结果以广播的形式发送，在所有的activity中注册广播，接收到结果后更新UI，这种方式比较简单，也是笔者比较推荐的方式。因为耗时的操作结果不需要以handler的方式发送到主线程，可以直接在子线程中发送广播，接收者始终运行在主线程中。
+ 静态注册,注册的广播，在manifest中
+ <receiver android:name=".SMSBroadcastReceiver" >
+　　<intent-filter android:priority = "2147483647" >
+　　　　<action android:name="android.provider.Telephony.SMS_RECEIVED" />
+　　</intent-filter>
+</receiver >
+
+动态注册，一般在Activity可交互时onResume()内注册BroadcastReceiver
+IntentFilter intentFilter=new IntentFilter("android.provider.Telephony.SMS_RECEIVED");
+registerReceiver(mBatteryInfoReceiver ,intentFilter);
+
+//反注册
+unregisterReceiver(receiver);
+
+动态注册广播接收器还有一个特点，就是当用来注册的Activity关掉后，广播也就失效了。静态注册无需担忧广播接收器是否被关闭,只要设备是开启状态,广播接收器也是打开着的。也就是说哪怕app本身未启动,该app订阅的广播在触发时也会对它起作用
+
+系统常见广播Intent,如开机启动、电池电量变化、时间改变等广播
 
 (1)简单的service发送广播给activity接收，其中的ServiceConnection也可以不用做
 Service类：
@@ -42024,18 +42160,22 @@ public boolean onTouchEvent(MotionEvent event) {
 *JNI开发:JNI是一个接口，把c,c++程序封装成jni，供android调用
 1.环境安装:
 1)下载android-ndk-r9d，这个是ndk插件，用来交叉编译
-  eclipse->windows->preferences->ndk->路径选择ndk的路径
-2)下载cygwin，选择一个安装连接，点击Devel-Default，使之变成Devel-Install，展开后选择gcc,gdb,make,g++：
+  eclipse->windows->preferences->Android->ndk->路径选择ndk的路径
+  C:\android\android-ndk-r9d
+2)下载cygwin，选择一个安装连接，点击Devel-Default，使之变成Devel-Install来安装配置包，展开后选择gcc,gdb,make,g++：
 安装一个模拟Linux环境的虚拟机，并且安装交叉编译器，编译c语言和c++语言
-安装：
+为了使用gcc注意cygwin的必选安装包在devel目录下：binutils，gcc，make。
+总之，安装完成以后，运行cygwin的快捷方式，在控制台输入命令 gcc和make，有合理的反馈即可（不是SB的command not found）
+
+具体安装步骤：
 
     运行setup.exe程序，直接点击Next进入下一步。
     选择安装方式。第一次可以采用Direct Connection在线下载安装，如有现成的离线包，可以选择离线安装（Install from Local Directory）。
     选择安装目录。比如D:\Java\Cygwin，注意此目录是指Cygwin最终的安装目录，不是下载文件暂存目录。
-    设置本地包暂存路径。暂存目录默认是放到setup.exe的同级目录下，建议放到指定的文件夹，如D:\Cygwin_install_file。安装完成后把这个文件夹打包备份，以后再配置时不用重新下载。
+    接下来是选择安装插件包了，下面这个奇怪的长串就是我们云盘里面解压出来的根目录。暂存目录默认是放到setup.exe的同级目录下。安装完成后把这个文件夹打包备份，以后再配置时不用重新下载。
     设置网络连接方式。这个目前河蟹没爬过来，选第一个即可。
     选择下载站点地址。据说国内163站点的速度不错，我也是用的这个。
-    等待加载安装项载入，选择安装项。点击Devel-Default，使之变成Devel-Install，展开后可以看到其下的子项被选中了（网上多数教程都说选中某12个包，找起来太坑爹了，直接全下载了吧，全选多了150M左右）。此界面其他设置都不用动。
+    等待加载安装项载入，选择安装项。由于我们要进行编译，下面的两项需要点击Devel-Default，使之变成Devel-Install，展开后可以看到其下的子项被选中了，shells-Install。此界面其他设置都不用动。
     等待下载完成。下载完成时间决定于你选择的安装包数量及网络连接速度，安装我安装的版本，约983M，下载完成后会自动安装到上文设置的安装目录，安装也要时间的，总时间较长，去吃个饭没啥问题。
 
 提醒：第四步的备份建议，尽量去做。如果有备份，第二步中选择离线安装。
@@ -42045,7 +42185,7 @@ public boolean onTouchEvent(MotionEvent event) {
 在运行“Cygwin.bat”打开的命令行窗口输入：“cygcheck -c cygwin”命令，会打印出当前Cygwin的版本和运行状态，如果status是ok的话，则cygwin运行正常。
 分别输入：“make –v”和，“gcc –v”命令如果检测成功，会有make和gcc相关版本信息打印出来。
 3)配置环境变量
-在windows的系统环境变量中添加NDK的路径。使用“/cygdrive/d/Android/ndk”这种Linux风格路径，
+在windows的系统环境变量中添加NDK的路径。使用“/cygdrive/c/android/android-ndk-r9d”这种Linux风格路径，
 如果使用Windows下的“D:\Android\ndk”，Cygwin在编译时会发出警告。
 输入
 java
@@ -43372,6 +43512,199 @@ public class BluetoothActivity extends Activity
 		
 	}
 
+*压缩和解压缩zip文件
+public class XZip 
+{
+	 public XZip(){   
+		  
+	    }   
+	       
+	    /**  
+	     * 取得压缩包中的 文件列表(文件夹,文件自选)  
+	     * @param zipFileString     压缩包名字  
+	     * @param bContainFolder    是否包括 文件夹  
+	     * @param bContainFile      是否包括 文件  
+	     * @return  
+	     * @throws Exception  
+	     */  
+	    public static java.util.List<java.io.File> GetFileList(String zipFileString, boolean bContainFolder, boolean bContainFile)throws Exception {   
+	           
+	        android.util.Log.v("XZip", "GetFileList(String)");   
+	           
+	        java.util.List<java.io.File> fileList = new java.util.ArrayList<java.io.File>();   
+	        java.util.zip.ZipInputStream inZip = new java.util.zip.ZipInputStream(new java.io.FileInputStream(zipFileString));   
+	        java.util.zip.ZipEntry zipEntry;   
+	        String szName = "";   
+	           
+	        while ((zipEntry = inZip.getNextEntry()) != null) {   
+	            szName = zipEntry.getName();   
+	           
+	            if (zipEntry.isDirectory()) {   
+	           
+	                // get the folder name of the widget   
+	                szName = szName.substring(0, szName.length() - 1);   
+	                java.io.File folder = new java.io.File(szName);   
+	                if (bContainFolder) {   
+	                    fileList.add(folder);   
+	                }   
+	           
+	            } else {   
+	                java.io.File file = new java.io.File(szName);   
+	                if (bContainFile) {   
+	                    fileList.add(file);   
+	                }   
+	            }   
+	        }//end of while   
+	           
+	        inZip.close();   
+	           
+	        return fileList;   
+	    }   
+	  
+	    /**  
+	     * 返回压缩包中的文件InputStream  
+	     * @param zipFileString     压缩文件的名字  
+	     * @param fileString    解压文件的名字  
+	     * @return InputStream  
+	     * @throws Exception  
+	     */  
+	    public static java.io.InputStream UpZip(String zipFileString, String fileString)throws Exception {   
+	        android.util.Log.v("XZip", "UpZip(String, String)");   
+	        java.util.zip.ZipFile zipFile = new java.util.zip.ZipFile(zipFileString);   
+	        java.util.zip.ZipEntry zipEntry = zipFile.getEntry(fileString);   
+	           
+	        return zipFile.getInputStream(zipEntry);   
+	  
+	    }   
+	       
+	       
+	    /**  
+	     * 解压一个压缩文档 到指定位置  
+	     * @param zipFileString 压缩包的名字  
+	     * @param outPathString 指定的路径  
+	     * @throws Exception  
+	     */  
+	    public static void UnZipFolder(String zipFileString, String outPathString)throws Exception {   
+	        android.util.Log.v("XZip", "UnZipFolder(String, String)");   
+	        java.util.zip.ZipInputStream inZip = new java.util.zip.ZipInputStream(new java.io.FileInputStream(zipFileString));   
+	        java.util.zip.ZipEntry zipEntry;   
+	        String szName = "";   
+	           
+	        while ((zipEntry = inZip.getNextEntry()) != null) {   
+	            szName = zipEntry.getName();   
+	           
+	            if (zipEntry.isDirectory()) {   
+	           
+	                // get the folder name of the widget   
+	                szName = szName.substring(0, szName.length() - 1);   
+	                java.io.File folder = new java.io.File(outPathString + java.io.File.separator + szName);   
+	                folder.mkdirs();   
+	           
+	            } else {   
+	           
+	                java.io.File file = new java.io.File(outPathString + java.io.File.separator + szName);   
+	                file.createNewFile();   
+	                // get the output stream of the file   
+	                java.io.FileOutputStream out = new java.io.FileOutputStream(file);   
+	                int len;   
+	                byte[] buffer = new byte[1024];   
+	                // read (len) bytes into buffer   
+	                while ((len = inZip.read(buffer)) != -1) {   
+	                    // write (len) byte from buffer at the position 0   
+	                    out.write(buffer, 0, len);   
+	                    out.flush();   
+	                }   
+	                out.close();   
+	            }   
+	        }//end of while   
+	           
+	        inZip.close();   
+	       
+	    }//end of func   
+	       
+	  
+	    /**  
+	     * 压缩文件,文件夹  
+	     * @param srcFileString 要压缩的文件/文件夹名字  
+	     * @param zipFileString 指定压缩的目的和名字  
+	     * @throws Exception  
+	     */  
+	    public static void ZipFolder(String srcFileString, String zipFileString)throws Exception {   
+	        android.util.Log.v("XZip", "ZipFolder(String, String)");   
+	           
+	        //创建Zip包   
+	        java.util.zip.ZipOutputStream outZip = new java.util.zip.ZipOutputStream(new java.io.FileOutputStream(zipFileString));   
+	           
+	        //打开要输出的文件   
+	        java.io.File file = new java.io.File(srcFileString);   
+	  
+	        //压缩   
+	        ZipFiles(file.getParent()+java.io.File.separator, file.getName(), outZip);   
+	           
+	        //完成,关闭   
+	        outZip.finish();   
+	        outZip.close(); 
+	       
+	    }//end of func   
+	       
+	    /**  
+	     * 压缩文件  
+	     * @param folderString  
+	     * @param fileString  
+	     * @param zipOutputSteam  
+	     * @throws Exception  
+	     */  
+	    private static void ZipFiles(String folderString, String fileString, java.util.zip.ZipOutputStream zipOutputSteam)throws Exception{   
+	        android.util.Log.v("XZip", "ZipFiles(String, String, ZipOutputStream)");   
+	           
+	        if(zipOutputSteam == null)   
+	            return;   
+	           
+	        java.io.File file = new java.io.File(folderString+fileString);   
+	           
+	        //判断是不是文件   
+	        if (file.isFile()) {   
+	  
+	            java.util.zip.ZipEntry zipEntry =  new java.util.zip.ZipEntry(fileString);   
+	            java.io.FileInputStream inputStream = new java.io.FileInputStream(file);   
+	            zipOutputSteam.putNextEntry(zipEntry);   
+	               
+	            int len;   
+	            byte[] buffer = new byte[4096];   
+	               
+	            while((len=inputStream.read(buffer)) != -1)   
+	            {   
+	                zipOutputSteam.write(buffer, 0, len);   
+	            }   
+	               
+	            zipOutputSteam.closeEntry();   
+	        }   
+	        else {   
+	               
+	            //文件夹的方式,获取文件夹下的子文件   
+	            String fileList[] = file.list();   
+	               
+	            //如果没有子文件, 则添加进去即可   
+	            if (fileList.length <= 0) {   
+	                java.util.zip.ZipEntry zipEntry =  new java.util.zip.ZipEntry(fileString+java.io.File.separator);   
+	                zipOutputSteam.putNextEntry(zipEntry);   
+	                zipOutputSteam.closeEntry();                   
+	            }   
+	               
+	            //如果有子文件, 遍历子文件   
+	            for (int i = 0; i < fileList.length; i++) {   
+	                ZipFiles(folderString, fileString+java.io.File.separator+fileList[i], zipOutputSteam);   
+	            }//end of for   
+	       
+	        }//end of if   
+	           
+	    }//end of func   
+	       
+	    public void finalize() throws Throwable {   
+	           
+	    } 
+}
+	
 *Baidu地图
 1.下载和配置
 1)
