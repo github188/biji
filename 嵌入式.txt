@@ -30525,8 +30525,32 @@ android:text="@string/mybtn_info"
 TextView mytext= new TextView(this);//根据上下文(Context)创建组件
 
 
+//****************
+//Android屏幕适配
+//****************
+屏幕尺寸这么多，为了让我们开发的程序能够比较美观的显示在不同尺寸、分辨率、像素密度,
+6个主流分辨率占比最高的是480*800，320*480,720*1280,320*480,480*854,540*960,1080*1920.我们只要尽量适配这几种分辨率，就可以在大部分的手机上正常运行了
+屏幕尺寸
+
+屏幕尺寸指屏幕的对角线的长度，单位是英寸，1英寸=2.54厘米
+
+比如常见的屏幕尺寸有2.4、2.8、3.5、3.7、4.2、5.0、5.5、6.0等
+
+屏幕分辨率
+屏幕分辨率是指在横纵向上的像素点数，单位是px，1px=1个像素点。一般以纵向像素*横向像素，如1960*1080。
+
+屏幕像素密度dp、dip、dpi、sp
+
+屏幕像素密度是指每英寸上的像素点数，单位是dpi，即“dot per inch”的缩写。屏幕像素密度与屏幕尺寸和屏幕分辨率有关，在单一变化条件下，屏幕尺寸越小、分辨率越高，像素密度越大，反之越小。
+在Android开发中，写布局的时候要尽量使用dp而不是px
 
 
+mdpi、hdpi、xdpi、xxdpi
+mdpi	 48x48px
+hdpi	 72x72px
+xhdpi	 96x96px
+xxhdpi	 144x144px
+xxxhdpi	 192x192px
 
 
 //****************
@@ -31962,8 +31986,36 @@ this.list.setAdapter(new ArrayAdapter<String>(this,
  		android.R.layout.simple_list_item_1,this.dataList));
 super.setContentView(this.list);//显示组件
 
+（1）通过指定android.R.layout.simple_list_item_checked这个资源，实现带选择框的ListView。需要用setChoiceMode()方法设定选择为多选还是单选，否则将不能实现选择效果，运行效果如图4-30所示。
+
+实现代码如下：
+
+lv.setAdapter(new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_checked, strs));
+lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+ （2）通过指定android.R.layout.simple_list_item_multiple_choice这个资源实现带CheckBox的ListView。同样的，需要用setChoiceMode()方法来设置单选或者多选，运行效果如图4-31所示。
+
+实现代码如下：
+
+lv.setAdapter(new ArrayAdapter<String>(this,
+                android.R.layout.simple_list_item_multiple_choice, strs));
+lv.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+（3）通过指定android.R.layout.simple_list_item_single_choice这个资源实现带RadioButton的ListView。这里要注意的是，这里并不是指定了单选。是多选还是单选要通过setChoiceMode()方法来指定，运行效果如图4-32所示。
+
+实现代码如下：
+
+ 
+
+lv.setAdapter(newArrayAdapter<String>(this,
+
+android.R.layout.simple_list_item_single_choice,strs));
+
+lv.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+
 
 2.进行复杂的显示:android.widget.SimpleAdapter类
+很多时候需要在列表中展示一些除了文字以外的东西，比如图片等
 1）定义一个模板布局管理器
 新建Layout/data_list
 <?xml version="1.0" encoding="utf-8"?>
@@ -32422,6 +32474,124 @@ public class MainActivity extends Activity {
         } 
     } 
 
+}
+
+6. ListView使用BaseAdapter与ListView的优化
+在ListView的使用中，有时候还需要在里面加入按钮等控件，实现单独的操作。也就是说，这个ListView不再只是展示数据，也不仅仅是这一行要来处理用户的操作，而是里面的控件要获得用户的焦点。读者可以试试用SimpleAdapter添加一个按钮到ListView的条目中，会发现可以添加，但是却无法获得焦点，点击操作被ListView的Item所覆盖。这时候最方便的方法就是使用灵活的适配器BaseAdapter了。
+使用BaseAdapter必须写一个类继承它，同时BaseAdapter是一个抽象类，继承它必须实现它的方法。BaseAdapter的灵活性就在于它要重写很多方法，看一下有哪些方法，
+publicclass MyListViewBase extends Activity {
+    
+    private ListView lv;
+    /*定义一个动态数组*/
+    ArrayList<HashMap<String, Object>>listItem;
+
+
+/** Called when the activity is first created. */
+@Override
+publicvoid onCreate(Bundle savedInstanceState) {
+super.onCreate(savedInstanceState);
+        setContentView(R.layout.main);
+
+lv = (ListView) findViewById(R.id.lv);
+        MyAdapter mAdapter = new MyAdapter(this);//得到一个MyAdapter对象
+lv.setAdapter(mAdapter);//为ListView绑定Adapter
+/*为ListView添加点击事件*/
+lv.setOnItemClickListener(new OnItemClickListener() {
+
+            @Override
+            publicvoid onItemClick(AdapterView<?> arg0, View arg1, int arg2,
+                    long arg3) {
+        Log.v("MyListViewBase", "你点击了ListView条目" + arg2);//在LogCat中输出信息
+                
+            }
+        });
+
+    }
+/*添加一个得到数据的方法，方便使用*/
+private ArrayList<HashMap<String, Object>> getDate(){
+    
+    ArrayList<HashMap<String, Object>> listItem = new ArrayList<HashMap<String,     Object>>();
+    /*为动态数组添加数据*/
+    for(int i=0;i<30;i++)  
+         {  
+             HashMap<String, Object> map = new HashMap<String, Object>();  
+             map.put("ItemTitle", "第"+i+"行");  
+             map.put("ItemText", "这是第"+i+"行");  
+             listItem.add(map);  
+         } 
+        return listItem;
+    
+    }
+/*
+     * 新建一个类继承BaseAdapter，实现视图与数据的绑定
+     */
+privateclass MyAdapter extends BaseAdapter {
+    
+private LayoutInflater mInflater;//得到一个LayoutInfalter对象用来导入布局
+
+/*构造函数*/
+public MyAdapter(Context context) {
+    this.mInflater = LayoutInflater.from(context);
+        }
+
+        @Override
+        publicint getCount() {
+            
+            return getDate().size();//返回数组的长度
+        }
+
+        @Override
+        public Object getItem(int position) {
+            returnnull;
+        }
+
+        @Override
+        publiclong getItemId(int position) {
+            return 0;
+        }
+        /*书中详细解释该方法*/
+        @Override
+        public View getView(finalint position, View convertView, ViewGroup parent) {
+             ViewHolder holder;
+            //观察convertView随ListView滚动情况
+             Log.v("MyListViewBase", "getView " + position + " " + convertView);
+            if (convertView == null) {
+                     convertView = mInflater.inflate(R.layout.item,
+    null);
+                     holder = new ViewHolder();
+                    /*得到各个控件的对象*/
+                    holder.title = (TextView) convertView.findViewById(R.id.ItemTitle);
+                    holder.text = (TextView) convertView.findViewById(R.id.ItemText);
+                    holder.bt = (Button) convertView.findViewById(R.id.ItemButton);
+                    convertView.setTag(holder);//绑定ViewHolder对象
+                   }
+    else{
+                    holder = (ViewHolder)convertView.getTag();//取出ViewHolder对象
+                  }
+            /*设置TextView显示的内容，即我们存放在动态数组中的数据*/
+            holder.title.setText(getDate().get(position).get("ItemTitle").toString());
+            holder.text.setText(getDate().get(position).get("ItemText").toString());
+            
+            /*为Button添加点击事件*/
+             holder.bt.setOnClickListener(new OnClickListener() {
+                
+                @Override
+                publicvoid onClick(View v) {
+                Log.v("MyListViewBase", "你点击了按钮" + position);                                //打印Button的点击信息
+                    
+                }
+            });
+            
+            return convertView;
+        }
+    
+    }
+/*存放控件*/
+publicfinalclass ViewHolder{
+    public TextView title;
+    public TextView text;
+    public Button   bt;
+    }
 }
 
 
@@ -33509,6 +33679,7 @@ public View getView(int position, View convertView, ViewGroup parent) {
 }
 
 *LayoutInflater 
+加载布局的任务通常都是在Activity中调用setContentView()方法来完成的。其实setContentView()方法的内部也是使用LayoutInflater来加载布局的，只不过这部分源码是internal的，不太容易查看到。
 在实际工作中，事先写好的布局文件往往不能满足我们的需求，有时会根据情况在代码中自定义控件，这就需要用到LayoutInflater。
 LayoutInflater在Android中是“扩展”的意思，作用类似于findViewById()，不同的是LayoutInflater是用来获得布局文件对象的，而
 
@@ -33517,7 +33688,7 @@ LayoutInflater的用法有三种：
 
 第一种方法：
     LayoutInflater inflater = LayoutInflater.from(this);  
-    View layout = inflater.inflate(R.layout.main, null);  
+    View layout = inflater.inflate(R.layout.main, null);  	inflate()方法一般接收两个参数，第一个参数就是要加载的布局id，第二个参数是指给该布局的外部再嵌套一层父布局，如果不需要就直接传null
 
 第二种方法：
     LayoutInflater inflater = getLayoutInflater();  
@@ -34631,10 +34802,12 @@ public static String getRealFilePath( final Context context, final Uri uri ) {
 那么假如我们有一个图片的路径地址又该如何获得其Uri呢？
 String type = Utils.ensureNotNull(intent.getType());
 Log.d(TAG, "uri is " + uri);
-if (uri.getScheme().equals("file") && (type.contains("image/"))) {
+if (uri.getScheme().equals("file") && (type.contains("image/"))) 
+{
     String path = uri.getEncodedPath();
     Log.d(TAG, "path1 is " + path);
-    if (path != null) {
+    if (path != null) 
+	{
         path = Uri.decode(path);
         Log.d(TAG, "path2 is " + path);
         ContentResolver cr = this.getContentResolver();
@@ -35943,6 +36116,75 @@ public class gradson extends Thread {
 
 3.异步处理AsyncTask:Handler的线程之间的处理是阻塞的，但是异步处理是非阻塞的
 而且他整合了handler,和message的东西，操作很简单
+AsyncTask的基本用法
+首先来看一下AsyncTask的基本用法，由于AsyncTask是一个抽象类，所以如果我们想使用它，就必须要创建一个子类去继承它。在继承时我们可以为AsyncTask类指定三个泛型参数，这三个参数的用途如下：
+1. Params
+在执行AsyncTask时需要传入的参数，可用于在后台任务中使用。
+2. Progress
+后台任务执行时，如果需要在界面上显示当前的进度，则使用这里指定的泛型作为进度单位。
+3. Result
+当任务执行完毕后，如果需要对结果进行返回，则使用这里指定的泛型作为返回值类型。
+因此，一个最简单的自定义AsyncTask就可以写成如下方式：
+[java] view plain copy
+class DownloadTask extends AsyncTask<Void, Integer, Boolean> {  
+    ……  
+}  
+这里我们把AsyncTask的第一个泛型参数指定为Void，表示在执行AsyncTask的时候不需要传入参数给后台任务。第二个泛型参数指定为Integer，表示使用整型数据来作为进度显示单位。第三个泛型参数指定为Boolean，则表示使用布尔型数据来反馈执行结果。
+当然，目前我们自定义的DownloadTask还是一个空任务，并不能进行任何实际的操作，我们还需要去重写AsyncTask中的几个方法才能完成对任务的定制。经常需要去重写的方法有以下四个：
+1. onPreExecute()
+这个方法会在后台任务开始执行之间调用，用于进行一些界面上的初始化操作，比如显示一个进度条对话框等。
+2. doInBackground(Params...)
+这个方法中的所有代码都会在子线程中运行，我们应该在这里去处理所有的耗时任务。任务一旦完成就可以通过return语句来将任务的执行结果进行返回，如果AsyncTask的第三个泛型参数指定的是Void，就可以不返回任务执行结果。注意，在这个方法中是不可以进行UI操作的，如果需要更新UI元素，比如说反馈当前任务的执行进度，可以调用publishProgress(Progress...)方法来完成。
+3. onProgressUpdate(Progress...)
+当在后台任务中调用了publishProgress(Progress...)方法后，这个方法就很快会被调用，方法中携带的参数就是在后台任务中传递过来的。在这个方法中可以对UI进行操作，利用参数中的数值就可以对界面元素进行相应的更新。
+4. onPostExecute(Result)
+当后台任务执行完毕并通过return语句进行返回时，这个方法就很快会被调用。返回的数据会作为参数传递到此方法中，可以利用返回的数据来进行一些UI操作，比如说提醒任务执行的结果，以及关闭掉进度条对话框等。
+因此，一个比较完整的自定义AsyncTask就可以写成如下方式：
+[java] view plain copy
+class DownloadTask extends AsyncTask<Void, Integer, Boolean> {  
+  
+    @Override  
+    protected void onPreExecute() {  
+        progressDialog.show();  
+    }  
+  
+    @Override  
+    protected Boolean doInBackground(Void... params) {  
+        try {  
+            while (true) {  
+                int downloadPercent = doDownload();  
+                publishProgress(downloadPercent);  
+                if (downloadPercent >= 100) {  
+                    break;  
+                }  
+            }  
+        } catch (Exception e) {  
+            return false;  
+        }  
+        return true;  
+    }  
+  
+    @Override  
+    protected void onProgressUpdate(Integer... values) {  
+        progressDialog.setMessage("当前下载进度：" + values[0] + "%");  
+    }  
+  
+    @Override  
+    protected void onPostExecute(Boolean result) {  
+        progressDialog.dismiss();  
+        if (result) {  
+            Toast.makeText(context, "下载成功", Toast.LENGTH_SHORT).show();  
+        } else {  
+            Toast.makeText(context, "下载失败", Toast.LENGTH_SHORT).show();  
+        }  
+    }  
+}  
+这里我们模拟了一个下载任务，在doInBackground()方法中去执行具体的下载逻辑，在onProgressUpdate()方法中显示当前的下载进度，在onPostExecute()方法中来提示任务的执行结果。如果想要启动这个任务，只需要简单地调用以下代码即可：
+[java] view plain copy
+new DownloadTask().execute();  
+以上就是AsyncTask的基本用法，怎么样，是不是感觉在子线程和UI线程之间进行切换变得灵活了很多？我们并不需求去考虑什么异步消息处理机制，也不需要专门使用一个Handler来发送和接收消息，只需要调用一下publishProgress()方法就可以轻松地从子线程切换到UI线程了。
+
+
 例如：文本和进度条显示执行进度
 protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -36079,6 +36321,8 @@ public class MainActivity extends Activity {
 	}
 }
 
+
+
 4.线程池
 1)四种线程
 (1)
@@ -36128,7 +36372,182 @@ thread1=new Thread(child,"child Thread");
 pool.shutdown();关闭，即当前线程执行完毕之后就不再接收新的线程了
 pool.shutdownNow();	立即关闭，但是不一定能关闭的掉
 
+例如：
+普通线程
+      for (int i = 0; i < 10; i++) 
+      { 
+	      	final int index = i;
+	      	try 
+	      	{
+	      		Thread.sleep(index * 1000);
+	      	} catch (InterruptedException e) {
+	      		e.printStackTrace();
+	      	} 
+        
+	      	new Thread(new Runnable() {
+	       	 
+	       	@Override
+	       	public void run() {
+	       		// TODO Auto-generated method stub
+	       		Log.v("log",index+">>hellothread="+Thread.currentThread().getId());
+	       	}
+	       }).start();
+      }
 
+01-18 04:00:53.270: V/log(27107): 0>>hellothread=291
+01-18 04:00:54.280: V/log(27107): 1>>hellothread=292
+01-18 04:00:56.280: V/log(27107): 2>>hellothread=293
+01-18 04:00:59.280: V/log(27107): 3>>hellothread=294
+01-18 04:01:03.280: V/log(27107): 4>>hellothread=295
+01-18 04:01:08.280: V/log(27107): 5>>hellothread=296
+01-18 04:01:14.280: V/log(27107): 6>>hellothread=297
+01-18 04:01:21.280: V/log(27107): 7>>hellothread=298
+01-18 04:01:29.290: V/log(27107): 8>>hellothread=299
+01-18 04:01:38.290: V/log(27107): 9>>hellothread=300
+
+newCachedThreadPool：
+线程池为无限大，当执行第二个任务时第一个任务已经完成，会复用执行第一个任务的线程，而不用每次新建线程。
+ExecutorService cachedThreadPool = Executors.newCachedThreadPool();
+        for (int i = 0; i < 10; i++) 
+        { 
+  	      	final int index = i;
+  	      	try 
+  	      	{
+  	      		Thread.sleep(index * 1000);
+  	      	} catch (InterruptedException e) {
+  	      		e.printStackTrace();
+  	      	} 
+          
+  	      cachedThreadPool.execute(new Runnable() {
+  	         
+  	        		@Override
+  	        		public void run() {
+  	        			Log.v("log",index+">>hellothread="+Thread.currentThread().getId());
+  	        		}
+  	        	});
+        }
+
+01-18 04:06:48.990: V/log(27250): 0>>hellothread=294
+01-18 04:06:50.000: V/log(27250): 1>>hellothread=294
+01-18 04:06:52.000: V/log(27250): 2>>hellothread=294
+01-18 04:06:55.000: V/log(27250): 3>>hellothread=294
+01-18 04:06:59.000: V/log(27250): 4>>hellothread=294
+01-18 04:07:04.000: V/log(27250): 5>>hellothread=294
+01-18 04:07:10.000: V/log(27250): 6>>hellothread=294
+01-18 04:07:17.000: V/log(27250): 7>>hellothread=294
+01-18 04:07:25.000: V/log(27250): 8>>hellothread=294
+01-18 04:07:34.000: V/log(27250): 9>>hellothread=294
+
+
+newFixedThreadPool：
+ExecutorService fixedThreadPool = Executors.newFixedThreadPool(3);
+        for (int i = 0; i < 10; i++) 
+        { 
+  	      	final int index = i;
+  	      	try 
+  	      	{
+  	      		Thread.sleep(index * 1000);
+  	      	} catch (InterruptedException e) {
+  	      		e.printStackTrace();
+  	      	} 
+          
+  	      fixedThreadPool.execute(new Runnable() {
+  	         
+  	        		@Override
+  	        		public void run() {
+  	        			Log.v("log",index+">>hellothread="+Thread.currentThread().getId());
+  	        		}
+  	        	});
+        }
+
+01-18 04:14:25.510: V/log(27414): 0>>hellothread=297
+01-18 04:14:26.510: V/log(27414): 1>>hellothread=298
+01-18 04:14:28.510: V/log(27414): 2>>hellothread=299
+01-18 04:14:31.510: V/log(27414): 3>>hellothread=297
+01-18 04:14:35.510: V/log(27414): 4>>hellothread=298
+01-18 04:14:40.510: V/log(27414): 5>>hellothread=299
+01-18 04:14:46.510: V/log(27414): 6>>hellothread=297
+01-18 04:14:53.510: V/log(27414): 7>>hellothread=298
+01-18 04:15:01.510: V/log(27414): 8>>hellothread=299
+01-18 04:15:10.520: V/log(27414): 9>>hellothread=297
+
+
+newScheduledThreadPool
+创建一个定长线程池，支持定时及周期性任务执行。延迟执行示例代码如下：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(5);
+scheduledThreadPool.schedule(new Runnable() {
+ 
+	@Override
+	public void run() {
+		System.out.println("delay 3 seconds");
+	}
+}, 3, TimeUnit.SECONDS);
+表示延迟3秒执行。
+ 
+定期执行示例代码如下：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
+ 
+	@Override
+	public void run() {
+		System.out.println("delay 1 seconds, and excute every 3 seconds");
+	}
+}, 1, 3, TimeUnit.SECONDS);
+表示延迟1秒后每3秒执行一次。
+ScheduledExecutorService比Timer更安全，功能更强大，后面会有一篇单独进行对比。
+
+
+newSingleThreadExecutor：
+ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+        for (int i = 0; i < 10; i++) 
+        { 
+  	      	final int index = i;
+  	      	try 
+  	      	{
+  	      		Thread.sleep(index * 1000);
+  	      	} catch (InterruptedException e) {
+  	      		e.printStackTrace();
+  	      	} 
+          
+  	      singleThreadExecutor.execute(new Runnable() {
+  	         
+  	        		@Override
+  	        		public void run() {
+  	        			Log.v("log",index+">>hellothread="+Thread.currentThread().getId());
+  	        		}
+  	        	});
+        }
+    }
+
+01-18 04:22:23.060: V/log(27780): 0>>hellothread=309
+01-18 04:22:24.060: V/log(27780): 1>>hellothread=309
+01-18 04:22:26.060: V/log(27780): 2>>hellothread=309
+01-18 04:22:29.060: V/log(27780): 3>>hellothread=309
+01-18 04:22:33.060: V/log(27780): 4>>hellothread=309
+01-18 04:22:38.060: V/log(27780): 5>>hellothread=309
+01-18 04:22:44.060: V/log(27780): 6>>hellothread=309
+01-18 04:22:51.060: V/log(27780): 7>>hellothread=309
+01-18 04:22:59.060: V/log(27780): 8>>hellothread=309
+01-18 04:23:08.060: V/log(27780): 9>>hellothread=309
+	
 	
  
 *数据存储
@@ -39605,7 +40024,70 @@ ContentValues value1=new ContentValues();
  value2.put("display_name","zhang3");
  resolver.update(uri, value2, "display_name=? and type=?", new String[]{"zhaoliu","dd"});	
 
- 
+5.使用Content Provider对外共享数据的步骤
+1>继承ContentProvider类并根据需求重写以下方法:
+public boolean onCreate();//处理初始化操作
+
+       /**
+        * 插入数据到内容提供者(允许其他应用向你的应用中插入数据时重写)
+        * @param uri
+        * @param initialValues 插入的数据
+        * @return
+        */
+       public Uri insert(Uri uri, ContentValues initialValues);
+
+       /**
+        * 从内容提供者中删除数据(允许其他应用删除你应用的数据时重写)
+        * @param uri
+        * @param selection 条件语句
+        * @param selectionArgs 参数
+        * @return
+        */
+       public int delete(Uri uri, String selection, String[] selectionArgs);
+
+       /**
+        * 更新内容提供者已存在的数据(允许其他应用更新你应用的数据时重写)
+        * @param uri
+        * @param values 更新的数据
+        * @param selection 条件语句
+        * @param selectionArgs 参数
+        * @return
+        */
+       public int update(Uri uri, ContentValues values, String selection,
+                     String[] selectionArgs);
+
+       /**
+        * 返回数据给调用者(允许其他应用从你的应用中获取数据时重写)
+        * @param uri
+        * @param projection 列名
+        * @param selection 条件语句
+        * @param selectionArgs 参数
+        * @param sortOrder 排序
+        * @return
+        */
+       public Cursor query(Uri uri, String[] projection, String selection,
+                     String[] selectionArgs, String sortOrder) ;         
+
+       /**
+        * 用于返回当前Uri所代表数据的MIME类型
+        * 如果操作的数据为集合类型(多条数据),那么返回的类型字符串应该为vnd.android.cursor.dir/开头
+        * 例如要得到所有person记录的Uri为content://com.bravestarr.provider.personprovider/person,
+　　　　 *　　　那么返回的MIME类型字符串应该为"vnd.android.cursor.dir/person"
+        * 如果操作的数据为单一数据,那么返回的类型字符串应该为vnd.android.cursor.item/开头
+        * 例如要得到id为10的person记录的Uri为content://com.bravestarr.provider.personprovider/person/10,
+　　　　 *　　　那么返回的MIME类型字符串应该为"vnd.android.cursor.item/person"
+        * @param uri
+        */
+       public String getType(Uri uri)
+
+2>在AndroidManifest.xml中使用<provider>对ContentProvider进行配置注册(内容提供者注册它自己就像网站注册域名),ContentProvider采用authoritie(原意授权,可理解为域名)作为唯一标识,方便其他应用能找到
+<application
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name" >
+        <!-- authorities属性命名建议:公司名.provider.SomeProvider-->
+        <provider android:name=".PersonProvider" android:authorities="com.bravestarr.provider.personprovider"/>
+         ...
+</application>	   
 
 *Intent组件:一个程序由多个Activity组成，由Intent进行多个Activity的通讯
 1.基本操作
@@ -40015,7 +40497,618 @@ public class MainActivity extends Activity {
 
 5）返回到Activity,他会重新绑定
 
-3.操作系统服务：可以调用操作系统提供的服务作一些事情
+
+3.Service的基本用法
+关于Service最基本的用法自然就是如何启动一个Service了，启动Service的方法和启动Activity很类似，都需要借助Intent来实现，下面我们就通过一个具体的例子来看一下。
+新建一个Android项目，项目名就叫ServiceTest，这里我选择使用4.0的API。
+然后新建一个MyService继承自Service，并重写父类的onCreate()、onStartCommand()和onDestroy()方法，如下所示：
+[java] view plain copy
+public class MyService extends Service {  
+  
+    public static final String TAG = "MyService";  
+  
+    @Override  
+    public void onCreate() {  
+        super.onCreate();  
+        Log.d(TAG, "onCreate() executed");  
+    }  
+  
+    @Override  
+    public int onStartCommand(Intent intent, int flags, int startId) {  
+        Log.d(TAG, "onStartCommand() executed");  
+        return super.onStartCommand(intent, flags, startId);  
+    }  
+      
+    @Override  
+    public void onDestroy() {  
+        super.onDestroy();  
+        Log.d(TAG, "onDestroy() executed");  
+    }  
+  
+    @Override  
+    public IBinder onBind(Intent intent) {  
+        return null;  
+    }  
+  
+}  
+可以看到，我们只是在onCreate()、onStartCommand()和onDestroy()方法中分别打印了一句话，并没有进行其它任何的操作。
+然后打开或新建activity_main.xml作为程序的主布局文件，代码如下所示：
+[html] view plain copy
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"  
+    android:layout_width="match_parent"  
+    android:layout_height="match_parent"  
+    android:orientation="vertical" >  
+  
+    <Button  
+        android:id="@+id/start_service"  
+        android:layout_width="match_parent"  
+        android:layout_height="wrap_content"  
+        android:text="Start Service" />  
+  
+    <Button  
+        android:id="@+id/stop_service"  
+        android:layout_width="match_parent"  
+        android:layout_height="wrap_content"  
+        android:text="Stop Service" />  
+  
+</LinearLayout>  
+我们在布局文件中加入了两个按钮，一个用于启动Service，一个用于停止Service。
+然后打开或新建MainActivity作为程序的主Activity，在里面加入启动Service和停止Service的逻辑，代码如下所示：
+[java] view plain copy
+public class MainActivity extends Activity implements OnClickListener {  
+  
+    private Button startService;  
+  
+    private Button stopService;  
+  
+    @Override  
+    protected void onCreate(Bundle savedInstanceState) {  
+        super.onCreate(savedInstanceState);  
+        setContentView(R.layout.activity_main);  
+        startService = (Button) findViewById(R.id.start_service);  
+        stopService = (Button) findViewById(R.id.stop_service);  
+        startService.setOnClickListener(this);  
+        stopService.setOnClickListener(this);  
+    }  
+  
+    @Override  
+    public void onClick(View v) {  
+        switch (v.getId()) {  
+        case R.id.start_service:  
+            Intent startIntent = new Intent(this, MyService.class);  
+            startService(startIntent);  
+            break;  
+        case R.id.stop_service:  
+            Intent stopIntent = new Intent(this, MyService.class);  
+            stopService(stopIntent);  
+            break;  
+        default:  
+            break;  
+        }  
+    }  
+  
+}  
+可以看到，在Start Service按钮的点击事件里，我们构建出了一个Intent对象，并调用startService()方法来启动MyService。然后在Stop Serivce按钮的点击事件里，我们同样构建出了一个Intent对象，并调用stopService()方法来停止MyService。代码的逻辑非常简单，相信不需要我再多做解释了吧。
+另外需要注意，项目中的每一个Service都必须在AndroidManifest.xml中注册才行，所以还需要编辑AndroidManifest.xml文件，代码如下所示：
+[html] view plain copy
+<?xml version="1.0" encoding="utf-8"?>  
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"  
+    package="com.example.servicetest"  
+    android:versionCode="1"  
+    android:versionName="1.0" >  
+  
+    <uses-sdk  
+        android:minSdkVersion="14"  
+        android:targetSdkVersion="17" />  
+  
+    <application  
+        android:allowBackup="true"  
+        android:icon="@drawable/ic_launcher"  
+        android:label="@string/app_name"  
+        android:theme="@style/AppTheme" >  
+          
+    ……  
+  
+        <service android:name="com.example.servicetest.MyService" >  
+        </service>  
+    </application>  
+  
+</manifest>  
+这样的话，一个简单的带有Service功能的程序就写好了，现在我们将程序运行起来，并点击一下Start Service按钮，可以看到LogCat的打印日志如下：
+                                              
+也就是说，当启动一个Service的时候，会调用该Service中的onCreate()和onStartCommand()方法。
+那么如果我再点击一次Start Service按钮呢？这个时候的打印日志如下：
+                                          
+可以看到，这次只有onStartCommand()方法执行了，onCreate()方法并没有执行，为什么会这样呢？这是由于onCreate()方法只会在Service第一次被创建的时候调用，如果当前Service已经被创建过了，不管怎样调用startService()方法，onCreate()方法都不会再执行。因此你可以再多点击几次Start Service按钮试一次，每次都只会有onStartCommand()方法中的打印日志。
+我们还可以到手机的应用程序管理界面来检查一下MyService是不是正在运行，如下图所示：
+                                         
+恩，MyService确实是正在运行的，即使它的内部并没有执行任何的逻辑。
+回到ServiceTest程序，然后点击一下Stop Service按钮就可以将MyService停止掉了。
+Service和Activity通信
+上面我们学习了Service的基本用法，启动Service之后，就可以在onCreate()或onStartCommand()方法里去执行一些具体的逻辑了。不过这样的话Service和Activity的关系并不大，只是Activity通知了Service一下：“你可以启动了。”然后Service就去忙自己的事情了。那么有没有什么办法能让它们俩的关联更多一些呢？比如说在Activity中可以指定让Service去执行什么任务。当然可以，只需要让Activity和Service建立关联就好了。
+观察MyService中的代码，你会发现一直有一个onBind()方法我们都没有使用到，这个方法其实就是用于和Activity建立关联的，修改MyService中的代码，如下所示：
+[java] view plain copy
+public class MyService extends Service {  
+  
+    public static final String TAG = "MyService";  
+  
+    private MyBinder mBinder = new MyBinder();  
+  
+    @Override  
+    public void onCreate() {  
+        super.onCreate();  
+        Log.d(TAG, "onCreate() executed");  
+    }  
+  
+    @Override  
+    public int onStartCommand(Intent intent, int flags, int startId) {  
+        Log.d(TAG, "onStartCommand() executed");  
+        return super.onStartCommand(intent, flags, startId);  
+    }  
+  
+    @Override  
+    public void onDestroy() {  
+        super.onDestroy();  
+        Log.d(TAG, "onDestroy() executed");  
+    }  
+  
+    @Override  
+    public IBinder onBind(Intent intent) {  
+        return mBinder;  
+    }  
+  
+    class MyBinder extends Binder {  
+  
+        public void startDownload() {  
+            Log.d("TAG", "startDownload() executed");  
+            // 执行具体的下载任务  
+        }  
+  
+    }  
+  
+}  
+这里我们新增了一个MyBinder类继承自Binder类，然后在MyBinder中添加了一个startDownload()方法用于在后台执行下载任务，当然这里并不是真正地去下载某个东西，只是做个测试，所以startDownload()方法只是打印了一行日志。
+然后修改activity_main.xml中的代码，在布局文件中添加用于绑定Service和取消绑定Service的按钮：
+[html] view plain copy
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"  
+    android:layout_width="match_parent"  
+    android:layout_height="match_parent"  
+    android:orientation="vertical" >  
+  
+    <Button  
+        android:id="@+id/start_service"  
+        android:layout_width="match_parent"  
+        android:layout_height="wrap_content"  
+        android:text="Start Service" />  
+  
+    <Button  
+        android:id="@+id/stop_service"  
+        android:layout_width="match_parent"  
+        android:layout_height="wrap_content"  
+        android:text="Stop Service" />  
+  
+    <Button  
+        android:id="@+id/bind_service"  
+        android:layout_width="match_parent"  
+        android:layout_height="wrap_content"  
+        android:text="Bind Service" />  
+      
+    <Button   
+        android:id="@+id/unbind_service"  
+        android:layout_width="match_parent"  
+        android:layout_height="wrap_content"  
+        android:text="Unbind Service"  
+        />  
+      
+</LinearLayout>  
+接下来再修改MainActivity中的代码，让MainActivity和MyService之间建立关联，代码如下所示：
+[java] view plain copy
+public class MainActivity extends Activity implements OnClickListener {  
+  
+    private Button startService;  
+  
+    private Button stopService;  
+  
+    private Button bindService;  
+  
+    private Button unbindService;  
+  
+    private MyService.MyBinder myBinder;  
+  
+    private ServiceConnection connection = new ServiceConnection() {  
+  
+        @Override  
+        public void onServiceDisconnected(ComponentName name) {  
+        }  
+  
+        @Override  
+        public void onServiceConnected(ComponentName name, IBinder service) {  
+            myBinder = (MyService.MyBinder) service;  
+            myBinder.startDownload();  
+        }  
+    };  
+  
+    @Override  
+    protected void onCreate(Bundle savedInstanceState) {  
+        super.onCreate(savedInstanceState);  
+        setContentView(R.layout.activity_main);  
+        startService = (Button) findViewById(R.id.start_service);  
+        stopService = (Button) findViewById(R.id.stop_service);  
+        bindService = (Button) findViewById(R.id.bind_service);  
+        unbindService = (Button) findViewById(R.id.unbind_service);  
+        startService.setOnClickListener(this);  
+        stopService.setOnClickListener(this);  
+        bindService.setOnClickListener(this);  
+        unbindService.setOnClickListener(this);  
+    }  
+  
+    @Override  
+    public void onClick(View v) {  
+        switch (v.getId()) {  
+        case R.id.start_service:  
+            Intent startIntent = new Intent(this, MyService.class);  
+            startService(startIntent);  
+            break;  
+        case R.id.stop_service:  
+            Intent stopIntent = new Intent(this, MyService.class);  
+            stopService(stopIntent);  
+            break;  
+        case R.id.bind_service:  
+            Intent bindIntent = new Intent(this, MyService.class);  
+            bindService(bindIntent, connection, BIND_AUTO_CREATE);  
+            break;  
+        case R.id.unbind_service:  
+            unbindService(connection);  
+            break;  
+        default:  
+            break;  
+        }  
+    }  
+  
+}  
+可以看到，这里我们首先创建了一个ServiceConnection的匿名类，在里面重写了onServiceConnected()方法和onServiceDisconnected()方法，这两个方法分别会在Activity与Service建立关联和解除关联的时候调用。在onServiceConnected()方法中，我们又通过向下转型得到了MyBinder的实例，有了这个实例，Activity和Service之间的关系就变得非常紧密了。现在我们可以在Activity中根据具体的场景来调用MyBinder中的任何public方法，即实现了Activity指挥Service干什么Service就去干什么的功能。
+当然，现在Activity和Service其实还没关联起来了呢，这个功能是在Bind Service按钮的点击事件里完成的。可以看到，这里我们仍然是构建出了一个Intent对象，然后调用bindService()方法将Activity和Service进行绑定。bindService()方法接收三个参数，第一个参数就是刚刚构建出的Intent对象，第二个参数是前面创建出的ServiceConnection的实例，第三个参数是一个标志位，这里传入BIND_AUTO_CREATE表示在Activity和Service建立关联后自动创建Service，这会使得MyService中的onCreate()方法得到执行，但onStartCommand()方法不会执行。
+然后如何我们想解除Activity和Service之间的关联怎么办呢？调用一下unbindService()方法就可以了，这也是Unbind Service按钮的点击事件里实现的逻辑。
+现在让我们重新运行一下程序吧，在MainActivity中点击一下Bind Service按钮，LogCat里的打印日志如下图所示：
+                                         
+另外需要注意，任何一个Service在整个应用程序范围内都是通用的，即MyService不仅可以和MainActivity建立关联，还可以和任何一个Activity建立关联，而且在建立关联时它们都可以获取到相同的MyBinder实例。
+如何销毁Service
+在Service的基本用法这一部分，我们介绍了销毁Service最简单的一种情况，点击Start Service按钮启动Service，再点击Stop Service按钮停止Service，这样MyService就被销毁了，可以看到打印日志如下所示：
+                           
+那么如果我们是点击的Bind Service按钮呢？由于在绑定Service的时候指定的标志位是BIND_AUTO_CREATE，说明点击Bind Service按钮的时候Service也会被创建，这时应该怎么销毁Service呢？其实也很简单，点击一下Unbind Service按钮，将Activity和Service的关联解除就可以了。
+先点击一下Bind Service按钮，再点击一下Unbind Service按钮，打印日志如下所示：
+                                     
+以上这两种销毁的方式都很好理解。那么如果我们既点击了Start Service按钮，又点击了Bind Service按钮会怎么样呢？这个时候你会发现，不管你是单独点击Stop Service按钮还是Unbind Service按钮，Service都不会被销毁，必要将两个按钮都点击一下，Service才会被销毁。也就是说，点击Stop Service按钮只会让Service停止，点击Unbind Service按钮只会让Service和Activity解除关联，一个Service必须要在既没有和任何Activity关联又处理停止状态的时候才会被销毁。
+为了证实一下，我们在Stop Service和Unbind Service按钮的点击事件里面加入一行打印日志：
+[java] view plain copy
+public void onClick(View v) {  
+    switch (v.getId()) {  
+    case R.id.start_service:  
+        Intent startIntent = new Intent(this, MyService.class);  
+        startService(startIntent);  
+        break;  
+    case R.id.stop_service:  
+        Log.d("MyService", "click Stop Service button");  
+        Intent stopIntent = new Intent(this, MyService.class);  
+        stopService(stopIntent);  
+        break;  
+    case R.id.bind_service:  
+        Intent bindIntent = new Intent(this, MyService.class);  
+        bindService(bindIntent, connection, BIND_AUTO_CREATE);  
+        break;  
+    case R.id.unbind_service:  
+        Log.d("MyService", "click Unbind Service button");  
+        unbindService(connection);  
+        break;  
+    default:  
+        break;  
+    }  
+}  
+然后重新运行程序，先点击一下Start Service按钮，再点击一下Bind Service按钮，这样就将Service启动起来，并和Activity建立了关联。然后点击Stop Service按钮后Service并不会销毁，再点击一下Unbind Service按钮，Service就会销毁了，打印日志如下所示：
+                                
+我们应该始终记得在Service的onDestroy()方法里去清理掉那些不再使用的资源，防止在Service被销毁后还会有一些不再使用的对象仍占用着内存。
+
+
+4.Service和Thread的关系
+不少Android初学者都可能会有这样的疑惑，Service和Thread到底有什么关系呢？什么时候应该用Service，什么时候又应该用Thread？答案可能会有点让你吃惊，因为Service和Thread之间没有任何关系！
+之所以有不少人会把它们联系起来，主要就是因为Service的后台概念。Thread我们大家都知道，是用于开启一个子线程，在这里去执行一些耗时操作就不会阻塞主线程的运行。而Service我们最初理解的时候，总会觉得它是用来处理一些后台任务的，一些比较耗时的操作也可以放在这里运行，这就会让人产生混淆了。但是，如果我告诉你Service其实是运行在主线程里的，你还会觉得它和Thread有什么关系吗？让我们看一下这个残酷的事实吧。
+在MainActivity的onCreate()方法里加入一行打印当前线程id的语句：
+[java] view plain copy
+Log.d("MyService", "MainActivity thread id is " + Thread.currentThread().getId());  
+然后在MyService的onCreate()方法里也加入一行打印当前线程id的语句：
+[java] view plain copy
+Log.d("MyService", "MyService thread id is " + Thread.currentThread().getId());  
+现在重新运行一下程序，并点击Start Service按钮，会看到如下打印日志：
+                                 
+可以看到，它们的线程id完全是一样的，由此证实了Service确实是运行在主线程里的，也就是说如果你在Service里编写了非常耗时的代码，程序必定会出现ANR的。
+你可能会惊呼，这不是坑爹么！？那我要Service又有何用呢？其实大家不要把后台和子线程联系在一起就行了，这是两个完全不同的概念。Android的后台就是指，它的运行是完全不依赖UI的。即使Activity被销毁，或者程序被关闭，只要进程还在，Service就可以继续运行。比如说一些应用程序，始终需要与服务器之间始终保持着心跳连接，就可以使用Service来实现。你可能又会问，前面不是刚刚验证过Service是运行在主线程里的么？在这里一直执行着心跳连接，难道就不会阻塞主线程的运行吗？当然会，但是我们可以在Service中再创建一个子线程，然后在这里去处理耗时逻辑就没问题了。
+额，既然在Service里也要创建一个子线程，那为什么不直接在Activity里创建呢？这是因为Activity很难对Thread进行控制，当Activity被销毁之后，就没有任何其它的办法可以再重新获取到之前创建的子线程的实例。而且在一个Activity中创建的子线程，另一个Activity无法对其进行操作。但是Service就不同了，所有的Activity都可以与Service进行关联，然后可以很方便地操作其中的方法，即使Activity被销毁了，之后只要重新与Service建立关联，就又能够获取到原有的Service中Binder的实例。因此，使用Service来处理后台任务，Activity就可以放心地finish，完全不需要担心无法对后台任务进行控制的情况。
+一个比较标准的Service就可以写成：
+[java] view plain copy
+@Override  
+public int onStartCommand(Intent intent, int flags, int startId) {  
+    new Thread(new Runnable() {  
+        @Override  
+        public void run() {  
+            // 开始执行后台任务  
+        }  
+    }).start();  
+    return super.onStartCommand(intent, flags, startId);  
+}  
+  
+class MyBinder extends Binder {  
+  
+    public void startDownload() {  
+        new Thread(new Runnable() {  
+            @Override  
+            public void run() {  
+                // 执行具体的下载任务  
+            }  
+        }).start();  
+    }  
+  
+}  
+创建前台Service
+Service几乎都是在后台运行的，一直以来它都是默默地做着辛苦的工作。但是Service的系统优先级还是比较低的，当系统出现内存不足情况时，就有可能会回收掉正在后台运行的Service。如果你希望Service可以一直保持运行状态，而不会由于系统内存不足的原因导致被回收，就可以考虑使用前台Service。前台Service和普通Service最大的区别就在于，它会一直有一个正在运行的图标在系统的状态栏显示，下拉状态栏后可以看到更加详细的信息，非常类似于通知的效果。当然有时候你也可能不仅仅是为了防止Service被回收才使用前台Service，有些项目由于特殊的需求会要求必须使用前台Service，比如说墨迹天气，它的Service在后台更新天气数据的同时，还会在系统状态栏一直显示当前天气的信息，如下图所示：
+                                                   
+那么我们就来看一下如何才能创建一个前台Service吧，其实并不复杂，修改MyService中的代码，如下所示：
+[java] view plain copy
+public class MyService extends Service {  
+  
+    public static final String TAG = "MyService";  
+  
+    private MyBinder mBinder = new MyBinder();  
+  
+    @Override  
+    public void onCreate() {  
+        super.onCreate();  
+        Notification notification = new Notification(R.drawable.ic_launcher,  
+                "有通知到来", System.currentTimeMillis());  
+        Intent notificationIntent = new Intent(this, MainActivity.class);  
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,  
+                notificationIntent, 0);  
+        notification.setLatestEventInfo(this, "这是通知的标题", "这是通知的内容",  
+                pendingIntent);  
+        startForeground(1, notification);  
+        Log.d(TAG, "onCreate() executed");  
+    }  
+  
+    .........  
+  
+}  
+这里只是修改了MyService中onCreate()方法的代码。可以看到，我们首先创建了一个Notification对象，然后调用了它的setLatestEventInfo()方法来为通知初始化布局和数据，并在这里设置了点击通知后就打开MainActivity。然后调用startForeground()方法就可以让MyService变成一个前台Service，并会将通知的图片显示出来。
+现在重新运行一下程序，并点击Start Service或Bind Service按钮，MyService就会以前台Service的模式启动了，并且在系统状态栏会弹出一个通栏图标，下拉状态栏后可以看到通知的详细内容，如下图所示。
+
+5.远程service(用AIDL,一般情况下不用，就是用，也是使用广播实现的)
+在上一篇文章中，我们学习了Android Service相关的许多重要内容，包括Service的基本用法、Service和Activity进行通信、Service的销毁方式、Service与Thread的关系、以及如何创建前台Service。以上所提到的这些知识点，基本上涵盖了大部分日常开发工作当中可能使用到的Service技术。不过关于Service其实还有一个更加高端的使用技巧没有介绍，即远程Service的用法。使用远程Service甚至可以实现Android跨进程通信的功能，下面就让我们具体地学习一下。
+如果你还没有看过前面一篇文章，建议先去阅读一下 Android Service完全解析，关于服务你所需知道的一切（上） ，因为本篇文章中涉及到的代码是在上篇文章的基础上进行修改的。
+在上篇文章中我们知道了，Service其实是运行在主线程里的，如果直接在Service中处理一些耗时的逻辑，就会导致程序ANR。
+让我们来做个实验验证一下吧，修改上一篇文章中创建的ServiceTest项目，在MyService的onCreate()方法中让线程睡眠60秒，如下所示：
+[java] view plain copy
+public class MyService extends Service {  
+  
+    ......  
+  
+    @Override  
+    public void onCreate() {  
+        super.onCreate();  
+        Log.d(TAG, "onCreate() executed");  
+        try {  
+            Thread.sleep(60000);  
+        } catch (InterruptedException e) {  
+            e.printStackTrace();  
+        }  
+    }  
+      
+    ......  
+  
+}  
+重新运行后，点击一下Start Service按钮或Bind Service按钮，程序就会阻塞住并无法进行任何其它操作，过一段时间后就会弹出ANR的提示框，如下图所示。
+                                                        
+之前我们提到过，应该在Service中开启线程去执行耗时任务，这样就可以有效地避免ANR的出现。
+那么本篇文章的主题是介绍远程Service的用法，如果将MyService转换成一个远程Service，还会不会有ANR的情况呢？让我们来动手尝试一下吧。
+将一个普通的Service转换成远程Service其实非常简单，只需要在注册Service的时候将它的android:process属性指定成:remote就可以了，代码如下所示：
+[html] view plain copy
+<?xml version="1.0" encoding="utf-8"?>  
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"  
+    package="com.example.servicetest"  
+    android:versionCode="1"  
+    android:versionName="1.0" >  
+  
+    ......  
+      
+    <service  
+        android:name="com.example.servicetest.MyService"  
+        android:process=":remote" >  
+    </service>  
+  
+</manifest>  
+现在重新运行程序，并点击一下Start Service按钮，你会看到控制台立刻打印了onCreate() executed的信息，而且主界面并没有阻塞住，也不会出现ANR。大概过了一分钟后，又会看到onStartCommand() executed打印了出来。
+为什么将MyService转换成远程Service后就不会导致程序ANR了呢？这是由于，使用了远程Service后，MyService已经在另外一个进程当中运行了，所以只会阻塞该进程中的主线程，并不会影响到当前的应用程序。
+为了证实一下MyService现在确实已经运行在另外一个进程当中了，我们分别在MainActivity的onCreate()方法和MyService的onCreate()方法里加入一行日志，打印出各自所在的进程id，如下所示：
+[java] view plain copy
+Log.d("TAG", "process id is " + Process.myPid());  
+再次重新运行程序，然后点击一下Start Service按钮，打印结果如下图所示：
+                       
+可以看到，不仅仅是进程id不同了，就连应用程序包名也不一样了，MyService中打印的那条日志，包名后面还跟上了:remote标识。
+那既然远程Service这么好用，干脆以后我们把所有的Service都转换成远程Service吧，还省得再开启线程了。其实不然，远程Service非但不好用，甚至可以称得上是较为难用。一般情况下如果可以不使用远程Service，就尽量不要使用它。
+下面就来看一下它的弊端吧，首先将MyService的onCreate()方法中让线程睡眠的代码去除掉，然后重新运行程序，并点击一下Bind Service按钮，你会发现程序崩溃了！为什么点击Start Service按钮程序就不会崩溃，而点击Bind Service按钮就会崩溃呢？这是由于在Bind Service按钮的点击事件里面我们会让MainActivity和MyService建立关联，但是目前MyService已经是一个远程Service了，Activity和Service运行在两个不同的进程当中，这时就不能再使用传统的建立关联的方式，程序也就崩溃了。
+那么如何才能让Activity与一个远程Service建立关联呢？这就要使用AIDL来进行跨进程通信了（IPC）。
+AIDL（Android Interface Definition Language）是Android接口定义语言的意思，它可以用于让某个Service与多个应用程序组件之间进行跨进程通信，从而可以实现多个应用程序共享同一个Service的功能。
+下面我们就来一步步地看一下AIDL的用法到底是怎样的。首先需要新建一个AIDL文件，在这个文件中定义好Activity需要与Service进行通信的方法。新建MyAIDLService.aidl文件，代码如下所示：
+[java] view plain copy
+package com.example.servicetest;  
+interface MyAIDLService {  
+    int plus(int a, int b);  
+    String toUpperCase(String str);  
+}  
+点击保存之后，gen目录下就会生成一个对应的Java文件，如下图所示：
+                                             
+然后修改MyService中的代码，在里面实现我们刚刚定义好的MyAIDLService接口，如下所示：
+[java] view plain copy
+public class MyService extends Service {  
+  
+    ......  
+  
+    @Override  
+    public IBinder onBind(Intent intent) {  
+        return mBinder;  
+    }  
+  
+    MyAIDLService.Stub mBinder = new Stub() {  
+  
+        @Override  
+        public String toUpperCase(String str) throws RemoteException {  
+            if (str != null) {  
+                return str.toUpperCase();  
+            }  
+            return null;  
+        }  
+  
+        @Override  
+        public int plus(int a, int b) throws RemoteException {  
+            return a + b;  
+        }  
+    };  
+  
+}  
+这里先是对MyAIDLService.Stub进行了实现，重写里了toUpperCase()和plus()这两个方法。这两个方法的作用分别是将一个字符串全部转换成大写格式，以及将两个传入的整数进行相加。然后在onBind()方法中将MyAIDLService.Stub的实现返回。这里为什么可以这样写呢？因为Stub其实就是Binder的子类，所以在onBind()方法中可以直接返回Stub的实现。
+接下来修改MainActivity中的代码，如下所示：
+[java] view plain copy
+public class MainActivity extends Activity implements OnClickListener {  
+  
+    private Button startService;  
+  
+    private Button stopService;  
+  
+    private Button bindService;  
+  
+    private Button unbindService;  
+      
+    private MyAIDLService myAIDLService;  
+  
+    private ServiceConnection connection = new ServiceConnection() {  
+  
+        @Override  
+        public void onServiceDisconnected(ComponentName name) {  
+        }  
+  
+        @Override  
+        public void onServiceConnected(ComponentName name, IBinder service) {  
+            myAIDLService = MyAIDLService.Stub.asInterface(service);  
+            try {  
+                int result = myAIDLService.plus(3, 5);  
+                String upperStr = myAIDLService.toUpperCase("hello world");  
+                Log.d("TAG", "result is " + result);  
+                Log.d("TAG", "upperStr is " + upperStr);  
+            } catch (RemoteException e) {  
+                e.printStackTrace();  
+            }  
+        }  
+    };  
+  
+    ......  
+  
+}  
+我们只是修改了ServiceConnection中的代码。可以看到，这里首先使用了MyAIDLService.Stub.asInterface()方法将传入的IBinder对象传换成了MyAIDLService对象，接下来就可以调用在MyAIDLService.aidl文件中定义的所有接口了。这里我们先是调用了plus()方法，并传入了3和5作为参数，然后又调用了toUpperCase()方法，并传入hello world字符串作为参数，最后将调用方法的返回结果打印出来。
+现在重新运行程序，并点击一下Bind Service按钮，可以看到打印日志如下所示：
+                               
+由此可见，我们确实已经成功实现跨进程通信了，在一个进程中访问到了另外一个进程中的方法。
+不过你也可以看出，目前的跨进程通信其实并没有什么实质上的作用，因为这只是在一个Activity里调用了同一个应用程序的Service里的方法。而跨进程通信的真正意义是为了让一个应用程序去访问另一个应用程序中的Service，以实现共享Service的功能。那么下面我们自然要学习一下，如何才能在其它的应用程序中调用到MyService里的方法。
+在上一篇文章中我们已经知道，如果想要让Activity与Service之间建立关联，需要调用bindService()方法，并将Intent作为参数传递进去，在Intent里指定好要绑定的Service，示例代码如下：
+[java] view plain copy
+Intent bindIntent = new Intent(this, MyService.class);  
+bindService(bindIntent, connection, BIND_AUTO_CREATE);  
+这里在构建Intent的时候是使用MyService.class来指定要绑定哪一个Service的，但是在另一个应用程序中去绑定Service的时候并没有MyService这个类，这时就必须使用到隐式Intent了。现在修改AndroidManifest.xml中的代码，给MyService加上一个action，如下所示：
+[html] view plain copy
+<?xml version="1.0" encoding="utf-8"?>  
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"  
+    package="com.example.servicetest"  
+    android:versionCode="1"  
+    android:versionName="1.0" >  
+  
+    ......  
+  
+    <service  
+        android:name="com.example.servicetest.MyService"  
+        android:process=":remote" >  
+        <intent-filter>  
+            <action android:name="com.example.servicetest.MyAIDLService"/>  
+        </intent-filter>  
+    </service>  
+  
+</manifest>  
+这就说明，MyService可以响应带有com.example.servicetest.MyAIDLService这个action的Intent。
+现在重新运行一下程序，这样就把远程Service端的工作全部完成了。
+然后创建一个新的Android项目，起名为ClientTest，我们就尝试在这个程序中远程调用MyService中的方法。
+ClientTest中的Activity如果想要和MyService建立关联其实也不难，首先需要将MyAIDLService.aidl文件从ServiceTest项目中拷贝过来，注意要将原有的包路径一起拷贝过来，完成后项目的结构如下图所示：
+                                     
+然后打开或新建activity_main.xml，在布局文件中也加入一个Bind Service按钮：
+[html] view plain copy
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"  
+    android:layout_width="match_parent"  
+    android:layout_height="match_parent"  
+    android:orientation="vertical"  
+     >  
+  
+   <Button   
+       android:id="@+id/bind_service"  
+       android:layout_width="match_parent"  
+       android:layout_height="wrap_content"  
+       android:text="Bind Service"  
+       />  
+  
+</LinearLayout>  
+接下来打开或新建MainActivity，在其中加入和MyService建立关联的代码，如下所示：
+[java] view plain copy
+public class MainActivity extends Activity {  
+  
+    private MyAIDLService myAIDLService;  
+  
+    private ServiceConnection connection = new ServiceConnection() {  
+  
+        @Override  
+        public void onServiceDisconnected(ComponentName name) {  
+        }  
+  
+        @Override  
+        public void onServiceConnected(ComponentName name, IBinder service) {  
+            myAIDLService = MyAIDLService.Stub.asInterface(service);  
+            try {  
+                int result = myAIDLService.plus(50, 50);  
+                String upperStr = myAIDLService.toUpperCase("comes from ClientTest");  
+                Log.d("TAG", "result is " + result);  
+                Log.d("TAG", "upperStr is " + upperStr);  
+            } catch (RemoteException e) {  
+                e.printStackTrace();  
+            }  
+        }  
+    };  
+  
+    @Override  
+    protected void onCreate(Bundle savedInstanceState) {  
+        super.onCreate(savedInstanceState);  
+        setContentView(R.layout.activity_main);  
+        Button bindService = (Button) findViewById(R.id.bind_service);  
+        bindService.setOnClickListener(new OnClickListener() {  
+            @Override  
+            public void onClick(View v) {  
+                Intent intent = new Intent("com.example.servicetest.MyAIDLService");  
+                bindService(intent, connection, BIND_AUTO_CREATE);  
+            }  
+        });  
+    }  
+  
+}  
+这部分代码大家一定会非常眼熟吧？没错，这和在ServiceTest的MainActivity中的代码几乎是完全相同的，只是在让Activity和Service建立关联的时候我们使用了隐式Intent，将Intent的action指定成了com.example.servicetest.MyAIDLService。
+在当前Activity和MyService建立关联之后，我们仍然是调用了plus()和toUpperCase()这两个方法，远程的MyService会对传入的参数进行处理并返回结果，然后将结果打印出来。
+这样的话，ClientTest中的代码也就全部完成了，现在运行一下这个项目，然后点击Bind Service按钮，此时就会去和远程的MyService建立关联，观察LogCat中的打印信息如下所示：
+                            
+不用我说，大家都已经看出，我们的跨进程通信功能已经完美实现了。
+不过还有一点需要说明的是，由于这是在不同的进程之间传递数据，Android对这类数据的格式支持是非常有限的，基本上只能传递Java的基本数据类型、字符串、List或Map等。那么如果我想传递一个自定义的类该怎么办呢？这就必须要让这个类去实现Parcelable接口，并且要给这个类也定义一个同名的AIDL文件。这部分内容并不复杂，而且和Service关系不大，所以就不再详细进行讲解了，感兴趣的朋友可以自己去查阅一下相关的资料。
+好了，结合上下两篇，这就是关于Service你所需知道的一切。
+
+5.操作系统服务：可以调用操作系统提供的服务作一些事情
 1)剪切板服务
 MainActivity
 protected void onCreate(Bundle savedInstanceState) {
@@ -40064,7 +41157,7 @@ public class MainActivity extends Activity {
 <uses-permission android:name="android.permission.GET_TASKS"/>
 
 	
-4.PendingIntent与Intent的区别是，Intent定义后，就一定会调用他来跳转到一些
+6.PendingIntent与Intent的区别是，Intent定义后，就一定会调用他来跳转到一些
 Activity,或者service上。而PendingIntent是定义后，如果有产生某一个事件之后，才会调用这个PendingIntent来跳转。
 1)例子：发送通知Notifcation,这个组件是把一些提示用户操作的信息发送到手机
 上面的消息下拉框中
@@ -40085,7 +41178,7 @@ Notifcation是一个通知，NotifcationManager是一个发送通知的操作类
  
 实际运行情况：推送一个通知，只有当用户点击通知时，才触发一个事件，通过pendIntent跳转到他指定的页面，就是打开本activity程序	
 
-5.广播BroadcastReceiver：像电视信号，打开电视所有台的电视信号都在放，但只能选择一台可以看见
+7.广播BroadcastReceiver：像电视信号，打开电视所有台的电视信号都在放，但只能选择一台可以看见
 service是一直在后台运行的，而广播是需要一些特定条件，才开始执行的。通过广播
 可以实现service程序的启动
 
@@ -43970,5 +45063,442 @@ else
 	DogService.this.startActivity(intent);	
 }
 
+5.Android系统中标准Intent的使用
+一 Android系统用于Activity的标准Intent
 
+1 根据联系人ID显示联系人信息
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_VIEW);   //显示联系人信息  
+intent.setData(Uri.parse("content://contacts/people/492"));  
+startActivity(intent);  
+
+2 根据联系人ID显示拨号面板
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_DIAL);  //显示拨号面板  
+intent.setData(Uri.parse("content://contacts/people/492"));  
+startActivity(intent);  
+
+3 显示拨号面板， 并在拨号面板上将号码显示出来
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_VIEW);     
+intent.setData(Uri.parse("tel://15216448315"));  
+startActivity(intent);  
+
+4 显示拨号面板， 并在拨号面板上将号码显示出来
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_DIAL);   //显示拨号面板, 并在拨号面板上将号码显示出来  
+intent.setData(Uri.parse("tel://15216448315"));  
+startActivity(intent);  
+
+5 根据联系人的ID编辑联系人
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_EDIT);   //编辑联系人  
+intent.setData(Uri.parse("content://contacts/people/492"));  
+startActivity(intent);  
+
+6 显示通讯录联系人和其他账号联系人的列表
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_VIEW);     
+intent.setData(Uri.parse("content://contacts/people/"));  
+startActivity(intent);  
+
+7 启动HomeScreen
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_MAIN);     //启动HomeScreen  
+intent.addCategory(Intent.CATEGORY_HOME);  
+startActivity(intent);  
+
+8 选择某个联系人的号码，返回一个代表这个号码的uri，如:content://contacts/phones/982
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_GET_CONTENT);       
+intent.setType("vnd.android.cursor.item/phone");  
+startActivityForResult(intent, 1);  
+
+9  打开多个应用选取各种类型的数据,以uri返回。返回的uri可使用ContentResolver.openInputStream(Uri)打开
+    该功能可用在邮件中附件的选取
+    举例如下:
+    选取一张图片, 返回的uri为 content://media/external/images/media/47
+    选取一首歌, 返回的uri为 content://media/external/audio/media/51
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_GET_CONTENT);       
+intent.setType("*/*");  
+intent.addCategory(Intent.CATEGORY_OPENABLE);  
+startActivityForResult(intent, 2);  
+
+10 自定义一个chooser，不使用系统的chooser
+     该chooser可以有自己的标题(Title)
+     并且不必让用户指定偏好
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_CHOOSER);   
+intent.putExtra(Intent.EXTRA_TITLE, "my chooser");  
+intent.putExtra(Intent.EXTRA_INTENT,   
+        new Intent(Intent.ACTION_GET_CONTENT)  
+        .setType("*/*")  
+        .addCategory(Intent.CATEGORY_OPENABLE)  
+        );  
+  
+startActivityForResult(intent, 2);  
+
+11 选取activity，返回的activity可在返回的intent.getComponent()中得到
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_PICK_ACTIVITY);   
+intent.putExtra( Intent.EXTRA_INTENT,   
+        new Intent(Intent.ACTION_GET_CONTENT)  
+        .setType("*/*")  
+        .addCategory(Intent.CATEGORY_OPENABLE)  
+        );  
+startActivityForResult(intent, 3);  
+
+12 启动搜索，在以下示例代码中，"ANDROID"为要搜索的字符串
+     当执行这段代码后, 会在系统的Chooser中显示可以用于搜索的程序列表
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_SEARCH);     //启动搜索  
+intent.putExtra(SearchManager.QUERY, "ANDROID");  
+startActivity(intent);  
+
+13 启动WEB搜索，在以下示例代码中，"ANDROID"为要搜索的字符串
+     当执行这段代码后, 会在系统的Chooser中显示可以用于搜索的程序列表，一般情况下系统中安装的浏览器都会显示出来
+[java] view plain copy
+Intent intent = new Intent();  
+intent.setAction(Intent.ACTION_WEB_SEARCH);     //启动搜索  
+intent.putExtra(SearchManager.QUERY, "ANDROID");  
+startActivity(intent);  
+
+
+二  Android系统用于BroadcastReceiver的标准Intent
+
+1 ACTION_TIME_TICK，系统时钟广播，系统每分钟都会发送一个这样的广播，
+   如果在应用开发中，有些逻辑依赖于系统时钟，可以注册一个广播接收者
+   这是一个受保护的action，只有系统才能发送这个广播
+   并且，在manifest文件中注册的广播接收者不能接收到该广播，若要接收该广播，必须在代码中注册广播接收者
+[java] view plain copy
+registerReceiver(new BroadcastReceiver(){  
+  
+    @Override  
+    public void onReceive(Context context, Intent intent) {  
+        Log.i("xxxx", "TIME_TICK");  
+    }  
+      
+},   
+new IntentFilter(Intent.ACTION_TIME_TICK));  
+
+2 在官方文档中，列出了以下标准的广播action
+ACTION_TIME_TICK               系统时钟广播
+ACTION_TIME_CHANGED            时间被重新设置
+ACTION_TIMEZONE_CHANGED        时区改变
+ACTION_BOOT_COMPLETED          系统启动完成
+ACTION_PACKAGE_ADDED           系统中安装了新的应用
+ACTION_PACKAGE_CHANGED         系统中已存在的app包被更改
+ACTION_PACKAGE_REMOVED         系统中已存在的app被移除
+ACTION_PACKAGE_RESTARTED       用户重启了一个app，这个app的所有进程被杀死
+ACTION_PACKAGE_DATA_CLEARED    用户清除了一个app的数据
+ACTION_UID_REMOVED             系统中的一个user ID被移除
+ACTION_BATTERY_CHANGED         电池状态改变，这是一个sticky广播
+ACTION_POWER_CONNECTED         设备连接了外部电源
+ACTION_POWER_DISCONNECTED      外部电源被移除
+ACTION_SHUTDOWN                设备正在关机
+
+三  Android中的标准类别（category）
+
+类别（category）一般配合action使用，以下为系统中的标准类别，由于数量过多，只能在使用到时再详细研究
+CATEGORY_DEFAULT
+CATEGORY_BROWSABLE
+CATEGORY_TAB
+CATEGORY_ALTERNATIVE
+CATEGORY_SELECTED_ALTERNATIVE
+CATEGORY_LAUNCHER
+CATEGORY_INFO
+CATEGORY_HOME
+CATEGORY_PREFERENCE
+CATEGORY_TEST
+CATEGORY_CAR_DOCK
+CATEGORY_DESK_DOCK
+CATEGORY_LE_DESK_DOCK
+CATEGORY_HE_DESK_DOCK
+CATEGORY_CAR_MODE
+CATEGORY_APP_MARKET
+
+四  Android中的标准Extra键值
+
+这些常量用于在调用Intent.putExtra(String, Bundle)时作为键值传递数据，同样由于数量较多，在此只列出索引
+EXTRA_ALARM_COUNT
+EXTRA_BCC
+EXTRA_CC
+EXTRA_CHANGED_COMPONENT_NAME
+EXTRA_DATA_REMOVED
+EXTRA_DOCK_STATE
+EXTRA_DOCK_STATE_HE_DESK
+EXTRA_DOCK_STATE_LE_DESK
+EXTRA_DOCK_STATE_CAR
+EXTRA_DOCK_STATE_DESK
+EXTRA_DOCK_STATE_UNDOCKED
+EXTRA_DONT_KILL_APP
+EXTRA_EMAIL
+EXTRA_INITIAL_INTENTS
+EXTRA_INTENT
+EXTRA_KEY_EVENT
+EXTRA_ORIGINATING_URI
+EXTRA_PHONE_NUMBER
+EXTRA_REFERRER
+EXTRA_REMOTE_INTENT_TOKEN
+EXTRA_REPLACING
+EXTRA_SHORTCUT_ICON
+EXTRA_SHORTCUT_ICON_RESOURCE
+EXTRA_SHORTCUT_INTENT
+EXTRA_STREAM
+EXTRA_SHORTCUT_NAME
+EXTRA_SUBJECT
+EXTRA_TEMPLATE
+EXTRA_TEXT
+EXTRA_TITLE
+EXTRA_UID
+
+五  Intent中的标志（FLAG）
+
+Intent类中定义了一些以FLAG_开头的标志位，这些标志位中有的非常重要，会影响app中Activity和BroadcastReceiver等的行为。
+以下为这些标志位的索引，是从官方文档上的截图。之后会对重要的标志加以详细分析
+
+
+6.Android性能调优
+本文主要分享自己在appstore项目中的性能调优点，包括同步改异步、缓存、Layout优化、数据库优化、算法优化、延迟执行等。
+ 
+目前性能优化专题已完成以下部分：
+性能优化总纲——性能问题及性能调优方式
+性能优化第四篇——移动网络优化
+性能优化第三篇——Java(Android)代码优化
+性能优化第二篇——布局优化
+性能优化第一篇——数据库性能优化
+性能优化实例
+ 
+一、性能瓶颈点
+整个页面主要由6个Page的ViewPager，每个Page为一个GridView，GridView一屏大概显示4*4的item信息(本文最后有附图)。由于网络数据获取较多且随时需要保持页面内app下载进度及状态，所以出现以下性能问题
+a.  ViewPager左右滑动明显卡顿
+b.  GridView上下滚动明显卡顿
+c.  其他Activity返回ViewPager Activity较慢
+d.  网络获取到展现速度较慢
+ 
+二、性能调试及定位
+打开DDMS调试工具，打开devices窗口，选择某个进程，点击右上角的start method profilingddms trace
+运行app一段时间后，再点击已变成stop method profiling的该按钮。eclipse会自动弹出debug的标签（可通过菜单File->save as保存数据）。界面同上面。
+这种方式不需要修改代码，所以对于没有源码的程序同样可以进行排查。同时可以方便的进行全局性能排查。
+
+TraceView界面信息介绍
+TraceView界面包括时间面板和方法面板
+(1) 时间面板(Timeline Panel)
+时间面板展示了每个线程的执行情况，其中的[1]main即为ui主线程。
+移动到某个位置可以查看该点对应的方法的执行信息，点击方法面板则会选中相应的方法。
+可以左键按住不放选中区域放大局部精细查看，不同方法用不同颜色标注
+ 
+(2) 方法面板(Profile Panel)
+方法面板展示了所有方法的执行情况，点击某个方法可以查看在对应线程上的执行时间区域，并会显示其父方法及子方法。
+每个方法包括如下信息列，可点击某列进行排序，从而确定产生性能问题的函数：
+Incl Cpu Time, Excl Cpu Time, Incl Real Time, Excl Real Time, Incl Cpu Time%, Excl Cpu Time%, Incl Real Time%, Excl Real Time%, Calls+RecurCalls/Total, Cpu Time/Call, Real Time/Call
+所有的Time都是以毫秒计算。每列具体含义及作用如下：
+a. Incl表示将所有子函数耗时也计算在内，Excl则表示不包括子函数的调用时间。对比可以确定耗时操作发生是自身还是子函数中。
+b. Cpu Time表示占用cpu执行的时间，Real Time包括Cpu Time以及等待、切换的时间等，所以一般都大于Cpu Time。对比可以判断耗时操作是否在cpu执行段内。
+c. 上面四个指标对应的%表示函数在总时间的占比。方便查看某个函数的时间占比。
+d. Calls+RecurCalls/Total表示被外部调用次数+递归次数/总次数。可以查看调用次数是否符合自己预期。
+e. Cpu Time/Call, Real Time/Call表示总的Cpu Time及Real Time与总调用次数的比例。查看每次调用的耗时，一般可通过简单此项确定每个函数的性能。
+ 
+三、性能调优点
+主要包括同步改异步、缓存、Layout优化、数据库优化、算法优化、延迟执行。
+1. 同步改异步
+这个就不用多讲了，耗时操作放在线程中执行防止占用主线程，一定程度上解决anr。
+但需要注意线程和service结合（防止activity被回收后线程也被回收）以及线程的数量
+线程池使用可见java的线程池
+ 
+2. 缓存
+java的对象创建需要分配资源较耗费时间，加上创建的对象越多会造成越频繁的gc影响系统响应。主要使用单例模式、缓存(图片缓存、线程池、View缓存、IO缓存、消息缓存、通知栏notification缓存)及其他方式减少对象创建。
+(1). 单例模式
+对于创建开销较大的类可使用此方法，保证全局一个实例，在程序运行过程中该类不会因新建额外对象产生开销。示例代码如下：
+单例模式Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+public class Singleton {
+ 
+    private static Object    obj      = new Object();
+    private static Singleton instance = null;
+ 
+    private Singleton(){
+    }
+ 
+    public static Singleton getInstance() {
+        // if already inited, no need to get lock everytime
+        if (instance == null) {
+            synchronized (obj) {
+                if (instance == null) {
+                    instance = new Singleton();
+                }
+            }
+        }
+ 
+        return instance;
+    }
+}
+ 
+(2). 缓存
+程序中用到了图片缓存、线程池、View缓存、IO缓存、消息缓存、通知栏notification缓存等。
+a. 图片缓存：见ImageCache和ImageSdCache
+ 
+b. 线程池：使用Java的Executors类，通过newCachedThreadPool、newFixedThreadPool、newSingleThreadExecutor、newScheduledThreadPool提供四种不同类型的线程池
+ 
+c. View缓存：
+可见ListView缓存机制
+listView的getView缓存
+通过convertView是否为null减少layout inflate次数，通过静态的ViewHolder减少findViewById的次数，这两个函数尤其是inflate是相当费时间的
+ 
+d. IO缓存：
+使用具有缓存策略的输入流，BufferedInputStream替代InputStream，BufferedReader替代Reader，BufferedReader替代BufferedInputStream.对文件、网络IO皆适用。
+ 
+e. 消息缓存：通过 Handler 的 obtainMessage 回收 Message 对象，减少 Message 对象的创建开销
+handler.sendMessage(handler.obtainMessage(1));
+ 
+f. 通知栏notification缓存：下载中需要不断改变通知栏进度条状态，如果不断新建Notification会导致通知栏很卡。这里我们可以使用最简单的缓存
+Map<String, Notification> notificationMap = new HashMap<String, Notification>();如果notificationMap中不存在，则新建notification并且put into map.
+ 
+(3). 其他
+能创建基类解决问题就不用具体子类：除需要设置优先级的线程使用new Thread创建外，其余线程创建使用new Runnable。因为子类会有自己的属性创建需要更多开销。
+控制最大并发数量：使用Java的Executors类，通过Executors.newFixedThreadPool(nThreads)控制线程池最大线程并发
+对于http请求增加timeout
+ 
+3. Layout优化
+使用抽象布局标签(include, viewstub, merge)、去除不必要的嵌套和View节点、减少不必要的infalte及其他Layout方面可调优点，顺带提及布局调优相关工具(hierarchy viewer和lint)。具体可见性能优化之布局优化
+TextView属性优化：TextView的android:ellipsize=”marquee”跑马灯效果极耗性能，具体原因还在深入源码中
+ 
+4. 数据库优化
+主要包括索引和事务及针对Sqlite的优化。具体可见性能优化之数据库优化
+ 
+5. 算法优化
+这个就是个博大精深的话题了，只介绍本应用中使用的。
+使用hashMap代替arrayList，时间复杂度降低一个数量级
+ 
+6. 延迟执行
+对于很多耗时逻辑没必要立即执行，这时候我们可以将其延迟执行。
+线程延迟执行 ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(10);
+消息延迟发送 handler.sendMessageDelayed(handler.obtainMessage(0), 1000);
+ 
+四、本程序性能调优结果
+1. ViewPager左右滑动明显卡顿
+2. GridView上下滚动明显卡顿
+(1). 去掉TextView的android:ellipsize=”marquee”
+(2). 修改图片缓存的最大线程数，增加http timeout
+(3). 修改设置app是否已安装的状态，具体代码修改如下：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+List<PackageInfo> installedPackageList = getPackageManager().getInstalledPackages(PackageManager.GET_UNINSTALLED_PACKAGES);
+List<App> installedAppList = function(installedAppList)
+for (App app : appList) {
+	for (App installedApp : installedAppList) {
+ 
+	}
+}
+修改为
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+for (App app : appList) {
+	Pair<Integer, String> versionInfo = INSTALLED_APP_MAP.get(app.getPackageName());
+	if (versionInfo != null) {
+ 
+	} else {
+ 
+	}
+}
+从每次获取List<PackageInfo> installedAppList = getPackageManager().getInstalledPackages(PackageManager.GET_UNINSTALLED_PACKAGES);修改为只在有应用安装或卸载广播时获取应用列表，并且用hashMap代替installedAppList减少查询时间。
+将平均执行时间从201ms降低到1ms。
+ 
+3. 其他Activity返回ViewPager Activity较慢
+定位：在onStart函数
+解决：使用延迟策略，具体代码修改如下：
+Java
+
+1
+2
+3
+4
+5
+@Override
+public void onStart() {
+	super.onStart();
+	appUpdateListAdapter.notifyDataSetChanged();
+}
+改为
+优化后代码
+ 
+4. 网络获取到展现速度较慢
+定位：在HttpURLConnection.getInputStream()之后的处理
+解决：使用BufferedReader替代BufferedInputStream获取时间从100ms降低到3ms，具体代码修改如下：
+Java
+
+1
+2
+3
+4
+5
+HttpURLConnection con = (HttpURLConnection)url.openConnection();
+InputStream input = con.getInputStream();
+while (input.read(buffer, 0, 1024) != -1) {
+ 
+}
+改为
+Java
+
+1
+2
+3
+4
+5
+6
+HttpURLConnection con = (HttpURLConnection)url.openConnection();
+BufferedReader input = new BufferedReader(new InputStreamReader(con.getInputStream()));
+String s;
+while ((s = input.readLine()) != null) {
+ 
+}
 
