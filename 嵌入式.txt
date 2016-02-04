@@ -32594,6 +32594,154 @@ publicfinalclass ViewHolder{
     }
 }
 
+7.ListView item缓存机制：为了使得性能更优，ListView会缓存行item(某行对应的View)。ListView通过adapter的getView函数获得每行的item。滑动过程中，
+a. 如果某行item已经滑出屏幕，若该item不在缓存内，则put进缓存，否则更新缓存；
+b. 获取滑入屏幕的行item之前会先判断缓存中是否有可用的item，如果有，做为convertView参数传递给adapter的getView。
+更具体可见源代码ListView.obtainView。
+ 
+这样，如下的getView写法就可以充分利用缓存大大提升ListView的性能。即便上万个行item，最多inflate的次数为n，n为一屏最多显示ListView 行item的个数。
+ListView Adapter getView写法Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+@Override
+public View getView(int position, View convertView, ViewGroup parent) {
+	ViewHolder holder;
+	if (convertView == null) {
+		convertView = inflater.inflate(R.layout.list_item, null);
+		holder = new ViewHolder();
+		……
+		convertView.setTag(holder);
+	} else {
+		holder = (ViewHolder)convertView.getTag();
+	}
+}
+ 
+/**
+ * ViewHolder
+ * 
+ * @author trinea@trinea.cn 2013-08-01
+ */
+private static class ViewHolder {
+ 
+	ImageView appIcon;
+	TextView  appName;
+	TextView  appInfo;
+}
+这样提升了性能，但同时也会造成另外一些问题：
+a. 行item图片显示重复
+这个显示重复是指当前行item显示了之前某行item的图片。
+比如ListView滑动到第2行会异步加载某个图片，但是加载很慢，加载过程中listView已经滑动到了第14行，且滑动过程中该图片加载结束，第2行已不在屏幕内，根据上面介绍的缓存原理，第2行的view可能被第14行复用，这样我们看到的就是第14行显示了本该属于第2行的图片，造成显示重复。
+ 
+b. 行item图片显示错乱
+这个显示错乱是指某行item显示了不属于该行item的图片。
+比如ListView滑动到第2行会异步加载某个图片，但是加载很慢，加载过程中listView已经滑动到了第14行，第2行已不在屏幕内，根据上面介绍的缓存原理，第2行的view可能被第14行复用，第14行显示了第2行的View，这时之前的图片加载结束，就会显示在第14行，造成错乱。
+ 
+c. 行item图片显示闪烁
+上面b的情况，第14行图片又很快加载结束，所以我们看到第14行先显示了第2行的图片，立马又显示了自己的图片进行覆盖造成闪烁错乱。
+ 
+2、解决方法
+通过上面的分析我们知道了出现错乱的原因是异步加载及对象被复用造成的，如果每次getView能给对象一个标识，在异步加载完成时比较标识与当前行item的标识是否一致，一致则显示，否则不做处理即可。
+下面以使用ImageCache为ListView提供图片获取缓存为例，ListView中强烈推荐使用ImageCache。
+首先在listview adapter的getView中添加
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+@Override
+public View getView(int position, View convertView, ViewGroup parent) {
+	ViewHolder holder;
+	if (convertView == null) {
+		convertView = inflater.inflate(R.layout.list_item, null);
+		holder = new ViewHolder();
+		……
+		convertView.setTag(holder);
+	} else {
+		holder = (ViewHolder)convertView.getTag();
+	}
+ 
+	……
+	// add tag for image, to compare it when image loaded finish
+	imageView.setTag(imageUrl);
+	// if not in cache, restore default
+	if (!Cache.ICON_CACHE.get(imageUrl, imageView)) {
+		imageView.setImageDrawable(null);
+	}
+}
+其中setTag表示设置标识，方便下面进行标志比对
+
+1
+if (!Cache.ICON_CACHE.get(imageUrl, imageView))
+Cache.ICON_CACHE为ImageCache的实例，表示如果不在缓存内则设置drawable为null(当然你可以可以设置为你自己的默认资源)，防止显示了之前某个行item的图片，解决了a. 行item图片显示重复问题。
+ 
+在ImageCache的OnImageCallbackListener的onGetSuccess函数中添加
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+public void onGetSuccess(String imageUrl, Drawable imageDrawable, View view, boolean isInCache) {
+	// can be another view child, like textView and so on
+	if (view != null && imageDrawable != null) {
+		ImageView imageView = (ImageView)view;
+		// add tag judge, avoid listView cache and so on
+		String imageUrlTag = (String)imageView.getTag();
+		if (ObjectUtils.isEquals(imageUrlTag, imageUrl)) {
+			imageView.setImageDrawable(imageDrawable);
+		}
+	}
+};
+在上面用String imageUrlTag = (String)imageView.getTag();取得之前设置的tag，然后和当前的url进行比较，如果相等则显示，解决了b. 行item图片显示错乱，c. 行item图片显示错乱的两个问题。其中ObjectUtils可见ObjectUtils@Github.
+其他异步加载过程解决原理类似。
+
 
 *树形组件android.widget.ExpandableListView:
 1.基本显示
@@ -45272,6 +45420,7 @@ Intent类中定义了一些以FLAG_开头的标志位，这些标志位中有的非常重要，会影响app中Ac
 
 
 6.Android性能调优
+1）
 本文主要分享自己在appstore项目中的性能调优点，包括同步改异步、缓存、Layout优化、数据库优化、算法优化、延迟执行等。
  
 目前性能优化专题已完成以下部分：
@@ -45502,3 +45651,654 @@ while ((s = input.readLine()) != null) {
  
 }
 
+
+2）性能优化之布局优化
+本文为Android性能优化的第二篇——布局优化，主要介绍使用抽象布局标签(include, viewstub, merge)、去除不必要的嵌套和View节点、减少不必要的infalte及其他Layout方面可调优点，顺带提及布局调优相关工具(hierarchy viewer和lint)。
+ 
+目前性能优化专题已完成以下部分：
+性能优化总纲——性能问题及性能调优方式
+性能优化第四篇——移动网络优化
+性能优化第三篇——Java(Android)代码优化
+性能优化第二篇——布局优化
+性能优化第一篇——数据库性能优化
+性能优化实例
+ 
+1、抽象布局标签
+(1) <include>标签
+include标签常用于将布局中的公共部分提取出来供其他layout共用，以实现布局模块化，这在布局编写方便提供了大大的便利。
+下面以在一个布局main.xml中用include引入另一个布局foot.xml为例。main.mxl代码如下：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+ 
+    <ListView
+        android:id="@+id/simple_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/dp_80" />
+ 
+    <include layout="@layout/foot.xml" />
+ 
+</RelativeLayout>
+其中include引入的foot.xml为公用的页面底部，代码如下：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+ 
+    <Button
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_40"
+        android:layout_above="@+id/text"/>
+ 
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_40"
+        android:layout_alignParentBottom="true"
+        android:text="@string/app_name" />
+ 
+</RelativeLayout>
+<include>标签唯一需要的属性是layout属性，指定需要包含的布局文件。可以定义android:id和android:layout_*属性来覆盖被引入布局根节点的对应属性值。注意重新定义android:id后，子布局的顶结点i就变化了。
+ 
+(2) <viewstub>标签
+viewstub标签同include标签一样可以用来引入一个外部布局，不同的是，viewstub引入的布局默认不会扩张，即既不会占用显示也不会占用位置，从而在解析layout时节省cpu和内存。
+viewstub常用来引入那些默认不会显示，只在特殊情况下显示的布局，如进度布局、网络失败显示的刷新布局、信息出错出现的提示布局等。
+下面以在一个布局main.xml中加入网络错误时的提示页面network_error.xml为例。main.mxl代码如下：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+ 
+	……
+    <ViewStub
+        android:id="@+id/network_error_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout="@layout/network_error" />
+ 
+</RelativeLayout>
+其中network_error.xml为只有在网络错误时才需要显示的布局，默认不会被解析，示例代码如下：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+ 
+    <Button
+        android:id="@+id/network_setting"
+        android:layout_width="@dimen/dp_160"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="@string/network_setting" />
+ 
+    <Button
+        android:id="@+id/network_refresh"
+        android:layout_width="@dimen/dp_160"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/network_setting"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/dp_10"
+        android:text="@string/network_refresh" />
+ 
+</RelativeLayout>
+在java中通过(ViewStub)findViewById(id)找到ViewStub，通过stub.inflate()展开ViewStub，然后得到子View，如下：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+private View networkErrorView;
+ 
+private void showNetError() {
+	// not repeated infalte
+	if (networkErrorView != null) {
+		networkErrorView.setVisibility(View.VISIBLE);
+		return;
+	}
+ 
+	ViewStub stub = (ViewStub)findViewById(R.id.network_error_layout);
+	networkErrorView = stub.inflate();
+	Button networkSetting = (Button)networkErrorView.findViewById(R.id.network_setting);
+	Button refresh = (Button)findViewById(R.id.network_refresh);
+}
+ 
+private void showNormal() {
+	if (networkErrorView != null) {
+		networkErrorView.setVisibility(View.GONE);
+	}
+}
+在上面showNetError()中展开了ViewStub，同时我们对networkErrorView进行了保存，这样下次不用继续inflate。这就是后面第三部分提到的减少不必要的infalte。
+viewstub标签大部分属性同include标签类似。
+ 
+上面展开ViewStub部分代码
+Java
+
+1
+2
+ViewStub stub = (ViewStub)findViewById(R.id.network_error_layout);
+networkErrorView = stub.inflate();
+也可以写成下面的形式
+Java
+
+1
+2
+3
+View viewStub = findViewById(R.id.network_error_layout);
+viewStub.setVisibility(View.VISIBLE);   // ViewStub被展开后的布局所替换
+networkErrorView =  findViewById(R.id.network_error_layout); // 获取展开后的布局
+效果一致，只是不用显示的转换为ViewStub。通过viewstub的原理我们可以知道将一个view设置为GONE不会被解析，从而提高layout解析速度，而VISIBLE和INVISIBLE这两个可见性属性会被正常解析。
+ 
+(3) <merge>标签
+在使用了include后可能导致布局嵌套过多，多余不必要的layout节点，从而导致解析变慢，不必要的节点和嵌套可通过hierarchy viewer(下面布局调优工具中有具体介绍)或设置->开发者选项->显示布局边界查看。
+ 
+merge标签可用于两种典型情况：
+a.  布局顶结点是FrameLayout且不需要设置background或padding等属性，可以用merge代替，因为Activity内容试图的parent view就是个FrameLayout，所以可以用merge消除只剩一个。
+b.  某布局作为子布局被其他布局include时，使用merge当作该布局的顶节点，这样在被引入时顶结点会自动被忽略，而将其子节点全部合并到主布局中。
+以(1) <include>标签的示例为例，用hierarchy viewer查看main.xml布局如下图：
+android include
+可以发现多了一层没必要的RelativeLayout，将foot.xml中RelativeLayout改为merge，如下：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+ 
+    <Button
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_40"
+        android:layout_above="@+id/text"/>
+ 
+    <TextView
+        android:id="@+id/text"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_40"
+        android:layout_alignParentBottom="true"
+        android:text="@string/app_name" />
+ 
+</merge>
+运行后再次用hierarchy viewer查看main.xml布局如下图：
+android include2
+这样就不会有多余的RelativeLayout节点了。
+ 
+2、去除不必要的嵌套和View节点
+(1) 首次不需要使用的节点设置为GONE或使用viewstub
+(2) 使用RelativeLayout代替LinearLayout
+大约在Android4.0之前，新建工程的默认main.xml中顶节点是LinearLayout，而在之后已经改为RelativeLayout，因为RelativeLayout性能更优，且可以简单实现LinearLayout嵌套才能实现的布局。
+4.0及以上Android版本可通过设置->开发者选项->显示布局边界打开页面布局显示，看看是否有不必要的节点和嵌套。4.0以下版本可通过hierarchy viewer查看。
+ 
+3、减少不必要的infalte
+(1) 对于inflate的布局可以直接缓存，用全部变量代替局部变量，避免下次需再次inflate
+如上面ViewStub示例中的
+Java
+
+1
+2
+3
+4
+if (networkErrorView != null) {
+	networkErrorView.setVisibility(View.VISIBLE);
+	return;
+}
+ 
+(2) ListView提供了item缓存，adapter getView的标准写法，如下：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+@Override
+public View getView(int position, View convertView, ViewGroup parent) {
+	ViewHolder holder;
+	if (convertView == null) {
+		convertView = inflater.inflate(R.layout.list_item, null);
+		holder = new ViewHolder();
+		……
+		convertView.setTag(holder);
+	} else {
+		holder = (ViewHolder)convertView.getTag();
+	}
+}
+ 
+/**
+ * ViewHolder
+ * 
+ * @author trinea@trinea.cn 2013-08-01
+ */
+private static class ViewHolder {
+ 
+	ImageView appIcon;
+	TextView  appName;
+	TextView  appInfo;
+}
+关于ListView缓存原理可见Android ListView缓存机制。
+ 
+4、其他点
+(1) 用SurfaceView或TextureView代替普通View
+SurfaceView或TextureView可以通过将绘图操作移动到另一个单独线程上提高性能。
+普通View的绘制过程都是在主线程(UI线程)中完成，如果某些绘图操作影响性能就不好优化了，这时我们可以考虑使用SurfaceView和TextureView，他们的绘图操作发生在UI线程之外的另一个线程上。
+因为SurfaceView在常规视图系统之外，所以无法像常规试图一样移动、缩放或旋转一个SurfaceView。TextureView是Android4.0引入的，除了与SurfaceView一样在单独线程绘制外，还可以像常规视图一样被改变。
+ 
+(2) 使用RenderJavascript
+RenderScript是Adnroid3.0引进的用来在Android上写高性能代码的一种语言，语法给予C语言的C99标准，他的结构是独立的，所以不需要为不同的CPU或者GPU定制代码代码。
+ 
+(3) 使用OpenGL绘图
+Android支持使用OpenGL API的高性能绘图，这是Android可用的最高级的绘图机制，在游戏类对性能要求较高的应用中得到广泛使用。
+Android 4.3最大的改变，就是支持OpenGL ES 3.0。相比2.0，3.0有更多的缓冲区对象、增加了新的着色语言、增加多纹理支持等等，将为Android游戏带来更出色的视觉体验。
+ 
+(4) 尽量为所有分辨率创建资源
+减少不必要的硬件缩放，这会降低UI的绘制速度，可借助Android asset studio
+
+
+3）
+本文为性能优化的第一篇——数据库性能优化，原理适用于大部分数据库包括Sqlite、Mysql、Oracle、Sql server，详细介绍了索引(优缺点、分类、场景、规则)和事务，最后介绍了部分单独针对Sqlite的优化。
+ 
+目前性能优化专题已完成以下部分：
+性能优化总纲——性能问题及性能调优方式
+性能优化第四篇——移动网络优化
+性能优化第三篇——Java(Android)代码优化
+性能优化第二篇——布局优化
+性能优化第一篇——数据库性能优化
+性能优化实例
+ 
+1、索引
+简单的说，索引就像书本的目录，目录可以快速找到所在页数，数据库中索引可以帮助快速找到数据，而不用全表扫描，合适的索引可以大大提高数据库查询的效率。
+(1). 优点
+大大加快了数据库检索的速度，包括对单表查询、连表查询、分组查询、排序查询。经常是一到两个数量级的性能提升，且随着数据数量级增长。
+ 
+(2). 缺点
+索引的创建和维护存在消耗，索引会占用物理空间，且随着数据量的增加而增加。
+在对数据库进行增删改时需要维护索引，所以会对增删改的性能存在影响。
+ 
+(3). 分类
+a. 直接创建索引和间接创建索引
+直接创建: 使用sql语句创建，Android中可以在SQLiteOpenHelper的onCreate或是onUpgrade中直接excuSql创建语句，语句如
+
+1
+CREATE INDEX mycolumn_index ON mytable (myclumn)
+间接创建: 定义主键约束或者唯一性键约束，可以间接创建索引，主键默认为唯一索引。
+ 
+b. 普通索引和唯一性索引
+普通索引：
+
+1
+CREATE INDEX mycolumn_index ON mytable (myclumn)
+唯一性索引：保证在索引列中的全部数据是唯一的，对聚簇索引和非聚簇索引都可以使用，语句为
+
+1
+CREATE UNIQUE COUSTERED INDEX myclumn_cindex ON mytable(mycolumn)
+ 
+c. 单个索引和复合索引
+单个索引：索引建立语句中仅包含单个字段，如上面的普通索引和唯一性索引创建示例。
+复合索引：又叫组合索引，在索引建立语句中同时包含多个字段，语句如：
+
+1
+CREATE INDEX name_index ON username(firstname, lastname)
+其中firstname为前导列。
+ 
+d. 聚簇索引和非聚簇索引(聚集索引，群集索引)
+聚簇索引：物理索引，与基表的物理顺序相同，数据值的顺序总是按照顺序排列，语句为：
+
+1
+CREATE CLUSTERED INDEX mycolumn_cindex ON mytable(mycolumn) WITH ALLOW_DUP_ROW
+其中WITH ALLOW_DUP_ROW表示允许有重复记录的聚簇索引
+非聚簇索引：
+
+1
+CREATE UNCLUSTERED INDEX mycolumn_cindex ON mytable(mycolumn)
+索引默认为非聚簇索引
+ 
+(4). 使用场景
+在上面讲到了优缺点，那么肯定会对何时使用索引既有点明白又有点糊涂吧，那么下面总结下：
+a.  当某字段数据更新频率较低，查询频率较高，经常有范围查询(>, <, =, >=, <=)或order by、group by发生时建议使用索引。并且选择度越大，建索引越有优势，这里选择度指一个字段中唯一值的数量/总的数量。
+b.  经常同时存取多列，且每列都含有重复值可考虑建立复合索引
+ 
+(5). 索引使用规则
+a.  对于复合索引，把使用最频繁的列做为前导列(索引中第一个字段)。如果查询时前导列不在查询条件中则该复合索引不会被使用。
+如create unique index PK_GRADE_CLASS on student (grade, class)
+select * from student where class = 2未使用到索引
+select * from dept where grade = 3使用到了索引
+ 
+b.  避免对索引列进行计算，对where子句列的任何计算如果不能被编译优化，都会导致查询时索引失效
+select * from student where tochar(grade)=’2′
+c.  比较值避免使用NULL
+d.  多表查询时要注意是选择合适的表做为内表。连接条件要充份考虑带有索引的表、行数多的表，内外表的选择可由公式：外层表中的匹配行数*内层表中每一次查找的次数确定，乘积最小为最佳方案。实际多表操作在被实际执行前，查询优化器会根据连接条件，列出几组可能的连接方案并从中找出系统开销最小的最佳方案。
+ 
+e.  查询列与索引列次序一致
+f.  用多表连接代替EXISTS子句
+g.  把过滤记录数最多的条件放在最前面
+h.  善于使用存储过程，它使sql变得更加灵活和高效(Sqlite不支持存储过程::>_<:: )
+ 
+(6)索引检验
+建立了索引，对于某条sql语句是否使用到了索引可以通过执行计划查看是否用到了索引。
+ 
+2、使用事务
+使用事务的两大好处是原子提交和更优性能。
+(1) 原子提交
+原则提交意味着同一事务内的所有修改要么都完成要么都不做，如果某个修改失败，会自动回滚使得所有修改不生效。
+ 
+(2) 更优性能
+Sqlite默认会为每个插入、更新操作创建一个事务，并且在每次插入、更新后立即提交。
+这样如果连续插入100次数据实际是创建事务->执行语句->提交这个过程被重复执行了100次。如果我们显示的创建事务->执行100条语句->提交会使得这个创建事务和提交这个过程只做一次，通过这种一次性事务可以使得性能大幅提升。尤其当数据库位于sd卡时，时间上能节省两个数量级左右。
+Sqlte显示使用事务，示例代码如下：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+public void insertWithOneTransaction() {
+    SQLiteDatabase db = sqliteOpenHelper.getWritableDatabase();
+    // Begins a transaction
+    db.beginTransaction();
+    try {
+        // your sqls
+        for (int i = 0; i < 100; i++) {
+            db.insert(yourTableName, null, value);
+        }
+ 
+        // marks the current transaction as successful
+        db.setTransactionSuccessful();
+    } catch (Exception e) {
+        // process it
+        e.printStackTrace();
+    } finally {
+        // end a transaction
+        db.endTransaction();
+    }
+}
+其中sqliteOpenHelper.getWritableDatabase()表示得到写表权限。
+ 
+3、其他针对Sqlite的优化
+(1) 语句的拼接使用StringBuilder代替String
+这个就不多说了，简单的string相加会导致创建多个临时对象消耗性能。StringBuilder的空间预分配性能好得多。如果你对字符串的长度有大致了解，如100字符左右，可以直接new StringBuilder(128)指定初始大小，减少空间不够时的再次分配。
+ 
+(2) 查询时返回更少的结果集及更少的字段。
+查询时只取需要的字段和结果集，更多的结果集会消耗更多的时间及内存，更多的字段会导致更多的内存消耗。
+ 
+(3) 少用cursor.getColumnIndex
+根据性能调优过程中的观察cursor.getColumnIndex的时间消耗跟cursor.getInt相差无几。可以在建表的时候用static变量记住某列的index，直接调用相应index而不是每次查询。
+Java
+
+1
+2
+3
+4
+5
+6
+7
+public static final String       HTTP_RESPONSE_TABLE_ID                  = android.provider.BaseColumns._ID;
+public static final String       HTTP_RESPONSE_TABLE_RESPONSE            = "response";
+public List<Object> getData() {
+	……
+	cursor.getString(cursor.getColumnIndex(HTTP_RESPONSE_TABLE_RESPONSE));
+	……
+}
+优化为
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+public static final String       HTTP_RESPONSE_TABLE_ID                  = android.provider.BaseColumns._ID;
+public static final String       HTTP_RESPONSE_TABLE_RESPONSE            = "response";
+public static final int          HTTP_RESPONSE_TABLE_ID_INDEX            = 0;
+public static final int          HTTP_RESPONSE_TABLE_URL_INDEX           = 1;
+public List<Object> getData() {
+	……
+	cursor.getString(HTTP_RESPONSE_TABLE_RESPONSE_INDEX);
+	……
+}
+ 
+4、异步线程
+Sqlite是常用于嵌入式开发中的关系型数据库，完全开源。
+与Web常用的数据库Mysql、Oracle db、sql server不同，Sqlite是一个内嵌式的数据库，数据库服务器就在你的程序中，无需网络配置和管理，数据库服务器端和客户端运行在同一进程内，减少了网络访问的消耗，简化了数据库管理。不过Sqlite在并发、数据库大小、网络方面存在局限性，并且为表级锁，所以也没必要多线程操作。
+ 
+Android中数据不多时表查询可能耗时不多，不会导致anr，不过大于100ms时同样会让用户感觉到延时和卡顿，可以放在线程中运行，但sqlite在并发方面存在局限，多线程控制较麻烦，这时候可使用单线程池，在任务中执行db操作，通过handler返回结果和ui线程交互，既不会影响UI线程，同时也能防止并发带来的异常。
+可使用Android提供的AsyncQueryHandler(感谢@内网无法登陆账号 反馈)或类似如下代码完成：
+Java
+
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
+singleThreadExecutor.execute(new Runnable() {
+ 
+	@Override
+	public void run() {
+		// db operetions, u can use handler to send message after
+		db.insert(yourTableName, null, value);
+		handler.sendEmptyMessage(xx);
+	}
+});
+
+
+
+4）性能优化之Java(Android)代码优化
+(2). 数据存储优化
+包括数据类型、数据结构的选择。
+a. 数据类型选择
+字符串拼接用StringBuilder代替String，在非并发情况下用StringBuilder代替StringBuffer。如果你对字符串的长度有大致了解，如100字符左右，可以直接new StringBuilder(128)指定初始大小，减少空间不够时的再次分配。
+64位类型如long double的处理比32位如int慢
+使用SoftReference、WeakReference相对正常的强应用来说更有利于系统垃圾回收
+final类型存储在常量区中读取效率更高
+LocalBroadcastManager代替普通BroadcastReceiver，效率和安全性都更高
+ 
+b. 数据结构选择
+常见的数据结构选择如：
+ArrayList和LinkedList的选择，ArrayList根据index取值更快，LinkedList更占内存、随机插入删除更快速、扩容效率更高。一般推荐ArrayList。
+ArrayList、HashMap、LinkedHashMap、HashSet的选择，hash系列数据结构查询速度更优，ArrayList存储有序元素，HashMap为键值对数据结构，LinkedHashMap可以记住加入次序的hashMap，HashSet不允许重复元素。
+HashMap、WeakHashMap选择，WeakHashMap中元素可在适当时候被系统垃圾回收器自动回收，所以适合在内存紧张型中使用。
+Collections.synchronizedMap和ConcurrentHashMap的选择，ConcurrentHashMap为细分锁，锁粒度更小，并发性能更优。Collections.synchronizedMap为对象锁，自己添加函数进行锁控制更方便。
+ 
+Android也提供了一些性能更优的数据类型，如SparseArray、SparseBooleanArray、SparseIntArray、Pair。
+Sparse系列的数据结构是为key为int情况的特殊处理，采用二分查找及简单的数组存储，加上不需要泛型转换的开销，相对Map来说性能更优。不过我不太明白为啥默认的容量大小是10，是做过数据统计吗，还是说现在的内存优化不需要考虑这些东西，写16会死吗，还是建议大家根据自己可能的容量设置初始值。
+ 
+(3). 算法优化
+这个主题比较大，需要具体问题具体分析，尽量不用O(n*n)时间复杂度以上的算法，必要时候可用空间换时间。
+查询考虑hash和二分，尽量不用递归。可以从结构之法 算法之道或微软、Google等面试题学习。
+ 
+(4). JNI
+Android应用程序大都通过Java开发，需要Dalvik的JIT编译器将Java字节码转换成本地代码运行，而本地代码可以直接由设备管理器直接执行，节省了中间步骤，所以执行速度更快。不过需要注意从Java空间切换到本地空间需要开销，同时JIT编译器也能生成优化的本地代码，所以糟糕的本地代码不一定性能更优。
+这个优化点会在后面单独用一片博客介绍。
+ 
+(5). 逻辑优化
+这个不同于算法，主要是理清程序逻辑，减少不必要的操作。
+ 
+(6). 需求优化
+这个就不说了，对于sb的需求可能带来的性能问题，只能说做为一个合格的程序员不能只是执行者，要学会说NO。不过不能拿这种接口敷衍产品经理哦。
+ 
+2、异步，利用多线程提高TPS
+充分利用多核Cpu优势，利用线程解决密集型计算、IO、网络等操作。
+关于多线程可参考：Java线程池
+在Android应用程序中由于系统ANR的限制，将可能造成主线程超时操作放入另外的工作线程中。在工作线程中可以通过handler和主线程交互。
+ 
+3、提前或延迟操作，错开时间段提高TPS
+(1) 延迟操作
+不在Activity、Service、BroadcastReceiver的生命周期等对响应时间敏感函数中执行耗时操作，可适当delay。
+Java中延迟操作可使用ScheduledExecutorService，不推荐使用Timer.schedule;
+Android中除了支持ScheduledExecutorService之外，还有一些delay操作，如
+handler.postDelayed，handler.postAtTime，handler.sendMessageDelayed，View.postDelayed，AlarmManager定时等。
+ 
+(2) 提前操作
+对于第一次调用较耗时操作，可统一放到初始化中，将耗时提前。如得到壁纸wallpaperManager.getDrawable();
+
+
+5）移动端网络优化
+一个网络请求可以简单分为连接服务器 -> 获取数据两个部分。
+其中连接服务器前还包括 DNS 解析的过程；获取数据后可能会对数据进行缓存。
+ 
+一、连接服务器优化策略
+1. 不用域名，用 IP 直连
+省去 DNS 解析过程，DNS 全名 Domain Name System，解析意指根据域名得到其对应的 IP 地址。 如 http://www.codekk.com 的域名解析结果就是 104.236.147.76。
+3. 减小请求数据大小
+(1) 对于 POST 请求，Body 可以做 Gzip 压缩，如日志。
+ (2) 精简数据格式
+如 JSON 代替 XML，WebP 代替其他图片格式。关注公众号 codekk，回复 20 查看关于 WebP 的介绍。
+ (5) 大文件下载
+支持断点续传，并缓存 Http Resonse 的 ETag 标识，下次请求时带上，从而确定是否数据改变过，未改变则直接返回 304。
