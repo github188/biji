@@ -36056,6 +36056,23 @@ scheduledThreadPool.scheduleAtFixedRate(new Runnable() {
 	}
 }, 1, 3, TimeUnit.SECONDS);
 表示延迟1秒后每3秒执行一次。
+
+ long initialDelay1 = 1;
+        long period1 = 1;
+        // 从现在开始1秒钟之后，每隔1秒钟执行一次job1
+        service.scheduleAtFixedRate(
+                new ScheduledExecutorTest("job1"), initialDelay1,
+                period1, TimeUnit.SECONDS);
+
+        long initialDelay2 = 1;
+        long delay2 = 1;
+        // 从现在开始2秒钟之后，每隔2秒钟执行一次job2
+        service.scheduleWithFixedDelay(
+                new ScheduledExecutorTest("job2"), initialDelay2,
+                delay2, TimeUnit.SECONDS);
+上面代码展示了 ScheduledExecutorService 中两种最常用的调度方法 scheduleAtFixedRate 和 scheduleWithFixedDelay。scheduleAtFixedRate 每次执行时间为上一次任务开始起向后推一个时间间隔，即每次执行时间为 :initialDelay, initialDelay+period, initialDelay+2*period, …；
+scheduleWithFixedDelay 每次执行时间为上一次任务结束起向后推一个时间间隔，即每次执行时间为：initialDelay, initialDelay+executeTime+delay, initialDelay+2*executeTime+2*delay。由此可见，ScheduleAtFixedRate 是基于固定时间间隔进行任务调度，ScheduleWithFixedDelay 取决于每次任务执行的时间长短，是基于不固定时间间隔进行任务调度。
+  				
 ScheduledExecutorService比Timer更安全，功能更强大，后面会有一篇单独进行对比。
 
 
@@ -45759,12 +45776,12 @@ Java
 private View networkErrorView;
  
 private void showNetError() {
-	// not repeated infalte
+	// 如果已经存在了，就显示出来就可以了
 	if (networkErrorView != null) {
 		networkErrorView.setVisibility(View.VISIBLE);
 		return;
 	}
- 
+	//不存在，重新创建一个
 	ViewStub stub = (ViewStub)findViewById(R.id.network_error_layout);
 	networkErrorView = stub.inflate();
 	Button networkSetting = (Button)networkErrorView.findViewById(R.id.network_setting);
@@ -46150,7 +46167,91 @@ singleThreadExecutor.execute(new Runnable() {
 		handler.sendEmptyMessage(xx);
 	}
 });
+,或者直接用AsyncTask，
+例如查询记录：
+//查询报表
+private void loggrid()
+{
+	ToolClass.Log(ToolClass.INFO,"EV_JNI","APP<<start:"+ToolClass.getDayOfMonth(mYear, mMon, mDay)+"end:"+ToolClass.getDayOfMonth(eYear, eMon, eDay)+"时间大小="+ToolClass.dateCompare(ToolClass.getDayOfMonth(mYear, mMon, mDay),ToolClass.getDayOfMonth(eYear, eMon, eDay)),"log.txt");
+	if(
+			(!edtloggridstart.getText().toString().isEmpty())
+		  &&(!edtloggridend.getText().toString().isEmpty())
+		  &&(ToolClass.dateCompare(ToolClass.getDayOfMonth(mYear, mMon, mDay),ToolClass.getDayOfMonth(eYear, eMon, eDay))<0)
+	  )
+	{
+		LoggridQueryThread logquery=new LoggridQueryThread();
+		logquery.execute();
+	}
+	else
+	{
+		Toast.makeText(LogOpt.this, "请输入正确查询时间！", Toast.LENGTH_SHORT).show();
+	}
+}
+//****************
+//异步线程，用于查询记录
+//****************
+private class LoggridQueryThread extends AsyncTask<Void,Void,List<Tb_vmc_log>>
+{
 
+	@Override
+	protected List<Tb_vmc_log> doInBackground(Void... params) {
+		// TODO Auto-generated method stub
+		String mYearStr=null,mMonthStr=null,mDayStr=null;
+		String eYearStr=null,eMonthStr=null,eDayStr=null;
+		
+		mYearStr=((mYear<10)?("0"+String.valueOf(mYear)):String.valueOf(mYear));
+		mMonthStr=((mMon<10)?("0"+String.valueOf(mMon)):String.valueOf(mMon));
+		mDayStr=((mDay<10)?("0"+String.valueOf(mDay)):String.valueOf(mDay));
+		eYearStr=((eYear<10)?("0"+String.valueOf(eYear)):String.valueOf(eYear));
+		eMonthStr=((eMon<10)?("0"+String.valueOf(eMon)):String.valueOf(eMon));
+		eDayStr=((eDay<10)?("0"+String.valueOf(eDay)):String.valueOf(eDay));
+		// 创建InaccountDAO对象
+		vmc_logDAO logDAO = new vmc_logDAO(LogOpt.this);
+		String start=mYearStr+"-"+mMonthStr+"-"+mDayStr;
+		String end=eYearStr+"-"+eMonthStr+"-"+eDayStr;
+		List<Tb_vmc_log> listinfos=logDAO.getScrollPay(start,end);
+		return listinfos;
+	}
+
+	@Override
+	protected void onPostExecute(List<Tb_vmc_log> listinfos) {
+		// TODO Auto-generated method stub
+		String[] strInfos = new String[listinfos.size()];
+		logID = new String[listinfos.size()];
+		logType = new String[listinfos.size()];
+		logDesc = new String[listinfos.size()];
+		logTime = new String[listinfos.size()];
+		int m=0;
+		// 遍历List泛型集合
+		for (Tb_vmc_log tb_inaccount : listinfos) 
+		{
+			//总支付订单
+			logID[m]= tb_inaccount.getLogID();
+			logType[m] = ToolClass.typestr(3,tb_inaccount.getLogType());
+			logDesc[m] = tb_inaccount.getLogDesc();
+			logTime[m] = tb_inaccount.getLogTime();			
+			m++;// 标识加1
+		}
+		
+		int x=0;
+		LogOpt.this.listMap.clear();
+		for(x=0;x<listinfos.size();x++)
+		{
+			Map<String,String> map = new HashMap<String,String>();//定义Map集合，保存每一行数据
+			map.put("logID", logID[x]);
+			map.put("logType", logType[x]);
+			map.put("logDesc", logDesc[x]);
+			map.put("logTime", logTime[x]);
+			LogOpt.this.listMap.add(map);//保存数据行
+		}
+		//将这个构架加载到data_list中
+		LogOpt.this.simpleada = new SimpleAdapter(LogOpt.this,LogOpt.this.listMap,R.layout.loglist,
+					new String[]{"logID","logType","logDesc","logTime"},//Map中的key名称
+					new int[]{R.id.txtlogID,R.id.txtlogType,R.id.txtlogDesc,R.id.txtlogTime});
+		LogOpt.this.lvlog.setAdapter(LogOpt.this.simpleada);
+	}
+			
+}
 
 
 4）性能优化之Java(Android)代码优化
@@ -46158,6 +46259,11 @@ singleThreadExecutor.execute(new Runnable() {
 包括数据类型、数据结构的选择。
 a. 数据类型选择
 字符串拼接用StringBuilder代替String，在非并发情况下用StringBuilder代替StringBuffer。如果你对字符串的长度有大致了解，如100字符左右，可以直接new StringBuilder(128)指定初始大小，减少空间不够时的再次分配。
+对于三者使用的总结：
+1.如果要操作少量的数据用 = String
+2.单线程操作字符串缓冲区 下操作大量数据 = StringBuilder
+3.多线程操作字符串缓冲区 下操作大量数据 = StringBuffer
+ 
 64位类型如long double的处理比32位如int慢
 使用SoftReference、WeakReference相对正常的强应用来说更有利于系统垃圾回收
 final类型存储在常量区中读取效率更高
