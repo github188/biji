@@ -39448,6 +39448,145 @@ ImageRequest imageRequest = new ImageRequest(
 mQueue.add(imageRequest);  
 现在如果运行一下程序，并尝试发出这样一条网络请求，很快就能看到网络上的图片在ImageView中显示出来了，如下图所示：
 
+2.Android Volley框架的几种post提交请求方式
+1.客户端以普通的post方式进行提交,服务端返回字符串 
+Java代码  收藏代码
+RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());  
+  
+StringRequest stringRequest = new StringRequest(Request.Method.POST,httpurl,  
+    new Response.Listener<String>() {  
+        @Override  
+        public void onResponse(String response) {  
+            Log.d(TAG, "response -> " + response);  
+        }  
+    }, new Response.ErrorListener() {  
+        @Override  
+        public void onErrorResponse(VolleyError error) {  
+            Log.e(TAG, error.getMessage(), error);  
+        }  
+    }) {  
+    @Override  
+    protected Map<String, String> getParams() {  
+        //在这里设置需要post的参数  
+            Map<String, String> map = new HashMap<String, String>();    
+            map.put("name1", "value1");    
+            map.put("name2", "value2");    
+  
+        return params;  
+    }  
+};        
+  
+requestQueue.add(stringRequest);  
+
+2.客户端以json串的post请求方式进行提交,服务端返回json串 
+Java代码  收藏代码
+RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());  
+  
+Map<String, String> map = new HashMap<String, String>();    
+map.put("name1", "value1");    
+map.put("name2", "value2");    
+  
+JSONObject jsonObject = new JSONObject(params);  
+JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Method.POST,httpurl, jsonObject,  
+    new Response.Listener<JSONObject>() {  
+        @Override  
+        public void onResponse(JSONObject response) {  
+            Log.d(TAG, "response -> " + response.toString());  
+  
+        }  
+    }, new Response.ErrorListener() {  
+        @Override  
+        public void onErrorResponse(VolleyError error) {  
+            Log.e(TAG, error.getMessage(), error);  
+    }  
+    })  
+    {  
+    //注意此处override的getParams()方法,在此处设置post需要提交的参数根本不起作用  
+    //必须象上面那样,构成JSONObject当做实参传入JsonObjectRequest对象里  
+    //所以这个方法在此处是不需要的  
+//  @Override  
+//  protected Map<String, String> getParams() {                 
+//          Map<String, String> map = new HashMap<String, String>();    
+//          map.put("name1", "value1");    
+//          map.put("name2", "value2");    
+                  
+//      return params;  
+//  }  
+              
+    @Override  
+    public Map<String, String> getHeaders() {  
+        HashMap<String, String> headers = new HashMap<String, String>();  
+        headers.put("Accept", "application/json");  
+        headers.put("Content-Type", "application/json; charset=UTF-8");  
+                  
+        return headers;  
+    }  
+};  
+requestQueue.add(jsonRequest);  
+
+看了上面这段代码,会觉得volley这个框架实在是还不够完善,使用JsonObjectRequest对象提交一个post请求,如果有参数需要提交,就必须以JSONObject的json串方式提交. 
+如果服务端并不支持这种方式呢?比如常见的spring mvc服务端,就很难支持json的请求方式. 
+那么我们想实现这个目标,就需要使用下面给出的办法. 
+
+3.客户端以普通的post方式进行提交,服务端返回json串 
+首先在Activity类里,继承Request实现一个NormalPostRequest类 
+Java代码  收藏代码
+private class NormalPostRequest extends Request<JSONObject> {  
+    private Map<String, String> mMap;  
+    private Listener<JSONObject> mListener;  
+  
+    public NormalPostRequest(String url, Listener<JSONObject> listener,ErrorListener errorListener, Map<String, String> map) {  
+        super(Request.Method.POST, url, errorListener);  
+              
+        mListener = listener;  
+        mMap = map;  
+    }  
+      
+    //mMap是已经按照前面的方式,设置了参数的实例  
+    @Override  
+    protected Map<String, String> getParams() throws AuthFailureError {  
+        return mMap;  
+    }  
+      
+    //此处因为response返回值需要json数据,和JsonObjectRequest类一样即可  
+    @Override  
+    protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {  
+        try {  
+            String jsonString = new String(response.data,HttpHeaderParser.parseCharset(response.headers));  
+                  
+            return Response.success(new JSONObject(jsonString),HttpHeaderParser.parseCacheHeaders(response));  
+        } catch (UnsupportedEncodingException e) {  
+            return Response.error(new ParseError(e));  
+        } catch (JSONException je) {  
+            return Response.error(new ParseError(je));  
+        }  
+    }  
+  
+    @Override  
+    protected void deliverResponse(JSONObject response) {  
+        mListener.onResponse(response);  
+    }  
+}  
+
+接下来的调用方式和前面差不多,生成一个Request实例,加入队列中即可. 
+Java代码  收藏代码
+RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());  
+  
+Request<JSONObject> request = new NormalPostRequest(httpurl,  
+    new Response.Listener<JSONObject>() {  
+        @Override  
+        public void onResponse(JSONObject response) {  
+            Log.d(TAG, "response -> " + response.toString());  
+        }  
+    }, new Response.ErrorListener() {  
+        @Override  
+        public void onErrorResponse(VolleyError error) {  
+            Log.e(TAG, error.getMessage(), error);  
+        }  
+    }, params);  
+  
+requestQueue.add(request);  
+
 2. ImageLoader的用法
 如果你觉得ImageRequest已经非常好用了，那我只能说你太容易满足了 ^_^。实际上，Volley在请求网络图片方面可以做到的还远远不止这些，而ImageLoader就是一个很好的例子。ImageLoader也可以用于加载网络上的图片，并且它的内部也是使用ImageRequest来实现的，不过ImageLoader明显要比ImageRequest更加高效，因为它不仅可以帮我们对图片进行缓存，还可以过滤掉重复的链接，避免重复发送请求。
 由于ImageLoader已经不是继承自Request的了，所以它的用法也和我们之前学到的内容有所不同，总结起来大致可以分为以下四步：
@@ -39849,6 +39988,191 @@ mQueue.add(gsonRequest);
 可以看到，这里onResponse()方法的回调中直接返回了一个Weather对象，我们通过它就可以得到WeatherInfo对象，接着就能从中取出JSON中的相关数据了。现在运行一下代码，观察控制台日志，打印数据如下图所示：
 
 这样的话，XMLRequest和GsonRequest的功能就基本都实现了，我们也是借助这两个例子深刻地理解了自定义Request的方法，对Volley的认识也是更加深入了。好了，
+
+
+3.他是类似放到缓存里面，然后统一回调中来处理，onResponse处理上传完成后的结果，类似
+线程AsyncTask的onPostExecute方法，因此如果要连续发送，不能直接用for循环，要这样写
+JSONArray productarr=null;
+JSONArray zhuheproductArray=null;
+JSONObject zhuheproductjson = null; 
+int productint=0;
+//分解商品信息
+private void productArray(String classrst) throws JSONException
+{
+	JSONObject jsonObject = new JSONObject(classrst); 
+	productarr=jsonObject.getJSONArray("ProductList");
+	productint=0;
+	zhuheproductArray=new JSONArray();
+	zhuheproductjson = new JSONObject(); 
+	if(productarr.length()==0)
+	{
+		//向主线程返回信息
+		Message tomain=mainhand.obtainMessage();
+		tomain.what=SETRODUCTMAIN;
+		tomain.obj=zhuheproductjson.toString();
+		mainhand.sendMessage(tomain); // 发送消息	
+	}
+}
+//更新商品图片信息
+private String updateproduct(int i) throws JSONException
+{
+	final JSONObject object2=productarr.getJSONObject(i);
+	ToolClass.Log(ToolClass.INFO,"EV_SERVER","更新商品图片="+object2.toString(),"server.txt");										
+	final JSONObject zhuheobj=object2;
+	//第一步.获取商品图片名字
+	String target6 = httpStr+"/api/productImage";	//要提交的目标地址
+	JSONObject json=new JSONObject();
+	try {
+		json.put("VmcNo", vmc_no);
+		json.put("attId", object2.getString("att_batch_id"));				
+	} catch (JSONException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}					
+	final String param6=json.toString();		
+	ToolClass.Log(ToolClass.INFO,"EV_SERVER","Send2="+param6.toString(),"server.txt");
+	//4.准备加载信息设置
+	StringRequest stringRequest6 = new StringRequest(Method.POST, target6,  new Response.Listener<String>() {  
+		@Override  
+		public void onResponse(String response) {  				   
+			//如果请求成功
+			result = response;	//获取返回的字符串
+			ToolClass.Log(ToolClass.INFO,"EV_SERVER","rec1[ok10]="+result,"server.txt");
+			try
+			{
+				//第二步，获取图片名字ATTID
+				JSONObject jsonObject3 = new JSONObject(result); 
+				JSONArray arr3=jsonObject3.getJSONArray("ProductImageList");
+				JSONObject object3=arr3.getJSONObject(0);
+				final String ATT_ID=object3.getString("ATT_ID");
+				ToolClass.Log(ToolClass.INFO,"EV_SERVER","rec2[ok10]ATT_ID="+ATT_ID,"server.txt");
+				//ToolClass.Log(ToolClass.INFO,"EV_SERVER","rec2[ok10]zhuheobj="+zhuheobj+"zhuheproductArray="+zhuheproductArray,"server.txt");
+				//第三步，把图片名字保存到json中
+				zhuheobj.put("AttImg", ToolClass.getImgFile(ATT_ID));
+				zhuheproductArray.put(zhuheobj);
+				if(ATT_ID.isEmpty())
+				{
+					ToolClass.Log(ToolClass.INFO,"EV_SERVER","商品["+object2.getString("product_Name")+"]无图片","server.txt");
+				}
+				else
+				{
+					if(ToolClass.isImgFile(ATT_ID))
+					{
+						ToolClass.Log(ToolClass.INFO,"EV_SERVER","商品["+object2.getString("product_Name")+"]图片已存在","server.txt");
+					}
+					else 
+					{
+						ToolClass.Log(ToolClass.INFO,"EV_SERVER","商品["+object2.getString("product_Name")+"]图片,下载图片...","server.txt");
+						//第四步.准备下载	
+						String url= httpStr+"/topic/getFile/"+ATT_ID + ".jpg";	//要提交的目标地址
+						ImageRequest imageRequest = new ImageRequest(  
+								url,  
+								new Response.Listener<Bitmap>() {  
+									@Override  
+									public void onResponse(Bitmap response) {  
+										ToolClass.saveBitmaptofile(response,ATT_ID);
+										try {
+											ToolClass.Log(ToolClass.INFO,"EV_SERVER","商品["+object2.getString("product_Name")+"]图片,下载图片完成","server.txt");
+										} catch (JSONException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+									}  
+								}, 0, 0, Config.RGB_565, new Response.ErrorListener() {  
+									@Override  
+									public void onErrorResponse(VolleyError error) {  
+										result = "请求失败！";
+										try {
+											ToolClass.Log(ToolClass.INFO,"EV_SERVER","商品["+object2.getString("product_Name")+"]图片,下载图片失败","server.txt");
+										} catch (JSONException e) {
+											// TODO Auto-generated catch block
+											e.printStackTrace();
+										}
+									}  
+								});
+						mQueue.add(imageRequest); 
+					}
+					
+				}
+			}
+			catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			
+			
+			//第五步：进行下一个商品信息
+			productint++;
+			if(productint<productarr.length())
+			{
+				try {
+					updateproduct(productint);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			else
+			{
+				try {
+					zhuheproductjson.put("ProductList", zhuheproductArray);
+				} catch (JSONException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				ToolClass.Log(ToolClass.INFO,"EV_SERVER","reczhuhe="+zhuheproductjson.toString(),"server.txt");
+
+				//上传给server
+				//向主线程返回信息
+				Message tomain4=mainhand.obtainMessage();
+				tomain4.what=SETRODUCTMAIN;
+				tomain4.obj=zhuheproductjson.toString();
+				mainhand.sendMessage(tomain4); // 发送消息
+			}
+		}  
+	}, new Response.ErrorListener() {  
+		@Override  
+		public void onErrorResponse(VolleyError error) {  
+			result = "请求失败！";
+			//第三步，把图片名字保存到json中
+			try {
+				zhuheobj.put("AttImg", "");
+				zhuheproductArray.put(zhuheobj);
+				zhuheproductjson.put("ProductList", zhuheproductArray);
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}				
+			ToolClass.Log(ToolClass.INFO,"EV_SERVER","rec2=[fail10]"+result,"server.txt");
+			
+			//上传给server
+			//向主线程返回信息
+			Message tomain4=mainhand.obtainMessage();
+			tomain4.what=SETRODUCTMAIN;
+			tomain4.obj=zhuheproductjson.toString();
+			mainhand.sendMessage(tomain4); // 发送消息
+		}  
+	}) 
+	{  
+		@Override  
+		protected Map<String, String> getParams() throws AuthFailureError {  
+			//3.添加params
+			Map<String, String> map = new HashMap<String, String>();  
+			map.put("Token", Tok);  
+			map.put("param", param6);
+			ToolClass.Log(ToolClass.INFO,"EV_SERVER","Send3="+map.toString(),"server.txt");
+			return map;  
+	   }  
+	}; 	
+	//5.加载信息并发送到网络上
+	mQueue.add(stringRequest6);	
+	
+	//zhuheproductjson.put("ProductList", zhuheproductArray);
+	//ToolClass.Log(ToolClass.INFO,"EV_SERVER","reczhuhe="+zhuheproductjson.toString(),"server.txt");
+	//return zhuheproductjson.toString();
+	return "";
+}
+
 
 
 *Android 二维码 生成和识别ZXing
