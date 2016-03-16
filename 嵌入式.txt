@@ -43053,7 +43053,132 @@ public class OtherActivity extends Activity implements Observer {
     mContent.setText(person.toString());
   }
 }
-	
+
+*串口操作使用三方包android_serialport_api
+public class MainActivity extends Activity {
+	FileOutputStream mOutputStream;  
+    FileInputStream mInputStream;  
+    SerialPort sp; 
+    EditText edtrecv;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        final EditText edtsend= (EditText)findViewById(R.id.edtsend); 
+        edtrecv= (EditText)findViewById(R.id.edtrecv);
+        Button btnopen=(Button)findViewById(R.id.btnopen);  
+        btnopen.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				try {  
+	            sp=new SerialPort(new File("/dev/ttyS1"),9600,0);  
+	            } catch (SecurityException e) {  
+	                // TODO Auto-generated catch block  
+	                e.printStackTrace();  
+	            } catch (IOException e) {  
+	                // TODO Auto-generated catch block  
+	                e.printStackTrace();  
+	            }     
+	                
+	              
+	              mOutputStream=(FileOutputStream) sp.getOutputStream();  
+	              mInputStream=(FileInputStream) sp.getInputStream();  
+	              
+	               Toast.makeText(getApplicationContext(), "open",  
+	                        Toast.LENGTH_SHORT).show();   
+			}
+		});
+        Button btnsend=(Button)findViewById(R.id.btnsend);  
+        btnsend.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				//发送十六进制
+				byte content[] = new byte[16];
+				content[0]= ((char)0x0c);
+				content[1]= ((char)0x1a);
+				content[2]= ((char)0x0a);
+				content[3]= ((char)0x06);
+				content[4]= ((char)0x07);
+				content[5]= ((char)0x50);
+				content[6]= ((char)0x58);
+
+				content[7]= ((char)0x05);
+				content[8]= ((char)0x04);
+				content[9]= ((char)0x0b);
+
+				content[10]= ((char)0x02);
+				content[11]= ((char)0x06);
+				content[12]= ((char)0x01);
+				content[13]= ((char)0x2b);
+
+				content[14]= ((char)0x16);
+				content[15]= ((char)0x09);
+				
+				
+				try {  
+	                mOutputStream.write(content);
+	            } catch (IOException e) {  
+	                e.printStackTrace();  
+	            }
+				
+				//发送字符串
+//				String str=edtsend.getText().toString();
+//				 try {  
+//		                mOutputStream.write(str.getBytes());  
+//		                mOutputStream.write('\n');  
+//		            } catch (IOException e) {  
+//		                e.printStackTrace();  
+//		            }  
+				         
+		             
+		              Toast.makeText(getApplicationContext(), "send",  
+		                         Toast.LENGTH_SHORT).show(); 
+			}
+		});
+        Button btnrecv=(Button)findViewById(R.id.btnrecv);  
+        btnrecv.setOnClickListener(new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				int size;  
+	              
+	            try {  
+	            byte[] buffer = new byte[64];  
+	            if (mInputStream == null) return;  
+	            size = mInputStream.read(buffer);
+//	            //接收十六进制
+//	            String res="";
+//			    for(int i=0;i<size;i++)
+//			    {
+//			    	String hex = Integer.toHexString(buffer[i] & 0xFF);
+//		            if (hex.length() == 1)
+//		            {
+//		                hex = '0' + hex;
+//		            }	
+//			    	res+="["+hex.toUpperCase()+"]";
+//			    }
+//			    edtrecv.setText(res);
+	            //接收字符串
+	            if (size > 0) 
+	            {  
+	                String str=new String(buffer, 0, size);
+	                edtrecv.setText(str);   
+	            }  
+	        } catch (IOException e) {  
+	            e.printStackTrace();  
+	            return;  
+	        }  
+			}
+		});
+        
+        
+    }    
+}	
 
 *图表控件achartengine
 将插件achartengine-1.0.0.jar放到工程的libs目录下
