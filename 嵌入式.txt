@@ -30279,6 +30279,24 @@ xml布局文件
 activity.java文件
 MyVideoView videoView=(MyVideoView)view.findViewById(R.id.video);
 
+*WebView内置浏览器
+对于有显示 HTML 内容的 Android 应用来说用这个控件
+Android 的 WebView 组件使用非常简单，可以使用 loadUrl()加载一个 URL 地址，也可以使用 loadData()或 loadDataWithBaseURL()加载一段 HTML 代码片段。loadData()不能加载图片内容，所以在本例中选择使用可以加载图片内容，并获得更强大 Web 支持的 loadDataWithBaseURL()来显示文字与图片内容，
+loadDataWithBaseURL()方法定义
+baseUrl，相对路径，在本例中 HTML 文本内用到的所有资源文件，不论是图片还是其它的 JavaScript 文件或者 CSS 文件，其路径都是相对于这个参数的。
+data， 以 encoding 格式编码的 HTML 内容字符串。
+mimeType，数据的 MIME 类型，null 时默认为"text/html"。
+encoding， 数据编码格式。
+historyUrl，作为历史条目的 URL，可为 null。
+
+1)loadData加载字
+WebView webproductDesc = (WebView) findViewById(R.id.webproductDesc);
+WebSettings settings = webproductDesc.getSettings();
+settings.setSupportZoom(true);
+settings.setTextSize(WebSettings.TextSize.LARGEST);
+webproductDesc.getSettings().setDefaultTextEncodingName("UTF -8");//设置默认为utf-8
+webproductDesc.loadData(tb_vmc_product.getProductDesc().toString(), "text/html; charset=UTF-8", null);//这种写法可以正确中文解码
+
 //**********
 //布局管理器
 //**********
@@ -36905,6 +36923,9 @@ try {
 		ToolClass.Log(ToolClass.INFO,"EV_JNI","API<<断开连接");
 		EV_TYPE=EV_OFFLINE;
 	}
+	
+
+	
 1)数据的封装
 （1）简单有一个节点的数据
 jsonTools.java文件
@@ -43055,6 +43076,7 @@ public class OtherActivity extends Activity implements Observer {
 }
 
 *串口操作使用三方包android_serialport_api
+1)在主页面
 public class MainActivity extends Activity {
 	FileOutputStream mOutputStream;  
     FileInputStream mInputStream;  
@@ -43177,8 +43199,86 @@ public class MainActivity extends Activity {
 		});
         
         
-    }    
+    } 
+
+	//收到数据后，自动返回触发回调数值
+	@Override
+	protected void onDataReceived(final byte[] buffer, final int size) {
+		runOnUiThread(new Runnable() {
+			public void run() {
+				if (mReception != null) {
+					mReception.append(new String(buffer, 0, size));
+				}
+			}
+		});
+	}	
 }	
+
+2）在线程里面
+@Override
+public void run() {
+	// TODO Auto-generated method stub
+	Looper.prepare();//用户自己定义的类，创建线程需要自己准备loop
+	ToolClass.Log(ToolClass.INFO,"EV_COM","Thread start["+Thread.currentThread().getId()+"]","com.txt");
+	//打开串口1
+	try {  
+		sp=new SerialPort(new File("/dev/ttyS1"),9600,0);  
+	} catch (SecurityException e) {  
+		// TODO Auto-generated catch block  
+		e.printStackTrace();  
+	} catch (IOException e) {  
+		// TODO Auto-generated catch block  
+		e.printStackTrace();  
+	}
+			
+	childhand=new Handler()
+	{
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what)
+			{
+			case EV_BENTO_CHECKCHILD://子线程接收主线程格子查询消息		
+				//1.得到本机编号信息
+				JSONObject ev=null;
+				try {
+					ev = new JSONObject(msg.obj.toString());
+					cabinet=ev.getInt("cabinet");
+					ToolClass.Log(ToolClass.INFO,"EV_COM","ThreadSend0.2=cabinet="+cabinet,"com.txt");
+				} catch (JSONException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				//发送串口数据
+				mOutputStream=(FileOutputStream) sp.getOutputStream(); 
+				try {
+					mOutputStream.write(BentPort.sendstatus(cabinet));
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				//向主线程返回信息
+				final Message tomain11=mainhand.obtainMessage();
+				tomain11.what=EV_BENTO_CHECKMAIN;
+				mainhand.sendMessage(tomain11); // 发送消息
+				break;						
+			default:
+				break;
+			}
+		}
+		
+	};
+	//接收串口数据
+	ScheduledExecutorService timer = Executors.newScheduledThreadPool(1);
+	timer.scheduleWithFixedDelay(new Runnable() 
+	{ 
+		@Override 
+		public void run() 
+		{ 
+			ToolClass.Log(ToolClass.INFO,"EV_COM","Thread hello["+Thread.currentThread().getId()+"]","com.txt");
+		} 	           
+	}, 3, 2, TimeUnit.SECONDS);       // timeTask 10*60
+	Looper.loop();//用户自己定义的类，创建线程需要自己准备loop
+}
 
 *图表控件achartengine
 将插件achartengine-1.0.0.jar放到工程的libs目录下
