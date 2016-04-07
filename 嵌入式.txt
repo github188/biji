@@ -30288,6 +30288,8 @@ data， 以 encoding 格式编码的 HTML 内容字符串。
 mimeType，数据的 MIME 类型，null 时默认为"text/html"。
 encoding， 数据编码格式。
 historyUrl，作为历史条目的 URL，可为 null。
+例如： webproductDesc.loadDataWithBaseURL(null,tb_inaccount.getProductDesc().toString(), "text/html; charset=UTF-8","utf-8", null);//这种写法可以正确中文解码
+			
 
 1)loadData加载字
 WebView webproductDesc = (WebView) findViewById(R.id.webproductDesc);
@@ -42825,6 +42827,204 @@ public class mainact2 extends Activity {
 07-01 17:54:43.837: I/EV_JNI(12741): onreceiver=296
 
 
+(3)使用LocalBroadcastManager：
+在自己的进程内进行局部广播发送与注册，使用它比直接通过sendBroadcast(Intent)发送系统全局广播有以下几点好处。
+1    因广播数据在本应用范围内传播，你不用担心隐私数据泄露的问题。
+2    不用担心别的应用伪造广播，造成安全隐患。
+3    相比在系统内发送全局广播，它更高效。
+
+与上面全局广播类似
+MainActivity.java
+LocalBroadcastManager localBroadreceiver;
+EVServerReceiver receiver;
+	
+//2.创建EVServerReceiver的接收器广播，用来接收服务器同步的内容
+public class EVServerReceiver extends BroadcastReceiver 
+{
+
+	@Override
+	public void onReceive(Context context, Intent intent) 
+	{
+		// TODO Auto-generated method stub
+		Bundle bundle=intent.getExtras();
+		int EVWhat=bundle.getInt("EVWhat");
+		switch(EVWhat)
+		{
+		case EVServerhttp.SETMAIN:
+			Log.i("EV_JNI","activity=签到成功");
+			issuc=2;	
+			dialog.dismiss();				
+			break;
+		case EVServerhttp.SETFAILMAIN:
+			Log.i("EV_JNI","activity=失败，网络故障");
+			if(dialog.isShowing())
+				dialog.dismiss();
+			break;	
+		}
+		if(issale==false)
+		{
+			issale=true;
+			//签到完成，自动开启售货程序
+			barmaintain= ProgressDialog.show(MaintainActivity.this,"打开交易页面","请稍候...");
+			Intent intbus;
+			//横屏
+			if(ToolClass.getOrientation()==ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+			{
+				intbus = new Intent(MaintainActivity.this, BusLand.class);// 使用Accountflag窗口初始化Intent
+			}
+			//竖屏
+			else
+			{
+				intbus = new Intent(MaintainActivity.this, BusPort.class);// 使用Accountflag窗口初始化Intent
+			}
+			startActivityForResult(intbus,REQUEST_CODE);// 打开Accountflag
+		}
+	}
+
+}
+
+
+//3.开启服务
+startService(new Intent(MaintainActivity.this,EVServerService.class));
+//4.注册接收器
+localBroadreceiver = LocalBroadcastManager.getInstance(this);
+receiver=new EVServerReceiver();
+IntentFilter filter=new IntentFilter();
+filter.addAction("android.intent.action.vmserverrec");
+localBroadreceiver.registerReceiver(receiver,filter);
+
+//5.解除注册接收器
+localBroadreceiver.unregisterReceiver(receiver);
+//6.结束服务
+stopService(new Intent(MaintainActivity.this, EVServerService.class));
+
+//7.发送
+//上报给服务器
+Intent intent=new Intent();
+intent.putExtra("EVWhat", EVServerhttp.SETDEVSTATUCHILD);
+intent.putExtra("bill_err", bill_err);
+intent.putExtra("coin_err", coin_err);
+intent.setAction("android.intent.action.vmserversend");//action与接收器相同
+localBroadreceiver.sendBroadcast(intent); 
+
+
+
+EVServerService.java
+LocalBroadcastManager localBroadreceiver;
+ActivityReceiver receiver;
+
+//8.创建activity的接收器广播，用来接收内容
+public class ActivityReceiver extends BroadcastReceiver {
+
+	@Override
+	public void onReceive(Context context, Intent intent)
+	{
+		// TODO Auto-generated method stub
+		Bundle bundle=intent.getExtras();
+		int EVWhat=bundle.getInt("EVWhat");
+		switch(EVWhat)
+		{
+		//签到
+		case EVServerhttp.SETCHILD:
+			vmc_no=bundle.getString("vmc_no");
+			vmc_auth_code=bundle.getString("vmc_auth_code");
+			SerializableMap serializableMap = (SerializableMap) bundle.get("huoSet");
+			huoSet=serializableMap.getMap();
+			ToolClass.Log(ToolClass.INFO,"EV_SERVER","receiver:vmc_no="+vmc_no+"vmc_auth_code="+vmc_auth_code
+					+"huoSet="+huoSet.toString(),"server.txt");
+			ToolClass.setContext(context);
+			//处理接收到的内容,发送签到命令到子线程中
+			//初始化一:发送签到指令
+			childhand=serverhttp.obtainHandler();
+			Message childmsg=childhand.obtainMessage();
+			childmsg.what=EVServerhttp.SETCHILD;
+			JSONObject ev=null;
+			try {
+				ev=new JSONObject();
+				ev.put("vmc_no", vmc_no);
+				ev.put("vmc_auth_code", vmc_auth_code);
+				ToolClass.Log(ToolClass.INFO,"EV_SERVER","Send0.1="+ev.toString(),"server.txt");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			childmsg.obj=ev;
+			childhand.sendMessage(childmsg);
+			ischeck=false;
+			break;
+		//设备状态上报	
+		case EVServerhttp.SETDEVSTATUCHILD:
+			int bill_err=bundle.getInt("bill_err");
+			int coin_err=bundle.getInt("coin_err");
+			ToolClass.Log(ToolClass.INFO,"EV_SERVER","Service 上报设备bill_err="+bill_err
+					+" coin_err="+coin_err,"server.txt");				
+			//
+			childhand=serverhttp.obtainHandler();
+			Message childmsg3=childhand.obtainMessage();
+			childmsg3.what=EVServerhttp.SETDEVSTATUCHILD;
+			JSONObject ev3=null;
+			try {
+				ev3=new JSONObject();
+				ev3.put("bill_err", bill_err);
+				ev3.put("coin_err", coin_err);	    			  			
+				ToolClass.Log(ToolClass.INFO,"EV_SERVER","Send0.1="+ev3.toString(),"server.txt");
+			} catch (JSONException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			childmsg3.obj=ev3;
+			childhand.sendMessage(childmsg3);
+			break;	
+		//发送交易记录命令到子线程中
+		case EVServerhttp.SETRECORDCHILD://子线程接收主线程消息获取心跳信息
+			childhand=serverhttp.obtainHandler();
+			Message childheartmsg2=childhand.obtainMessage();
+			childheartmsg2.what=EVServerhttp.SETRECORDCHILD;
+			childheartmsg2.obj=grid();
+			childhand.sendMessage(childheartmsg2);						
+			break;	
+		//发送货道上传命令到子线程中	
+		case EVServerhttp.SETHUODAOSTATUCHILD:				
+			childhand=serverhttp.obtainHandler();
+			Message childheartmsg3=childhand.obtainMessage();
+			childheartmsg3.what=EVServerhttp.SETHUODAOSTATUCHILD;
+			childheartmsg3.obj=columngrid();
+			childhand.sendMessage(childheartmsg3);
+			break;	
+		}			
+	}
+
+}
+
+@Override
+public void onCreate() {
+	// TODO Auto-generated method stub
+	ToolClass.Log(ToolClass.INFO,"EV_SERVER","Service create","server.txt");
+	super.onCreate();
+	//9.注册接收器
+	localBroadreceiver = LocalBroadcastManager.getInstance(this);
+	receiver=new ActivityReceiver();
+	IntentFilter filter=new IntentFilter();
+	filter.addAction("android.intent.action.vmserversend");
+	localBroadreceiver.registerReceiver(receiver,filter);						
+}
+
+@Override
+public void onDestroy() {
+	// TODO Auto-generated method stub		
+	ToolClass.Log(ToolClass.INFO,"EV_SERVER","Service destroy","server.txt");
+	//10.解除注册接收器
+	localBroadreceiver.unregisterReceiver(receiver);
+	super.onDestroy();
+}
+
+//11.发送广播
+//返回给activity广播
+intent=new Intent();
+intent.putExtra("EVWhat", EVServerhttp.SETFAILMAIN);
+intent.setAction("android.intent.action.vmse
+rverrec");//action与接收器相同
+localBroadreceiver.sendBroadcast(intent);	
 
 
 3)使用观察者模式 ，service为被观察者，所以的activity为观察者，当service中的内容发生改变时，通知所有的activity来更新，代码如下
