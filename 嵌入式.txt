@@ -36892,7 +36892,7 @@ value值如果是一个数组的情况下
 0.1)如果不需要解包整个json,只是提出里面的键值来用既可以了，只要简单的这样
 做就行了
 判断是否存在这个键值
-先用jsonObject.containsKey(key)判断，有再去取值
+先用jsonObject.has(key)判断，有再去取值
 
 获取键值：
 try {
@@ -47071,3 +47071,222 @@ handler.postDelayed，handler.postAtTime，handler.sendMessageDelayed，View.postDe
 如 JSON 代替 XML，WebP 代替其他图片格式。关注公众号 codekk，回复 20 查看关于 WebP 的介绍。
  (5) 大文件下载
 支持断点续传，并缓存 Http Resonse 的 ETag 标识，下次请求时带上，从而确定是否数据改变过，未改变则直接返回 304。
+
+
+
+
+*自动升级和安装程序
+Button btn=(Button)findViewById(R.id.btn);
+        btn.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				final String SDCARD_DIR=File.separator+"sdcard"+File.separator+"ev";
+		    	final String NOSDCARD_DIR=File.separator+"ev";
+		    	File fileName=null;
+		    	String  sDir =null,str=null;
+		    	Map<String, String> list=null;
+		    	    	
+		        try {
+		        	  //首先判断sdcard是否插入
+		        	  String status = Environment.getExternalStorageState();
+		        	  if (status.equals(Environment.MEDIA_MOUNTED)) 
+		        	  {
+		        		 sDir = SDCARD_DIR;;
+		        	  } 
+		        	  else
+		        	  {
+		        		  sDir = NOSDCARD_DIR;
+		        	  }
+		        	 
+		        	  
+		        	             
+		        } catch (Exception e) {
+		            e.printStackTrace();
+		        }
+		        fileName=new File(sDir+File.separator+"EVConsole0419.apk");  
+		        //如果不存在，则创建文件
+	        	if(!fileName.exists())
+	        	{  
+	        		Log.v("EV_JNI","file not exists");
+	    	    } 
+	        	else
+	        	{
+	        		Log.v("EV_JNI",fileName.toString());
+	        	}
+		        
+	        	//1.有提示的安装
+//		        Intent intent = new Intent();  
+//		        //执行动作  
+//		        intent.setAction(Intent.ACTION_VIEW); 
+//		        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); 
+//		        //执行的数据类型  
+//		        intent.setDataAndType(Uri.fromFile(fileName), "application/vnd.android.package-archive");  
+//		        startActivity(intent); 
+//		        
+	        	//1.静默安装
+	        	Process process = null;  
+	            OutputStream out = null;
+	            boolean result = false;  
+	            try {  
+	                process = Runtime.getRuntime().exec("su");  
+	                out = process.getOutputStream();  
+	                DataOutputStream dataOutputStream = new DataOutputStream(out);  
+	                dataOutputStream.writeBytes("chmod 777 " + fileName.getPath() + "\n");  
+	                dataOutputStream.writeBytes("LD_LIBRARY_PATH=/vendor/lib:/system/lib pm install -r " +  
+	                		fileName.getPath());  
+	                // 提交命令  
+	                dataOutputStream.flush();  
+	                // 关闭流操作  
+	                dataOutputStream.close();  
+	                out.close();  
+	                int value = process.waitFor();  
+	                  
+	                // 代表成功  
+	                if (value == 0) {  
+	                    result = true;  
+	                } else if (value == 1) { // 失败  
+	                    result = false;  
+	                } else { // 未知情况  
+	                    result = false;  
+	                }  
+	            } catch (IOException e) {  
+	                e.printStackTrace();  
+	            } catch (InterruptedException e) {  
+	                e.printStackTrace();  
+	            }
+	            
+	            //2.杀死本进程
+	            android.os.Process.killProcess(android.os.Process.myPid());
+	            
+	            //3.打开已安装的程序
+	            
+	            
+			}
+		});
+		
+		
+*上传交易日志：
+1.base64格式的转换
+在项目中需要用到文件传输入，为了传输方便最好的办法是将文件转成base64字串，再将base64字串转成字节流保存在文件了。
+不过这种做法的虽然简单，但还是要根据实际需要进行选择；弊端是不能转太大的文件，文件太大会造成效率上的问题。具体多大，笔者没有做深入研究和实际测试。如有兴趣，可以自己深入研究测试。
+
+需要导入 import android.util.Base64;
+/**
+* encodeBase64File:(将文件转成base64 字符串). <br/>
+* @author guhaizhou@126.com
+* @param path 文件路径
+* @return
+* @throws Exception
+* @since JDK 1.6
+*/
+public static String encodeBase64File(String path) throws Exception {
+File  file = new File(path);
+FileInputStream inputFile = new FileInputStream(file);
+byte[] buffer = new byte[(int)file.length()];
+inputFile.read(buffer);
+        inputFile.close();
+        return Base64.encodeToString(buffer,Base64.DEFAULT);
+}
+－－－－－－－－－－－－－－－－－－－－－－－－－－可以加我微信号：googlecao 进行交流－－－－－－－－－－－－－－－－－－－－－－－－
+/**
+* decoderBase64File:(将base64字符解码保存文件). <br/>
+* @author guhaizhou@126.com
+* @param base64Code 编码后的字串
+* @param savePath  文件保存路径
+* @throws Exception
+* @since JDK 1.6
+*/
+public static void decoderBase64File(String base64Code,String savePath) throws Exception {
+//byte[] buffer = new BASE64Decoder().decodeBuffer(base64Code);
+byte[] buffer =Base64.decode(base64Code, Base64.DEFAULT);
+FileOutputStream out = new FileOutputStream(savePath);
+out.write(buffer);
+out.close();
+}
+
+
+2.例子：		
+/**
+ * 上传文件线程
+ * 
+ * @author coolszy
+ *@date 2012-4-26
+ *@blog http://blog.92coding.com
+ */
+private class uploadLogThread extends Thread
+{
+	@Override
+	public void run()
+	{
+		String target = httpStr+"/api/uploadClientLog";	//要提交的目标地址
+		HttpClient httpclient = new DefaultHttpClient();	//创建HttpClient对象
+		httpclient.getParams().setParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 10000);//请求超时
+		httpclient.getParams().setParameter(CoreConnectionPNames.SO_TIMEOUT, 10000);//读取超时
+		HttpPost httppost = new HttpPost(target);	//创建HttpPost对象
+		//1.添加params
+		List<NameValuePair> params = new ArrayList<NameValuePair>();
+		params.add(new BasicNameValuePair("LAST_EDIT_TIME", ToolClass.getLasttime()));
+		params.add(new BasicNameValuePair("Token", Tok));			
+		params.add(new BasicNameValuePair("CLIENT_LOG_ID", LOG_IDS));
+		ByteArrayOutputStream output =null;
+		String bal=null;
+		try {
+			FileInputStream inputFile = new FileInputStream(file);
+			byte[] buffer = new byte[(int)file.length()];
+			inputFile.read(buffer);
+			inputFile.close();
+			bal= Base64.encodeToString(buffer,Base64.DEFAULT);
+		} catch (FileNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		params.add(new BasicNameValuePair("FILE_CONTENT", bal));
+		//ToolClass.Log(ToolClass.INFO,"EV_SERVER","Send3="+params.toString(),"server.txt");
+		try {
+			httppost.setEntity(new UrlEncodedFormEntity(params, "utf-8")); //设置编码方式
+			HttpResponse httpResponse = httpclient.execute(httppost);	//执行HttpClient请求
+			//向主线程返回信息
+			Message tomain=mainhand.obtainMessage();
+			if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK){	//如果请求成功
+				//如果请求成功
+				result = EntityUtils.toString(httpResponse.getEntity());	//获取返回的字符串
+				ToolClass.Log(ToolClass.INFO,"EV_SERVER","rec1="+result,"server.txt");
+//					JSONObject object=new JSONObject(result);
+//					int errType =  object.getInt("Error");
+//					//返回有故障
+//					if(errType>0)
+//					{
+//						tomain.what=SETERRFAILMAIN;
+//						tomain.obj=object.getString("Message");
+//						ToolClass.Log(ToolClass.INFO,"EV_SERVER","rec1=[fail1]SETERRFAILMAIN","server.txt");
+//					}
+//					else
+//					{
+//						tomain.what=SETMAIN;
+//						Tok=object.getString("Token");
+//						ToolClass.Log(ToolClass.INFO,"EV_SERVER","rec1=[ok1]","server.txt");
+//					}			    	    
+//		    	    mainhand.sendMessage(tomain); // 发送消息
+			}else{
+				result = "请求失败！";
+				tomain.what=SETFAILMAIN;
+				mainhand.sendMessage(tomain); // 发送消息
+				ToolClass.Log(ToolClass.INFO,"EV_SERVER","rec1=[fail1]SETFAILMAIN"+result,"server.txt");
+			}
+			
+			
+		} 
+	   catch (Exception e) 
+	   {  
+		   //e.printStackTrace();  
+		   //向主线程返回网络失败信息
+			Message tomain=mainhand.obtainMessage();
+			tomain.what=SETFAILMAIN;
+			mainhand.sendMessage(tomain); // 发送消息
+			ToolClass.Log(ToolClass.INFO,"EV_SERVER","rec1=Net[fail1]SETFAILMAIN","server.txt");
+	   }
+	}
+};
