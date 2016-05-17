@@ -30299,6 +30299,107 @@ settings.setTextSize(WebSettings.TextSize.LARGEST);
 webproductDesc.getSettings().setDefaultTextEncodingName("UTF -8");//设置默认为utf-8
 webproductDesc.loadData(tb_vmc_product.getProductDesc().toString(), "text/html; charset=UTF-8", null);//这种写法可以正确中文解码
 
+*提示框Toast
+二、五种效果实现
+1、默认的Toast特效样式
+
+在android4.1.2下对 <wbr>Toast五种显示效果建立属于你自己的Toast
+
+代码
+listener1 = newOnClickListener() {
+public voidonClick(View v) {
+setTitle(R.string.mybutton1_text);
+Toast.makeText(ToastMainActivity.this,getText(R.string.mybutton1_text)+myeditText1.getText().toString(),Toast.LENGTH_LONG).show();
+myText.setText(myeditText1.getText().toString());
+myeditText1.setText("");
+ }
+};
+2、自定义显示位置效果
+
+在android4.1.2下对 <wbr>Toast五种显示效果建立属于你自己的Toast
+
+代码
+listener2 = newOnClickListener() {
+public voidonClick(View v) {
+setTitle(R.string.mybutton2_text);         
+myToast=Toast.makeText(getApplicationContext(),getText(R.string.mybutton2_text)+myeditText1.getText().toString(),Toast.LENGTH_LONG);
+myToast.setGravity(Gravity.CENTER, 0, 0);
+myToast.show();
+myText.setText(myeditText1.getText().toString());
+myeditText1.setText("");
+}
+}; 
+3、带图片效果
+
+在android4.1.2下对 <wbr>Toast五种显示效果建立属于你自己的Toast
+
+ 
+代码
+listener3 = newOnClickListener() {
+public voidonClick(View v) {
+setTitle(R.string.mybutton3_text);         
+myToast= Toast.makeText(getApplicationContext(),getText(R.string.mybutton3_text)+myeditText1.getText().toString(), Toast.LENGTH_LONG);
+myToast.setGravity(Gravity.CENTER, 0, 0);
+LinearLayout toastView = (LinearLayout) myToast.getView();
+ImageView imageCodeProject = newImageView(getApplicationContext());
+imageCodeProject.setImageResource(R.drawable.ic_action_search);
+toastView.addView(imageCodeProject, 0);
+myToast.show();
+myText.setText(myeditText1.getText().toString());
+myeditText1.setText("");
+ }
+}; 
+4、完全自定义效果
+
+在android4.1.2下对 <wbr>Toast五种显示效果建立属于你自己的Toast
+
+代码
+listener4 = newOnClickListener() {
+public voidonClick(View v) {
+setTitle(R.string.mybutton4_text);         
+LayoutInflater inflater = getLayoutInflater();
+View layout = inflater.inflate(R.layout.custom,(ViewGroup) findViewById(R.id.llToast));
+ImageView image = (ImageView) layout.findViewById(R.id.tvImageToast);
+image.setImageResource(R.drawable.ic_launcher);
+TextView title = (TextView) layout.findViewById(R.id.tvTitleToast);
+title.setText("Attention");
+TextView text = (TextView) layout.findViewById(R.id.tvTextToast);
+text.setText(getText(R.string.mybutton4_text)+myeditText1.getText().toString());
+myToast= newToast(getApplicationContext());
+myToast.setGravity(Gravity.RIGHT | Gravity.TOP, 12, 40);
+myToast.setDuration(Toast.LENGTH_LONG);
+myToast.setView(layout);
+myToast.show();
+myText.setText(myeditText1.getText().toString());
+myeditText1.setText("");
+  }
+}; 
+5、其他线程
+
+在android4.1.2下对 <wbr>Toast五种显示效果建立属于你自己的Toast
+
+  代码
+listener5 = new OnClickListener() {    
+public voidonClick(View v) {
+setTitle(R.string.mybutton5_text);         
+newThread(newRunnable() {
+public voidrun() {
+showToast();
+}
+}).start();
+myText.setText(myeditText1.getText().toString());
+myeditText1.setText("");                               
+}
+public voidshowToast() {
+handler.post(new Runnable() {
+//   @Override
+public voidrun() {
+                    myToast=Toast.makeText(getApplicationContext(),getText(R.string.mybutton5_text),Toast.LENGTH_SHORT);
+myToast.show();
+    }
+});
+}
+};   
 //**********
 //布局管理器
 //**********
@@ -47230,12 +47331,15 @@ private class uploadLogThread extends Thread
 		ByteArrayOutputStream output =null;
 		String bal=null;
 		try {
-			FileInputStream inputFile = new FileInputStream(file);
-			byte[] buffer = new byte[(int)file.length()];
-			inputFile.read(buffer);
-			inputFile.close();
-			bal= Base64.encodeToString(buffer,Base64.DEFAULT);
-		} catch (FileNotFoundException e1) {
+				//输入文件流
+				FileInputStream inputFile = new FileInputStream(file);
+				//抓为byte字节
+				byte[] buffer = new byte[(int)file.length()];
+				inputFile.read(buffer);
+				inputFile.close();
+				//压缩为Base64格式
+				bal= Base64.encodeToString(buffer,Base64.DEFAULT);
+			} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		} catch (IOException e) {
