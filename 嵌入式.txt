@@ -25785,22 +25785,25 @@ while((temp=input.read())!=-1)//表示还没有读完,-1表示读完了
 追加写入
 Writer out=new FileWriter(f,true);
 
-注意：有一个问题点，就是Java FileWriter 默认是用（ISO-8859-1 or US-ASCII）西方编码的，总之不是UTF-8的，
+注意：有一个问题点，就是Java FileWriter 默认是用（ISO-8859-1 or US-ASCII）西方编码的，总之不是UTF-8的，但是实际
+使用发现转为utf-8无效，只有写入时转为gbk编码，才可以正确使用。
 因此写入中文会乱码
 写入中文不会乱码方法：FileOutputStream后面加上true是追加写入，(实际在写日志的时候，发现频繁)
 
 输出UTF-8的文件： 
-OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(path, true),"UTF-8"); 
+OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(fileName, true),Charset.forName("gbk"));
 或者 
-Writer out = new BufferedWriter( new OutputStreamWriter(new FileOutputStream(this.outputFilename, true),”UTF-8″));
+Writer out = new BufferedWriter( new OutputStreamWriter(new FileOutputStream(fileName, true),Charset.forName("gbk")));
 或者
 String filePath = "/sdcard/utf8_file.txt";
-String UTF8 = "utf8";
 int BUFFER_SIZE = 8192;
-BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(filePath, true), UTF8),BUFFER_SIZE);
+BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(
+		fileName, true),Charset.forName("gbk")), BUFFER_SIZE);
+out.write(cont);//写入字符串  
+out.close();
 
 读入中文不会乱码方法
-BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), UTF8),BUFFER_SIZE);
+BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(filePath), Charset.forName("gbk")),BUFFER_SIZE);
 
 (2)read读
 File f=new File("C:" + File.separator+"androaidprj"+ File.separator+"test.txt");
