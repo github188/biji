@@ -43444,9 +43444,10 @@ MainActivity.java文件
 		    	//一旦到时间之后，就跳转到由PendingIntent包装的Intent中，而这个Intent作用是
 		    	//跳转到一个广播之中
 		    	PendingIntent sender=PendingIntent.getBroadcast(MainActivity.this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		    	//设置闹钟服务
+		    	//设置一次性闹钟服务
 		    	MainActivity.this.alarm.set(AlarmManager.RTC_WAKEUP, MainActivity.this.calendar.getTimeInMillis(), sender);
-		    	
+		    	//设置每天定时闹钟服务
+				//MainActivity.this.alarm.setRepeating(AlarmManager.RTC_WAKEUP, MainActivity.this.calendar.getTimeInMillis(),1000*60*60*24, sender);
 		    	MainActivity.this.msg.setText("闹钟响起时间"+MainActivity.this.hourOfDay+":"+MainActivity.this.minute);
 		    	Toast.makeText(MainActivity.this, "闹钟设置成功", Toast.LENGTH_LONG).show();
 		    	
@@ -49199,3 +49200,14 @@ public class AnimationUtils {
 		}
 	};
 }
+
+*一键重启系统
+try {
+        //以下两种方法都可以实现
+		//String cmd = "su -c reboot";
+		//Runtime.getRuntime().exec(cmd);
+		Runtime.getRuntime().exec(new String[]{"/system/bin/su","-c","reboot now"}); 
+  } catch (IOException e) {
+		 // TODO Auto-generated catch block
+		// new AlertDialog.Builder(this).setTitle("Error").setMessage(e.getMessage()).setPositiveButton("OK", null).show();
+  }
