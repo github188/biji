@@ -28231,6 +28231,62 @@ public class proper
    }
 }
 
+13.Vector
+import Java.util.*;
+/**
+ * 演示Vector的使用。包括Vector的创建、向Vector中添加元素、从Vector中删除元素、
+ * 统计Vector中元素的个数和遍历Vector中的元素。
+ */
+
+public class VectorDemo{
+ public static void main(String[] args){
+  
+  //Vector的创建
+  //使用Vector的构造方法进行创建
+  Vector v = new Vector(4);
+  
+  //向Vector中添加元素
+  //使用add方法直接添加元素
+  v.add("Test0");
+  v.add("Test1");
+  v.add("Test0");
+  v.add("Test2");
+  v.add("Test2");
+  
+  //从Vector中删除元素
+  v.remove("Test0"); //删除指定内容的元素
+  v.remove(0);       //按照索引号删除元素
+  
+  //获得Vector中已有元素的个数
+  int size = v.size();
+  System.out.println("size:" + size);
+  
+  //遍历Vector中的元素
+  for(int i = 0;i < v.size();i++){
+   System.out.println(v.get(i));
+  }
+ }
+}
+
+Vector 类提供了实现可增长数组的功能，随着更多元素加入其中，数组变的更大。在删除一些元素之后，数组变小。
+Vector 有三个构造函数，
+public Vector(int initialCapacity,int capacityIncrement)
+　　　　　　　　　public Vector(int initialCapacity)
+　　　　　　　　　public Vector()
+　　Vector 运行时创建一个初始的存储容量initialCapacity，存储容量是以capacityIncrement 变量定义的增量增长。初始的存储容量和capacityIncrement 可以在Vector 的构造函数中定义。第二个构造函数只创建初始存储容量。第三个构造函数既不指定初始的存储容量也不指定capacityIncrement。
+　　Vector 类提供的访问方法支持类似数组运算和与Vector 大小相关的运算。类似数组的运算允许向量中增加，删除和插入元素。它们也允许测试矢量的内容和检索指定的元素，与大小相关的运算允许判定字节大小和矢量中元素不数目。
+　　现针对经常用到的对向量增，删，插功能举例描述：
+addElement(Object obj)　　
+　　把组件加到向量尾部，同时大小加1，向量容量比以前大1
+　
+insertElementAt(Object obj, int index)　　
+　　把组件加到所定索引处，此后的内容向后移动1 个单位
+　
+setElementAt(Object obj, int index)
+　　把组件加到所定索引处，此处的内容被代替。
+　　removeElement(Object obj) 把向量中含有本组件内容移走。
+　　removeAllElements() 把向量中所有组件移走，向量大小为0。
+
 
 *反射机制
 1.class类：通过一个对象来找到其所在的类的信息
@@ -37677,6 +37733,8 @@ SharedPreferences share = super.getSharedPreferences(FILENAME, Activity.MODE_PRI
 //读取
 this.author.setText("作者:"+share.getString("author", "默认值"));
 this.age.setText("作者:"+share.getInt("age", 0));
+
+
 
 2.复杂的数据存储：需要文件存储
 1)简单读写
@@ -49211,3 +49269,65 @@ try {
 		 // TODO Auto-generated catch block
 		// new AlertDialog.Builder(this).setTitle("Error").setMessage(e.getMessage()).setPositiveButton("OK", null).show();
   }
+*隐藏当前activity页面：
+方法一：
+moveTaskToBack(true);//隐藏当前activity页面 
+方法二：这个方法会把原先开启的应用一起转到后台隐藏了，不大好
+Intent home = new Intent(Intent.ACTION_MAIN);  
+home.addCategory(Intent.CATEGORY_HOME);   
+startActivity(home); 
+*android 在一个应用中启动另一个应用
+在程序开发过程当中，常遇到需要启动另一个应用程序的情况，比如在点击软件的一个按钮可以打开地图软件。
+如果既有包名又有主类的名字，那就好 办了，
+String MY_PKG_NAME = "com.example.evconsole";
+Intent intent = new Intent();		        			 
+PackageManager packageManager = DogService.this.getPackageManager();
+intent = packageManager.getLaunchIntentForPackage(MY_PKG_NAME);
+intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_ACTIVITY_CLEAR_TOP) ;
+DogService.this.startActivity(intent);
+
+*html规则表达式
+//获取一个字符串中图片链接地址列表传入一个字符串获取其中全部图片链接地址add到Vector<String>中返回
+public static Vector<String> parseImageURL(String text)
+{
+	  text = text.replaceAll("< *(?i)img ", "\n<img ");
+	  String[] list = text.split("\n");
+	  if (list == null || list.length == 0)
+		  return null;
+	  Vector<String> imageList = new java.util.Vector<String>();
+	  String image;
+	  for (String line : list) 
+	  {
+		   line = line.trim();
+		   if (!line.startsWith("<img "))
+			   continue;
+		   image = line.replaceFirst("<img .*?(?i)src=\"(.*?)\".*", "$1");
+		   if (image.equals(line))
+			   continue;
+		   imageList.add(image);
+	  }
+	  return imageList.size() == 0 ? null : imageList;
+ }
+
+//获取图片名称(如：传入http://xxx/xx/photo.jpg 则返回photo.jpg)
+public static String getImageName(String text) 
+{
+	String[] urlArray = text.split("/");
+	String ATT_ID=urlArray[urlArray.length - 1];
+	ATT_ID=ATT_ID.substring(0,ATT_ID.lastIndexOf("."));
+	ToolClass.Log(ToolClass.INFO,"EV_SERVER","图片ATT_ID="+ATT_ID,"server.txt");	
+	return ATT_ID;
+}
+
+//通过前面的2个方法 可以把一个字符串中的所有图片名字获得到 之后调用下面的方法把希望从本地加载的图片地址修改成指定目录
+//附正则方法 传入一个字符串 传入图片名称（如photo.jpg) 此方法会把这段文字中名字为photo.jpg的图片加载地址，从网上地址替换成本地地址(SD卡根目录)，之后返回替换完的字符串
+//此格式为从网上加载图片的格式
+//把<img src = http://xxx/xxx/xxx/a.jpg/>格式
+//此格式为从本地加载图片的格式此目录为SD卡根目录(建议使用Environment.getExternalStorageDirectory()方法获取SD卡根目录)
+//改成<img src = file:///sdcard/a.jpg/>格式
+public static String repImageURL(String text, String filename) {
+	String pattern = "<img src=\"" + filename + "\"";
+	String files=getImageName(filename);
+	files=ToolClass.getImgFile(files);
+  return text.replaceAll(pattern, "<img src=\"file://"+files+"\"");
+ }
