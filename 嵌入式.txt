@@ -43408,6 +43408,105 @@ public class MainActivity extends Activity {
 	
 }
 
+5)如何将BroadcastReceiver中的数据传递给activity
+用接口传。定义一个接口 让 Activity实现这个接口，然后接受者调用接口里面的方法把要传递的参数传进去。
+(1)
+public class WifiChangeBroadcastReceiver extends BroadcastReceiver {
+	private Context mContext;
+	private BRInteraction brInteraction;
+	 @Override  
+     public void onReceive(Context context, Intent intent) {  
+         mContext=context;  
+         Log.i("EV_COM","Wifi发生变化");  
+         getWifiInfo();  
+     }  
+       
+     private void getWifiInfo() {  
+         WifiManager wifiManager = (WifiManager) mContext.getSystemService(mContext.WIFI_SERVICE);  
+         WifiInfo wifiInfo = wifiManager.getConnectionInfo();  
+         if (wifiInfo.getBSSID() != null) {  
+             //wifi名称  
+             String ssid = wifiInfo.getSSID();  
+             //wifi信号强度  
+             int signalLevel = WifiManager.calculateSignalLevel(wifiInfo.getRssi(), 5);  
+             //wifi速度  
+             int speed = wifiInfo.getLinkSpeed();  
+             //wifi速度单位  
+             String units = WifiInfo.LINK_SPEED_UNITS;  
+             Log.i("EV_COM","ssid="+ssid+",signalLevel="+signalLevel+",speed="+speed+",units="+units);  
+             brInteraction.setText("ssid="+ssid+",signalLevel="+signalLevel+",speed="+speed+",units="+units);  
+         }  
+    } 
+     public interface BRInteraction {
+         public void setText(String content);
+     }
+
+     public void setBRInteractionListener(BRInteraction brInteraction) {
+         this.brInteraction = brInteraction;
+     } 
+
+}
+
+(2)
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.signal"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="18" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="com.example.signal.MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <receiver android:name="com.example.signal.WifiChangeBroadcastReceiver"/>  
+                
+    </application>
+	 <uses-permission android:name="android.permission.INTERNET"/>  
+        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>  
+        <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+</manifest>
+
+(3)
+public class MainActivity extends Activity implements WifiChangeBroadcastReceiver.BRInteraction {
+	TextView txt;
+	@Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        txt=(TextView)findViewById(R.id.txt);
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("android.net.wifi.RSSI_CHANGED");
+        WifiChangeBroadcastReceiver dianLiangBR = new WifiChangeBroadcastReceiver();
+        registerReceiver(dianLiangBR, intentFilter);
+        dianLiangBR.setBRInteractionListener(this);
+        
+    }
+	@Override
+    public void setText(String content) {
+        if (content != null) {
+        	txt.setText(content);
+        }
+    }
+
+	
+    
+}
+
+
+
 例子：闹钟
 （1）调用闹钟页面AlarmMessage.java,他的触动通过广播来完成
 public class AlarmMessage extends Activity {
@@ -44988,6 +45087,36 @@ public class MainActivity extends Activity {
 		});
 	}	
 }	
+
+
+/*********************************************************************************************************
+** Function name:     	CrcCheck
+** Descriptions:	    CRC校验和
+** input parameters:    msg需要检验的数据;len数据长度
+** output parameters:   无
+** Returned value:      CRC检验结果
+*********************************************************************************************************/
+public static int crcCheck(byte msg[], int len){
+	int i, j, crc = 0, current;
+	for(i = 0;i < len;i++)
+	{
+		current = ((msg[i] & 0x000000FF) << 8);
+		for (j = 0;j < 8;j++)
+		{
+			if((short)(crc ^ current) < 0)
+			{
+				crc =  ((crc << 1) ^ 0x1021) & 0x0000FFFF;
+			}
+			else
+			{
+				crc = (crc << 1) & 0x0000FFFF;
+			}
+			current = (current << 1) & 0x0000FFFF;
+		}
+	}
+
+	return crc;
+}
 
 2）在线程里面
 @Override
@@ -49331,3 +49460,231 @@ public static String repImageURL(String text, String filename) {
 	files=ToolClass.getImgFile(files);
   return text.replaceAll(pattern, "<img src=\"file://"+files+"\"");
  }
+ 
+ 
+*获取网络连接状态
+1.获取网络连接状态(3G/Wifi)及调用网络配置界面
+1)有三种状态
+UNKNOW,CONNECTED,DISCONNECTED
+
+private void checkNetworkInfo()
+    {
+    ConnectivityManager conMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+	//有线
+	NetworkInfo networkInfo = conMan.getNetworkInfo(ConnectivityManager.TYPE_ETHERNET);
+	if(networkInfo.isConnected())
+		txtnetstate.setText("connected");
+	else
+		txtnetstate.setText("disconnected");
+    //mobile 3G Data Network
+    State mobile = conMan.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState();
+    txt3G.setText(mobile.toString()); //显示3G网络连接状态
+    //wifi
+    State wifi = conMan.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
+    txtWifi.setText(wifi.toString()); //显示wifi连接状态
+    }
+	
+<uses-permission android:name="android.permission.INTERNET"/>  
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>  
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/> 
+
+2)调用Android手机的网络配置界面
+
+使用过Android手机上的手机QQ的朋友，应该知道，当QQ启动时，如果没有有效的网络连接，QQ会提示转入手机的网络配置界面。这是如何实现的呢。其实很简单啦
+
+复制代码
+privatevoid checkNetworkInfo()
+{
+ConnectivityManager conMan = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+
+//mobile 3G Data Network
+State mobile = conMan.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState();
+txt3G.setText(mobile.toString());
+//wifi
+State wifi = conMan.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState();
+txtWifi.setText(wifi.toString());
+
+//如果3G网络和wifi网络都未连接，且不是处于正在连接状态 则进入Network Setting界面 由用户配置网络连接
+if(mobile==State.CONNECTED||mobile==State.CONNECTING)
+return;
+if(wifi==State.CONNECTED||wifi==State.CONNECTING)
+return;
+
+
+startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));//进入无线网络配置界面
+//startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)); //进入手机中的wifi网络设置界面
+
+}
+复制代码
+运行结果(关闭3G及wifi网络连接的状态下)，程序转入无线网络配置界面
+
+startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));//进入无线网络配置界面
+
+
+如果调用
+
+startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS)); //直接进入手机中的wifi网络设置界面
+则直接进入手机中的wifi网络设置界面
+
+
+
+在wifi网络连接后 运行该程序
+
+
+
+我们可以看到 wi-fi 状态为已连接(CONNECTED).
+
+
+3)获取wifi信号强度
+(1)
+public class WifiChangeBroadcastReceiver extends BroadcastReceiver {
+	private Context mContext;
+	private BRInteraction brInteraction;
+	 @Override  
+     public void onReceive(Context context, Intent intent) {  
+         mContext=context;  
+         Log.i("EV_COM","Wifi发生变化");  
+         getWifiInfo();  
+     }  
+       
+     private void getWifiInfo() {  
+         WifiManager wifiManager = (WifiManager) mContext.getSystemService(mContext.WIFI_SERVICE);  
+         WifiInfo wifiInfo = wifiManager.getConnectionInfo();  
+         if (wifiInfo.getBSSID() != null) {  
+             //wifi名称  
+             String ssid = wifiInfo.getSSID();  
+             //wifi信号强度  
+             int signalLevel = WifiManager.calculateSignalLevel(wifiInfo.getRssi(), 5);  
+             //wifi速度  
+             int speed = wifiInfo.getLinkSpeed();  
+             //wifi速度单位  
+             String units = WifiInfo.LINK_SPEED_UNITS;  
+             Log.i("EV_COM","ssid="+ssid+",signalLevel="+signalLevel+",speed="+speed+",units="+units);  
+             brInteraction.setText("ssid="+ssid+",signalLevel="+signalLevel+",speed="+speed+",units="+units);  
+         }  
+    } 
+     public interface BRInteraction {
+         public void setText(String content);
+     }
+
+     public void setBRInteractionListener(BRInteraction brInteraction) {
+         this.brInteraction = brInteraction;
+     } 
+
+}
+
+(2)
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.signal"
+    android:versionCode="1"
+    android:versionName="1.0" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="18" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+            android:name="com.example.signal.MainActivity"
+            android:label="@string/app_name" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <receiver android:name="com.example.signal.WifiChangeBroadcastReceiver"/>  
+                
+    </application>
+	 <uses-permission android:name="android.permission.INTERNET"/>  
+        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>  
+        <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+</manifest>
+
+(3)
+public class MainActivity extends Activity implements WifiChangeBroadcastReceiver.BRInteraction {
+	TextView txt;
+	@Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        txt=(TextView)findViewById(R.id.txt);
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction("android.net.wifi.RSSI_CHANGED");
+        WifiChangeBroadcastReceiver dianLiangBR = new WifiChangeBroadcastReceiver();
+        registerReceiver(dianLiangBR, intentFilter);
+        dianLiangBR.setBRInteractionListener(this);
+        
+    }
+	@Override
+    public void setText(String content) {
+        if (content != null) {
+        	txt.setText(content);
+        }
+    }
+
+	
+    
+}
+
+(4)获取4g信号强度
+(1)
+<uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/> 
+
+(2)
+TelephonyManager        Tel;
+    MyPhoneStateListener    MyListener;
+	
+protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+		 //4g相关
+        MyListener   = new MyPhoneStateListener();        
+        Tel       = ( TelephonyManager )getSystemService(Context.TELEPHONY_SERVICE); 
+        Tel.listen(MyListener ,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+}	
+
+@Override
+    public void setText(String content) {
+        if (content != null) 
+        {
+        	txt.setText("wifi信号:"+content);
+        }
+    }
+
+	@Override	 
+	protected void onPause()	 
+	{	 
+	   super.onPause();	 
+	   Tel.listen(MyListener, PhoneStateListener.LISTEN_NONE);
+	}
+	
+	@Override	 
+	protected void onResume()
+	{
+	  super.onResume();
+	  Tel.listen(MyListener,PhoneStateListener.LISTEN_SIGNAL_STRENGTHS);
+	}
+	
+	private class MyPhoneStateListener extends PhoneStateListener
+	{ 
+      /* Get the Signal strength from the provider, each tiome there is an update  从得到的信号强度,每个tiome供应商有更新*/
+ 
+      @Override 
+      public void onSignalStrengthsChanged(SignalStrength signalStrength)
+      {
+          super.onSignalStrengthsChanged(signalStrength);
+//          Toast.makeText(getApplicationContext(), "GSM 信号 = "
+//             + String.valueOf(signalStrength.getGsmSignalStrength()), Toast.LENGTH_SHORT).show();
+          txt4g.setText("GSM 信号 = "
+             + String.valueOf(signalStrength.getGsmSignalStrength()));
+      } 
+    };/* End of private Class */	
+
+
+	
