@@ -25207,6 +25207,7 @@ public class observer
 }
 
 2)ÊµÏÖ¼ÆÊ±Óëµ¹¼ÆÊ±
+ÔÚ×ÓÏß³ÌÖĞÖ±½Ó¸üĞÂuiÏß³ÌµÄ¿Ø¼ş£¬ÓÃÕâ¸ö·½·¨
 public class timerTask extends Activity{ 
   
     private int recLen = 11; 
@@ -25240,6 +25241,48 @@ public class timerTask extends Activity{
         } 
     }; 
 }
+
+Õë¶ÔFragment
+TimerTask task = new TimerTask() { 
+	@Override 
+	public void run() { 
+
+		((Activity)context).runOnUiThread(new Runnable() {      // UI thread 
+			 @Override 
+			public void run()
+			{ 
+				 if(editread>0)
+					 editread--;
+				 if(editread==0)
+				 {
+					 if(editstr.equals("")==false)
+					 {
+						 int length=editstr.length();
+						 if(length<18)
+						 {
+							 Log.i("EV_JNI","String edit=readerr!!!");
+							 editstr="";
+							 editTextTimeCOMA.setText("");
+							 editTextTimeCOMA.setFocusable(true);
+							 editTextTimeCOMA.setFocusableInTouchMode(true);
+							 editTextTimeCOMA.requestFocus();
+						 }
+						 else
+						 {
+							 Log.i("EV_JNI","String edit="+editstr);
+							 editstr="";
+							 editTextTimeCOMA.setText("");
+							 editTextTimeCOMA.setFocusable(false);
+						 }	        			 
+						 
+					 }
+				 }
+			} 
+		});
+	}     	    
+};	
+
+
 
 
 10.Ê±¼äº¯Êı
@@ -25554,6 +25597,15 @@ public class DoorTest
 ÃÅ1¹Ø±Õ
 ÃÅ2¹Ø±Õ£¬Í¬Ê±¹Ø±Õ×ßÀÈµÄµÆ
 
+
+
+*JAVAÅĞ¶ÏÁ½¸öÊ±¼ä´Á£¬Ïà¸ô¶àÉÙ·ÖÖÓ
+hqtimeÎªÔ­Ê±¼ä´Á
+System.currentTimeMillis()»ñÈ¡µ±Ç°Ê±¼ä´Á
+Long s = (System.currentTimeMillis() - hqtime) / (1000 * 60);
+
+sÎªÔ­Ê±¼ä´ÁºÍµ±Ç°Ê±¼ä´ÁÖĞ¼äÏà¸ôµÄ·ÖÖÓÊı
+  
 *IOÎÄ¼ş²Ù×÷
 java.io.*;
 1.FileÀà
@@ -31948,6 +32000,334 @@ fill_parent£º×é¼ş»áÏÔÊ¾µÃºÍÆä¸¸×é¼şÒ»Ñù´ó£¬²¢Ìî³äÊ£ÓàµÄ¿Õ¼ä£¨ÔÚ API Level 8ÖĞÃüÃ
          android:textColor="@android:color/white"
          android:background="@drawable/login_button_selector"
          />
+		 
+		 
+2.Ô­ÏÈ¶¨ÒåÒ»¸öÑÕÉ«£¬µã»÷ºóÇĞ»»ÑÕÉ«
+Ê¹ÓÃ£º
+°´Å¥
+android:background="@drawable/cornerbtn_style"   »ÆÉ«
+android:background="@drawable/cornerbtn_style2"  ÂÌÉ«
+
+
+editÓĞ±ß¿òµÄÑÕÉ«
+android:background="@drawable/editsharp"  À¶±ß
+android:background="@drawable/editsharp2" »Æ±ß
+android:background="@drawable/editsharp3" ºì±ß 
+
+
+¶¨Òå£º
+drawableÄ¿Â¼
+cornerbtn_style.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--    »ÆÉ« -->
+    <item android:state_pressed="false">
+        <shape android:shape="rectangle">
+            <!-- Ìî³äµÄÑÕÉ« -->
+            <solid android:color="@color/goldenrod" />
+            <!-- ÉèÖÃ°´Å¥µÄËÄ¸ö½ÇÎª»¡ĞÎ -->
+            <!-- android:radius »¡ĞÎµÄ°ë¾¶ -->
+            <corners android:radius="10dip" />
+            <!-- padding£ºButtonÀïÃæµÄÎÄ×ÖÓëButton±ß½çµÄ¼ä¸ô -->
+            <padding android:bottom="10dp" android:left="10dp" android:right="10dp" android:top="10dp" />
+        </shape>
+    </item>
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/gray" />
+            <corners android:radius="10dip" />
+        </shape>
+    </item>
+</selector>
+
+cornerbtn_style2.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--    ÂÌÉ« -->
+    <item android:state_pressed="false">
+        <shape android:shape="rectangle">
+            <!-- Ìî³äµÄÑÕÉ« -->
+            <solid android:color="@color/forestgreen" />
+            <!-- ÉèÖÃ°´Å¥µÄËÄ¸ö½ÇÎª»¡ĞÎ -->
+            <!-- android:radius »¡ĞÎµÄ°ë¾¶ -->
+            <corners android:radius="8dip" />
+            <!-- padding£ºButtonÀïÃæµÄÎÄ×ÖÓëButton±ß½çµÄ¼ä¸ô -->
+            <padding android:bottom="10dp" android:left="10dp" android:right="10dp" android:top="10dp" />
+        </shape>
+    </item>
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/gray" />
+            <corners android:radius="8dip" />
+        </shape>
+    </item>
+</selector>
+
+editsharp.xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle" >
+
+<!--    À¶±ß 
+        <gradient
+        android:angle="45"
+        android:endColor="#CCCCCC"
+        android:startColor="#CCCCCC" /> -->
+
+    <padding
+        android:bottom="7dp"
+        android:left="7dp"
+        android:right="7dp"
+        android:top="7dp" />
+    <!-- ÉèÖÃÔ²½Ç¾ØĞÎ -->
+    <corners android:radius="10dp" />
+
+    <stroke
+        android:width="2px"
+        android:color="#1199EF" />
+
+    <solid android:color="#CCCCCC" />
+
+</shape>
+
+editsharp2.xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle" >
+
+<!--    »Æ±ß 
+        <gradient
+        android:angle="45"
+        android:endColor="#CCCCCC"
+        android:startColor="#CCCCCC" /> -->
+
+    <padding
+        android:bottom="7dp"
+        android:left="7dp"
+        android:right="7dp"
+        android:top="7dp" />
+    <!-- ÉèÖÃÔ²½Ç¾ØĞÎ -->
+    <corners android:radius="5dp" />
+
+    <stroke
+        android:width="2px"
+        android:color="@color/goldenrod" />
+
+    <solid android:color="#CCCCCC" />
+
+</shape>
+
+editsharp3.xml
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle" >
+
+<!--    ºì±ß 
+        <gradient
+        android:angle="45"
+        android:endColor="#CCCCCC"
+        android:startColor="#CCCCCC" /> -->
+
+    <padding
+        android:bottom="7dp"
+        android:left="7dp"
+        android:right="7dp"
+        android:top="7dp" />
+    <!-- ÉèÖÃÔ²½Ç¾ØĞÎ -->
+    <corners android:radius="5dp" />
+
+    <stroke
+        android:width="2px"
+        android:color="@color/red" />
+
+    <solid android:color="#CCCCCC" />
+
+</shape>
+
+valuesÄ¿Â¼
+colors.xml
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     Copyright (C) 2007 The Android Open Source Project
+
+     Licensed under the Apache License, Version 2.0 (the "License");
+     you may not use this file except in compliance with the License.
+     You may obtain a copy of the License at
+  
+          http://www.apache.org/licenses/LICENSE-2.0
+  
+     Unless required by applicable law or agreed to in writing, software
+     distributed under the License is distributed on an "AS IS" BASIS,
+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+     See the License for the specific language governing permissions and
+     limitations under the License.
+-->
+
+<resources>
+
+    <drawable name="red">#7f00</drawable>
+    <drawable name="blue">#770000ff</drawable>
+    <drawable name="green">#7700ff00</drawable>
+    <drawable name="yellow">#77ffff00</drawable>
+    
+    <drawable name="screen_background_black">#ff000000</drawable><!-- ÆÁÄ»±³¾°ºÚÉ« -->
+    <drawable name="translucent_background">#e0000000</drawable><!-- °ëÍ¸Ã÷±³¾° -->
+    <drawable name="transparent_background">#00000000</drawable><!-- Í¸Ã÷±³¾° -->
+
+    <color name="solid_red">#f00</color>
+    <color name="solid_blue">#0000ff</color>
+    <color name="solid_green">#f0f0</color>
+    <color name="solid_yellow">#ffffff00</color>
+    
+    <color name="pink">#ffc0cb</color> <!-- ·ÛºìÉ« -->
+    <color name="lightpink">#ffb6c1</color> <!-- ÁÁ·ÛºìÉ« -->
+    <color name="white">#ffffff</color> <!-- °×É« -->
+    <color name="peachpuff">#ffdab9</color> <!-- ÌÒÉ« -->
+    <color name="gold">#ffd700</color> <!-- ½ğÉ« -->
+    <color name="ivory">#fffff0</color> <!-- ÏóÑÀÉ« -->
+    <color name="lightyellow">#ffffe0</color> <!-- ÁÁ»ÆÉ« -->
+    <color name="yellow">#ffff00</color> <!-- »ÆÉ« -->
+    <color name="snow">#fffafa</color> <!-- Ñ©°×É« -->
+    <color name="floralwhite">#fffaf0</color> <!-- »¨°×É« -->
+    <color name="lemonchiffon">#fffacd</color> <!-- ÄûÃÊ³ñÉ« -->
+    <color name="cornsilk">#fff8dc</color> <!-- Ã×³ñÉ« -->
+    <color name="seaShell">#fff5ee</color> <!-- º£±´É« -->
+    <color name="lavenderblush">#fff0f5</color> <!-- µ­×Ïºì -->
+    <color name="papayawhip">#ffefd5</color> <!-- ·¬Ä¾É« -->
+    <color name="blanchedalmond">#ffebcd</color> <!-- °×ĞÓÉ« -->
+    <color name="mistyrose">#ffe4e1</color> <!-- Ç³Ãµ¹åÉ« -->
+    <color name="bisque">#ffe4c4</color> <!-- ½Û»ÆÉ« -->
+    <color name="moccasin">#ffe4b5</color> <!-- Â¹Æ¤É« -->
+    <color name="navajowhite">#ffdead</color> <!-- ÄÉÍß°× -->
+    <color name="orange">#ffa500</color> <!-- ³ÈÉ« -->
+    <color name="lightsalmon">#ffa07a</color> <!-- ÁÁÈâÉ« -->
+    <color name="darkorange">#ff8c00</color> <!-- °µ½Û»ÆÉ« -->
+    <color name="coral">#ff7f50</color> <!-- Éºº÷É« -->
+    <color name="hotpink">#ff69b4</color> <!-- ÈÈ·ÛºìÉ« -->
+    <color name="ghostwhite">#f8f8ff</color> <!-- ÓÄÁé°× -->
+    <color name="mintcream">#f5fffa</color> <!-- ±¡ºÉÉ« -->
+    <color name="whitesmoke">#f5f5f5</color> <!-- ÑÌ°×É« -->
+    <color name="beige">#f5f5dc</color> <!-- Ã×É« -->
+    <color name="wheat">#f5deb3</color> <!-- Ç³»ÆÉ« -->
+    <color name="sandybrown">#f4a460</color> <!-- É³ºÖÉ« -->
+    <color name="tomato">#ff6347</color> <!-- Î÷ºìÊÁÉ« -->
+    <color name="orangered">#ff4500</color> <!-- ºì³ÈÉ« -->
+    <color name="deeppink">#ff1493</color> <!-- Éî·ÛºìÉ« -->
+    <color name="fuchsia">#ff00ff</color> <!-- ×ÏºìÉ« -->
+    <color name="magenta">#ff00ff</color> <!-- ºì×ÏÉ« -->
+    <color name="red">#ff0000</color> <!-- ºìÉ« -->
+    <color name="oldlace">#fdf5e6</color> <!-- ÀÏ»¨É« -->
+    <color name="lightgoldenrodyellow">#fafad2</color> <!-- ÁÁ½ğ»ÆÉ« -->
+    <color name="linen">#faf0e6</color> <!-- ÑÇÂéÉ« -->
+    <color name="antiquewhite">#faebd7</color> <!-- ¹Å¶­°× -->
+    <color name="salmon">#fa8072</color> <!-- ÏÊÈâÉ« -->
+    <color name="azure">#f0ffff</color> <!-- ÌìÀ¶É« -->
+    <color name="palevioletred">#db7093</color> <!-- ²Ô×ÏÂŞÀ¼É« -->
+    <color name="goldenrod">#daa520</color> <!-- ½ğ÷è÷ëÉ« -->
+    <color name="orchid">#da70d6</color> <!-- µ­×ÏÉ« -->
+    <color name="thistle">#d8bfd8</color> <!-- ¼»É« -->
+    <color name="lightgray">#d3d3d3</color> <!-- ÁÁ»ÒÉ« -->
+    <color name="lightgrey">#d3d3d3</color> <!-- ÁÁ»ÒÉ« -->
+    <color name="tan">#d2b48c</color> <!-- ²èÉ« -->
+    <color name="chocolate">#d2691e</color> <!-- ÇÉ¿ÉÁ¦É« -->
+    <color name="peru">#cd853f</color> <!-- ÃØÂ³É« -->
+    <color name="indianred">#cd5c5c</color> <!-- Ó¡µÚ°²ºì -->
+    <color name="mediumvioletred">#c71585</color> <!-- ÖĞ×ÏÂŞÀ¼É« -->
+    <color name="silver">#c0c0c0</color> <!-- ÒøÉ« -->
+    <color name="darkkhaki">#bdb76b</color> <!-- °µ»ÆºÖÉ« -->
+    <color name="rosybrown">#bc8f8f</color> <!-- ºÖÃµ¹åºì -->
+    <color name="mediumorchid">#ba55d3</color> <!-- ÖĞ·Û×ÏÉ« -->
+    <color name="darkgoldenrod">#b8860b</color> <!-- °µ½ğ»ÆÉ« -->
+    <color name="firebrick">#b22222</color> <!-- »ğ×©É« -->
+    <color name="powderblue">#b0e0e6</color> <!-- ·ÛÀ¶É« -->
+    <color name="lightsteelblue">#b0c4de</color> <!-- ÁÁ¸ÖÀ¼É« -->
+    <color name="paleturquoise">#afeeee</color> <!-- ²Ô±¦Ê¯ÂÌ -->
+    <color name="greenyellow">#adff2f</color> <!-- »ÆÂÌÉ« -->
+    <color name="lightblue">#add8e6</color> <!-- ÁÁÀ¶É« -->
+    <color name="darkgray">#a9a9a9</color> <!-- °µ»ÒÉ« -->
+    <color name="darkgrey">#a9a9a9</color> <!-- °µ»ÒÉ« -->
+    <color name="brown">#a52a2a</color> <!-- ºÖÉ« -->
+    <color name="sienna">#a0522d</color> <!-- ô÷É« -->
+    <color name="darkorchid">#9932cc</color> <!-- °µ×ÏÉ« -->
+    <color name="palegreen">#98fb98</color> <!-- ²ÔÂÌÉ« -->
+    <color name="darkviolet">#9400d3</color> <!-- °µ×ÏÂŞÀ¼É« -->
+    <color name="mediumpurple">#9370db</color> <!-- ÖĞ×ÏÉ« -->
+    <color name="skyblue">#87ceeb</color> <!-- ÌìÀ¶É« -->
+    <color name="gray">#808080</color> <!-- »ÒÉ« -->
+    <color name="grey">#808080</color> <!-- »ÒÉ« -->
+    <color name="olive">#808000</color> <!-- éÏé­É« -->
+    <color name="purple">#800080</color> <!-- ×ÏÉ« -->
+    <color name="maroon">#800000</color> <!-- ËÚÉ« -->
+    <color name="aquamarine">#7fffd4</color> <!-- ±ÌÂÌÉ« -->
+    <color name="chartreuse">#7fff00</color> <!-- »ÆÂÌÉ« -->
+    <color name="lawngreen">#7cfc00</color> <!-- ²İÂÌÉ« -->
+    <color name="mediumslateblue">#7b68ee</color> <!-- ÖĞ°µÀ¶É« -->
+    <color name="darkcyan">#008b8b</color> <!-- °µÇàÉ« -->
+    <color name="teal">#008080</color> <!-- Ë®Ñ¼É« -->
+    <color name="green">#008000</color> <!-- ÂÌÉ« -->
+    <color name="darkgreen">#006400</color> <!-- °µÂÌÉ« -->
+    <color name="blue">#0000ff</color> <!-- À¶É« -->
+    <color name="mediumblue">#0000cd</color> <!-- ÖĞÀ¼É« -->
+    <color name="darkblue">#00008b</color> <!-- °µÀ¶É« -->
+    <color name="lightslategray">#778899</color> <!-- ÁÁÀ¶»Ò -->
+    <color name="lightslategrey">#778899</color> <!-- ÁÁÀ¶»Ò -->
+    <color name="slategray">#708090</color> <!-- »ÒÊ¯É« -->
+    <color name="slategrey">#708090</color> <!-- »ÒÊ¯É« -->
+    <color name="olivedrab">#6b8e23</color> <!-- ÉîÂÌºÖÉ« -->
+    <color name="slateblue">#6a5acd</color> <!-- Ê¯À¶É« -->
+    <color name="dimgray">#696969</color> <!-- °µ»ÒÉ« -->
+    <color name="dimgrey">#696969</color> <!-- °µ»ÒÉ« -->
+    <color name="mediumaquamarine">#66cdaa</color> <!-- ÖĞÂÌÉ« -->
+    <color name="cornflowerblue">#6495ed</color> <!-- ¾ÕÀ¼É« -->
+    <color name="cadetblue">#5f9ea0</color> <!-- ¾üÀ¼É« -->
+    <color name="darkolivegreen">#556b2f</color> <!-- °µéÏé­ÂÌ -->
+    <color name="indigo">#4b0082</color> <!-- µåÇàÉ« -->
+    <color name="mediumturquoise">#48d1cc</color> <!-- ÖĞÂÌ±¦Ê¯ -->
+    <color name="darkslateblue">#483d8b</color> <!-- °µ»ÒÀ¶É« -->
+    <color name="steelblue">#4682b4</color> <!-- ¸ÖÀ¼É« -->
+    <color name="royalblue">#4169e1</color> <!-- »Ê¼ÒÀ¶ -->
+    <color name="turquoise">#40e0d0</color> <!-- ÇàÂÌÉ« -->
+    <color name="mediumseagreen">#3cb371</color> <!-- ÖĞº£À¶ -->
+    <color name="limegreen">#32cd32</color> <!-- ³ÈÂÌÉ« -->
+    <color name="midnightblue">#191970</color> <!-- ÖĞ»ÒÀ¼É« -->
+    <color name="aqua">#00ffff</color> <!-- Ç³ÂÌÉ« -->
+    <color name="cyan">#00ffff</color> <!-- ÇàÉ« -->
+    <color name="springgreen">#00ff7f</color> <!-- ´ºÂÌÉ« -->
+    <color name="lime">#00ff00</color> <!-- Ëá³ÈÉ« -->
+    <color name="mediumspringgreen">#00fa9a</color> <!-- ÖĞ´ºÂÌÉ« -->
+    <color name="darkturquoise">#00ced1</color> <!-- °µ±¦Ê¯ÂÌ -->
+    <color name="deepskyblue">#00bfff</color> <!-- ÉîÌìÀ¶É« -->
+    <color name="navy">#000080</color> <!-- º£¾üÉ« -->
+    <color name="black">#000000</color> <!-- ºÚÉ« -->
+    <color name="darkslategray">#2f4f4f</color> <!-- °µÍß»ÒÉ« -->
+    <color name="darkslategrey">#2f4f4f</color> <!-- °µÍß»ÒÉ« -->
+    <color name="seagreen">#2e8b57</color> <!-- º£ÂÌÉ« -->
+    <color name="forestgreen">#228b22</color> <!-- É­ÁÖÂÌ -->
+    <color name="lightseagreen">#20b2aa</color> <!-- ÁÁº£À¶É« -->
+    <color name="dodgerblue">#1e90ff</color> <!-- ÉÁÀ¼É« -->
+    <color name="honeydew">#f0fff0</color> <!-- ÃÛÉ« -->
+    <color name="aliceblue">#f0f8ff</color> <!-- °¬ÀûË¹À¼ -->
+    <color name="khaki">#f0e68c</color> <!-- »ÆºÖÉ« -->
+    <color name="lightcoral">#f08080</color> <!-- ÁÁÉºº÷É« -->
+    <color name="palegoldenrod">#eee8aa</color> <!-- ²Ô÷è÷ëÉ« -->
+    <color name="violet">#ee82ee</color> <!-- ×ÏÂŞÀ¼É« -->
+    <color name="darksalmon">#e9967a</color> <!-- °µÈâÉ« -->
+    <color name="lightgreen">#90ee90</color> <!-- ÁÁÂÌÉ« -->
+    <color name="darkseagreen">#8fbc8f</color> <!-- °µº£À¼É« -->
+    <color name="saddlebrown">#8b4513</color> <!-- ÖØºÖÉ« -->
+    <color name="darkmagenta">#8b008b</color> <!-- °µÑóºì -->
+    <color name="darkred">#8b0000</color> <!-- °µºìÉ« -->
+    <color name="blueviolet">#8a2be2</color> <!-- ×ÏÂŞÀ¼À¶É« -->
+    <color name="lightskyblue">#87cefa</color> <!-- ÁÁÌìÀ¶É« -->
+    <color name="lavender">#e6e6fa</color> <!-- µ­×ÏÉ« -->
+    <color name="lightcyan">#e0ffff</color> <!-- ÁÁÇàÉ« -->
+    <color name="burlywood">#deb887</color> <!-- ÊµÄ¾É« -->
+    <color name="crimson">#dc143c</color> <!-- °µÉîºìÉ« -->
+    <color name="plum">#dda0dd</color> <!-- ÑóÀîÉ« -->
+    <color name="gainsboro">#dcdcdc</color> <!-- µ­»ÒÉ« -->
+
+</resources>
+
 		 
 2.¸Ä±ä±³¾°Í¼
 ÔÚres/drawableÎÄ¼şÏÂ´´½¨selector.xml£¬Ê¾Àı´úÂëÈçÏÂ
@@ -49686,5 +50066,746 @@ protected void onCreate(Bundle savedInstanceState) {
       } 
     };/* End of private Class */	
 
+	
+
+
+
+
+//******************
+//Androaid¿ò¼ÜÊ½±à³Ì
+//******************
+
+*Android studio¹¤³Ì·½·¨
+1.ÉèÖÃ¿ì½İ¼ü
+1).Ê×ÏÈ¸ÄÎªEclipse¿ì½İ¼ü£¨È»ºó´ó²¿·Ö¿ì½İ¼ü¶¼»á¸úEclipseÒ»ÖÂÁË£©
+
+2).File->Settings->IDE Settings->Keymap->KeymapsÑ¡ÔñEclipse
+3).ÉèÖÃAlt+/£ºKeymap->Main Menu->Code->Completion->Basic£ºÄ¬ÈÏÊÇCtrl+Space
+4).ºöÂÔ´óĞ¡Ğ´£ºEditor->General->Code Completion->Case sensitive Éè³ÉNone
+5).×Ô¶¯µ¼Èë°ü£ºAlt+Enter,¶øÇÒÔÚÉèÖÃÖĞÒª¹´Ñ¡Editor->General->Auto ImportÈ«²¿´ò¹´
+6).Ìí¼Ó×¢ÊÍËµÃ÷Ä£¿é:Keymap->Other->Fix doc comment Éè³ÉCtrl+Enter
+7).×¢ÊÍ´úÂë£º
+  Ctrl+Ğ±¸Ü£º×¢ÊÍ»òÈ¡Ïû×¢ÊÍµ±Ç°ĞĞ»òÑ¡ÖĞµÄ´úÂë¿é£¬ÒÔË«Ğ±¸ÜµÄ·½Ê½¼´¡°//¡±
+  Ctrl+shift+Ğ±¸Ü:×¢ÊÍ»òÈ¡Ïû×¢ÊÍÑ¡ÖĞµÄ´úÂë¿é£¬ÒÔ¡°/*¡­¡­*/¡±·½Ê½×¢ÊÍ£¬
+            
+
+2.Gradle
+GradleÊÇÒÀÀµ°üµÄÅäÖÃÓïÑÔ£¬
+ÅäÖÃ×ÜµÄgradle(Module:app)
+ÅäÖÃÓ¦ÓÃµÄgradle(Project:Ó¦ÓÃ)ÊÇÔÚÓ¦ÓÃµÄappÀïÃæ
+ÅäÖÃsettings.gradle
+
+
+
+gradle(Module:app)ÎÄ¼ş£º
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 18
+    buildToolsVersion "24.0.1"
+
+    defaultConfig {
+        applicationId "com.example.evconsole"
+        minSdkVersion 14
+        targetSdkVersion 18
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false//ÊÇ·ñ²ÉÓÃ»ìÏı
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'//Ä¬ÈÏ»ìÏıÂ·¾¶
+        }
+    }
+}
+
+//Ê¹ÓÃÒÀÀµ°ü
+dependencies {
+    compile 'com.android.support:support-v4:18.0.0'
+    compile 'com.google.code.gson:gson:2.2.4'
+    compile files('libs/achartengine-1.0.0.jar')
+    compile files('libs/httpclient-4.3.4.jar')
+    compile files('libs/zxing.jar')
+}
+
+1)ÀıÈç£¬ÊÖ¹¤Ìí¼Ózxing.jar°üµ½¹¤³ÌµÄlibsÀïÃæ£¬È»ºó¹¤³Ì»á×Ô¶¯Ìí¼ÓÕâÒ»ĞĞ´úÂë
+   µ½gradleÖĞ¡£Èç¹ûÃ»ÓĞÌí¼Ó£¬¿ÉÒÔµã»÷Í¼ĞÎ²Ëµ¥À¸ÖĞµÄsync project with gradle°´Å¥
+  compile files('libs/zxing.jar')
+2)Ô¶³ÌÌí¼Ó°ü
+  Ö±½ÓĞ´compile 'com.google.code.gson:gson:2.2.4'//¹ÙÍøÂ·¾¶
+  gradleÓÒÉÏ½Ç»áÓĞÌáÊ¾£¬µã»÷sync now´Ó¹ÙÍøÏÂÔØÏÂÀ´£¬È»ºó×Ô¶¯Í¬²½
+  É¾³ıÔ¶³ÌµÄ°ücompile£¬gradleÓÒÉÏ½Ç»áÓĞÌáÊ¾£¬µã»÷sync nowÉ¾³ıºó×Ô¶¯Í¬²½    
+  Ğ´Í¨Åä·ûcompile 'com.google.code.gson:gson:2.+'£¬±íÊ¾ÏÂÔØ2.0ÒÔÉÏµÄÒ»¸ö×î¸ß°æ±¾
+    compile 'io.reactivex:rxandroid:1.+'
+	compile 'io.reactivex:rxjava:1.+'
+  Ô¶³ÌÏÂÔØÏÂÀ´µÄ°ü¿ÉÒÔÔÚExternal LibrariesµØÏÂ¿´µ½
+3)Ô¶³ÌµÄ°ü²»ÖªµÀÃû×Ö£¬¿ÉÒÔÖ±½ÓÕÒ£º
+  ¹¤³ÌÇĞ»»µ½androidÊÓÍ¼->ÓÒ»÷app->open module settings->Dependencies->Ä¿Ç°ÒÀÀµµÄ°ü
+  ->µã»÷"+"ºÅ->library dependency->ËÑË÷Ö§³ÖµÄ°ü   
+
+  
+3.Õı³£Éú³ÉµÄ²âÊÔ°æapk:
+  ÔÚapp/build/outputs/apkÀïÃæÓĞÒ»¸öapp-debug.apk  
+Èç¹ûÒªÉú³ÉÕıÊ½°æµÄapk,ËûÒªÄÜÔÚ°²×¿ÊĞ³¡ÉÏ¿ÉÒÔÊ¹ÓÃµÄ£¬ĞèÒªÇ©Ãû
+  Build->generated signed apk 
+  
+  
+4.EClipse ÏîÄ¿µ¼Èë Android Studio µ¼ÖÂµÄÂÒÂëÎÊÌâ
+×î½üÓĞÒ»¸ö Eclipse ÏîÄ¿µ¼Èë Android Studio 1.4 Ê±³öÏÖÂÒÂë£¬Build ÌáÊ¾
+
+Error:(38, 5) é”™è¯¯: ç¼–ç UTF-8çš„ä¸å¯æ˜ å°„å­—ç¬?¡£
+
+Ô´´úÂëÊÇ GBK ¸ñÊ½£¬Android Studio Encoding ·½Ê½ÊÇ UTF-8¡£
+
+½â¾ö·½Ê½ÈçÏÂ,Ã¿Ò»Ò³¶¼Òª×öÕâĞ©²Ù×÷£º
+
+1)¡¢µã»÷ Android Studio ÓÒÏÂ½ÇµÄ File Encoding UTF-8£¬ÔÚ³öÏÖÌáÊ¾Ê±µã»÷ GBK£»
+
+2)¡¢ÔÚ³öÏÖµÄ¶Ô»°¿òÖĞµã»÷ Reload -> Reload anyway£¬´ËÊ±Ô´´úÂëÂÒÂëÏûÊ§£¬³öÏÖÖĞÎÄ£»
+
+3)¡¢µã»÷ Android Studio ÓÒÏÂ½ÇµÄ File Encoding GBK£¬ÔÚ³öÏÖÌáÊ¾Ê±µã»÷ UTF-8£»
+
+4)¡¢ÔÚ³öÏÖµÄ¶Ô»°¿òÖĞµã»÷ Convert¡£
+
+BuildÒ»ÇĞOK¡£×¢ÒâË³Ğò²»ÄÜ³ö´í¡£
+
+5.  EClipse ÏîÄ¿µ¼Èë Android Studio,ÓĞÊ±ºòÍ¼Æ¬»á±¨´í£¬ÕâÊÇÒòÎªAndroid Studio¶ÔÍ¼Æ¬µÄÒªÇó±È½ÏÑÏ¸ñ£¬½â¾ö·½·¨ÊÇÖØĞÂ
+»­Ò»ÕÅÍ¼Æ¬£¬»òÕß¸É´àÉ¾³ıµôÕâ¸öÍ¼Æ¬
+
+	
+*Rxandroid¿ò¼ÜÏìÓ¦Ê½±à³Ì
+Rx=Observables(·¢³öÊı¾İ)+LINO(¼¯³É²éÑ¯)+Schedulers(µ÷¶È)
+ËûÊ¹ÓÃº¯ÊıÊ½µÄ·ç¸ñ£¬ÈÃÎÒÃÇ°ÚÍÑµ×²ãµÄÏß³ÌÍ¬²½£¬ºÍ¸÷ÖÖ²¢·¢ÎÊÌâ£¬ÒÔ¼°¸÷ÖÖ»Øµ÷µÄ¸´ÔÓÂß¼­
+RxÊ¹ÓÃ£º¹ıÂË(filter),Ñ¡Ôñ(select),±ä»»(transform),½áºÏ(combine)ºÍ×éºÏ(compose)²Ù×÷·û¸øobservableÉú²úÕß
+observable±»¹Û²ìÕß£º¿ÉÒÔµ±×öIterableÀ´ÍÆËÍÊı¾İ£¬¿ÉÒÔÑ¡ÔñÍ¬²½»òÕßÒì²½´«ËÍ
+observer:¹Û²ìÕß´Ó±»¹Û²ìÕßÄÇÀïÀ­È¡Êı¾İ£¬Ïß³Ì×èÈûÖ±µ½Êı¾İ×¼±¸ºÃ
+subscribe¶©ÔÄ£º¼´¶©ÔÄ¼àÌıÊÂ¼ş
+ÊÂ¼ş£ºÊÂ¼ş·¢ÉúÊ±´¥·¢
+1.¹Û²ìÕßÓë±»¹Û²ìÕßÔ­Àí
+//±»¹Û²ìÕß
+public interface watched {
+	public void addwatcher(watcher watch);//Ìí¼Ó
+	public void removewatcher(watcher watch);//É¾³ı
+	public void notifywatcher(String str);//ÌáĞÑ
+}
+
+//¹Û²ìÕß
+public interface watcher {
+	public void update(String str);
+}
+
+//±»¹Û²ìÕßÊµÏÖÀà
+public class ConnectWatched implements watched{
+	private List<watcher> list=new ArrayList<watcher>();
+	@Override
+	public void addwatcher(watcher watch) {
+		// TODO Auto-generated method stub
+		list.add(watch);
+	}
+
+	@Override
+	public void removewatcher(watcher watch) {
+		// TODO Auto-generated method stub
+		list.remove(watch);
+	}
+
+	@Override
+	public void notifywatcher(String str) {
+		// TODO Auto-generated method stub
+		for(watcher watch:list)
+		{
+			watch.update(str);
+		}
+	}
+	
+}
+
+//¹Û²ìÕßÊµÏÖÀà
+public class ConnectWatcher implements watcher{
+
+	@Override
+	public void update(String str) {
+		// TODO Auto-generated method stub
+		Log.i("EV_JNI","update="+str);
+	}
+
+}
+
+protected void onCreate(Bundle savedInstanceState) 
+{
+	super.onCreate(savedInstanceState);
+	setContentView(R.layout.activity_main);
+	final watched xiaotou=new ConnectWatched();//±»¹Û²ìÕßÊµÀı»¯
+	//¹Û²ìÕßÊµÀı»¯
+	watcher police1=new ConnectWatcher();
+	watcher police2=new ConnectWatcher();
+	watcher police3=new ConnectWatcher();
+	//Ìí¼Ó¼àÌıÆ÷
+	xiaotou.addwatcher(police1);
+	xiaotou.addwatcher(police2);
+	xiaotou.addwatcher(police3);
+	//ÊÂ¼ş´¥·¢
+	Button btn=(Button)findViewById(R.id.btn);
+	btn.setOnClickListener(new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			xiaotou.notifywatcher("Íµ¶«Î÷ÁË");
+		}
+	});
+}
+
+´òÓ¡
+11-23 13:11:06.770: I/EV_JNI(30007): update=Íµ¶«Î÷ÁË
+11-23 13:11:06.770: I/EV_JNI(30007): update=Íµ¶«Î÷ÁË
+11-23 13:11:06.770: I/EV_JNI(30007): update=Íµ¶«Î÷ÁË
+
+2.Ö±½ÓÊ¹ÓÃObserver,ÓëObservable·½·¨
+//´´½¨±»¹Û²ìÕß
+public class SimpleObservable extends Observable
+{
+	private int data=0;
+
+	public int getData() {
+		return data;
+	}
+
+	public void setData(int data) {
+		//Êı¾İÓĞ±ä»¯Ê±
+		if(this.data != data)
+		{
+			this.data = data;
+			//Í¨Öª¹Û²ìÕß£¬±íÊ¾Êı¾İ·¢Éú±ä»¯
+			this.setChanged();
+			this.notifyObservers();
+		}
+	}
+	
+}
+
+
+//´´½¨¹Û²ìÕß
+public class SimpleObserver implements Observer
+{
+	//³õÊ¼»¯Ê±£¬Ö±½Ó×¢²á¼àÌı
+	public SimpleObserver(SimpleObservable observable) {
+		observable.addObserver(this);
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	//µ±±»¹Û²ìÕß±ä»¯Ê±£¬¹Û²ìÕß´òÓ¡Êı¾İ
+	public void update(Observable observable, Object data) {
+		// TODO Auto-generated method stub
+		Log.i("EV_JNI","update="+((SimpleObservable)observable).getData());
+	}	
+}
+
+
+
+
+protected void onCreate(Bundle savedInstanceState)
+ {
+	super.onCreate(savedInstanceState);
+	setContentView(R.layout.activity_main);
+	final SimpleObservable xiaotou=new SimpleObservable();//±»¹Û²ìÕßÊµÀı»¯
+	SimpleObserver   police=new SimpleObserver(xiaotou);//¹Û²ìÕßÊµÀı»¯£¬²¢Ö±½Ó×¢²á¼àÌı
+	
+	//ÊÂ¼ş´¥·¢
+	Button btn=(Button)findViewById(R.id.btn);
+	btn.setOnClickListener(new View.OnClickListener() {
+		
+		@Override
+		public void onClick(View v) {
+			// TODO Auto-generated method stub
+			xiaotou.setData(1);
+			xiaotou.setData(2);
+			xiaotou.setData(2);
+			xiaotou.setData(3);
+		}
+	});
+}
+	
+´òÓ¡
+11-23 15:02:24.600: I/EV_JNI(17754): update=1
+11-23 15:02:24.600: I/EV_JNI(17754): update=2
+11-23 15:02:24.600: I/EV_JNI(17754): update=3
+
+3.RxAndroidµ÷ÓÃ
+¹Û²ìÕßÍ¨¹ı¶©ÔÄ£¬Á¬½Óµ½±»¹Û²ìÕß,Í¨¹ı±»¹Û²ìÕß»Øµ÷À´È¡µÃ·½·¨½á¹û¡£
+»Øµ÷·½·¨£ºonNext(T item):±»¹Û²ìÕß·¢ËÍÊı¾İ£¬²ÎÊıÊÇÊı¾İ
+onError(Exception ex):±»¹Û²ìÕßÅ×³öÒì³££¬²¢ÖÕÖ¹±»¹Û²ìÕß
+onComplete:	±»¹Û²ìÕß×îºó·¢ËÍÒ»¸öonNextºó£¬ÔÙ·¢ËÍonComplete±íÊ¾Íê³É
+1).ÅäÖÃ×ÜµÄgradle(Module:app)
+apply plugin: 'com.android.application'
+//3.Ìí¼Ó±í´ïÊ½ÓïÑÔµÄ²å¼ş
+apply plugin: 'me.tatarka.retrolambda'
+android {
+    compileSdkVersion 23
+    buildToolsVersion "24.0.1"
+    defaultConfig {
+        applicationId "com.example.user.myapplication"
+        minSdkVersion 15
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+  //2.Ìí¼Ójdk1.8µÄÖ§³Ö£¬ÎªÁË¿ÉÊ¹ÓÃLambda±í´ïÊ½
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:23.3.0'
+    testCompile 'junit:junit:4.12'
+    //1.ÅäÖÃrxandroidµÄ°ü
+    compile 'io.reactivex:rxandroid:1.1.0'
+    compile 'io.reactivex:rxjava:1.1.0'
+    compile 'com.jakewharton:butterknife:7.0.1'
+}
+
+
+2).ÅäÖÃÓ¦ÓÃµÄgradle(Project:MyApplication)
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.2'
+       //4.Ìí¼Óclasspath
+        classpath 'me.tatarka:gradle-retrolambda:2.5.0'
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+3).¼ÓÔØjar°ü
+×ó±ßÊÓÍ¼´ÓAndroid,¸ÄÎªproject,½«rxandroid.jar·Åµ½libsÀïÃæ¡£
+ÔÚprojectÑ¡ÖĞjar°üµã»÷ÓÒ¼ü"Add as library"
+ĞèÒªÔÚÏîÄ¿µÄbuild.gradleÎÄ¼şÀïµÄdependencies½Ú¼ÓÈë dependencies 
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:23.3.0'
+    testCompile 'junit:junit:4.12'
+    ¡£¡£¡£¡£
+    compile files('libs/rxandroid-0.24.0.jar')//Ò»°ã»á×Ô¼ºÌí¼ÓÕâÒ»ĞĞ£¬Ã»ÓĞÔòÊÖ¶¯Ìí¼Ó
+}
+4).Ìí¼Ó±»¹Û²ìÕß
+public class RxUtils
+{
+//»ñµÃµ±Ç°ÀàÃû³Æ
+    private static final String TAG=RxUtils.class.getSimpleName();
+   
+    public static void createObservable()
+    {
+        //´´½¨±»¹Û²ìÕß:×¢ÒâÒªµ÷ÓÃrx°üµÄÕâ¸ö
+        rx.Observable<String> observable= rx.Observable.create(new rx.Observable.OnSubscribe<String>() {
+            @Override
+             public void call(Subscriber<? super String> subscriber) {
+                //Èç¹ûÓë¹Û²ìÕß´æÔÚ¶©ÔÄ¹ØÏµ 
+                if(!subscriber.isUnsubscribed())
+                {
+   //Ïò¹Û²ìÕß·¢ËÍĞÅÏ¢£¬ÒòÎª·ºĞÍÊÇ×Ö·û´®£¬Òò´Ë·¢ËÍString	
+                    subscriber.onNext("hello");
+                    subscriber.onNext("world");
+                    subscriber.onNext(downloadjson());
+                    subscriber.onCompleted();//·¢ËÍÍê³É
+                }
+            }
+        });
+//´´½¨¶©ÔÄ¹ØÏµ
+Subscriber<String> showsub=new Subscriber<String>() 
+{
+    @Override
+    public void onCompleted() {
+        Log.i(TAG,"onCompleted");
+    }
+
+    @Override
+    public void onError(Throwable e) {
+        Log.i(TAG,e.getMessage());
+    }
+
+    @Override
+    public void onNext(String s) {
+        Log.i(TAG,"cout>>"+s);
+    }
+    
+};
+observable.subscribe(showsub);//¹ØÁª±»¹Û²ìÕß
+
+    }
+    public static String downloadjson()
+    {
+        return "json data";
+    }
+}
+
+5.buttonµ÷ÓÃ
+ĞÂ°æandroid studio¿ÉÒÔÖ±½ÓOnclick°ó¶¨·½·¨createMethod
+<Button
+	android:text="Button"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:id="@+id/button"
+	android:onClick="createMethod"/>
+	
+	
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    }
+
+    public void createMethod(android.view.View view)
+    {
+        RxUtils.createObservable();
+    }
+}
+
+
+´òÓ¡
+11-28 22:15:22.008 9753-9753/com.example.user.myapplication I/RxUtils: cout>>hello
+11-28 22:15:22.008 9753-9753/com.example.user.myapplication I/RxUtils: cout>>world
+11-28 22:15:22.008 9753-9753/com.example.user.myapplication I/RxUtils: cout>>json data
+11-28 22:15:22.008 9753-9753/com.example.user.myapplication I/RxUtils: onCompleted
+
+
+
+
+
+Ê¹ÓÃrxandroidµÄ×÷ÓÃ£º
+ÎÊÌâÒ»£ººóÌ¨ÈÎÎñ
+Android¿ª·¢ÕßÊ×ÏÈÓöµ½µÄÌôÕ½¾ÍÊÇÈçºÎÓĞĞ§µÄÔÚºóÌ¨Ïß³ÌÖĞ¹¤×÷£¬È»ºóÔÚUIÏß³ÌÖĞ¸üĞÂUI¡£Õâ¾­³£ÊÇÒòÎªĞèÒª´Óweb serviceÖĞ»ñÈ¡Êı¾İ¡£¶ÔÓÚÒÑ¾­ÓĞÏà¹Ø¾­ÑéµÄÄã¿ÉÄÜ»áËµ£º¡°ÕâÓĞÊ²Ã´ÌôÕ½ĞÔ£¿ÄãÖ»ĞèÒªÆô¶¯Ò»¸öAsyncTask£¬È»ºóËùÓĞµÄ¹¤×÷Ëü¾Í¶¼¸øÄã×öÁË¡£¡± Èç¹ûÄãÊÇÕâÑùÏëµÄ£¬ÄÇÃ´ÄãÓĞÒ»¸ö»ú»áÈ¥¸ÄÉÆÕâÖÖ×´¿ö¡£ÕâÊÇÒòÎªÄãÒÑ¾­Ï°¹ßÁËÕâÖÖ¸´ÔÓµÄ·½Ê½²¢ÇÒÍü¼ÇÕâ±¾Ó¦¸ÃÊÇºÜ¼ò½àµÄ£¬»òÕßÊÇËµÄãÃ»ÓĞ´¦ÀíËùÓĞÓ¦¸Ã´¦ÀíµÄ ±ß½çÇé¿ö¡£ÈÃÎÒÃÇÀ´Ì¸Ì¸Õâ¸ö¡£
+
+Ä¬ÈÏµÄ½â¾ö·½°¸£ºAsyncTask
+AsyncTaskÊÇÔÚAndroidÀïÃæÄ¬ÈÏµÄ´¦Àí¹¤¾ß£¬¿ª·¢Õß¿ÉÒÔ×öÀïÃæÒ»Ğ©³¤Ê±¼äµÄ´¦Àí¹¤×÷£¬¶ø²»»á×èÈûÓÃ»§½çÃæ¡£(×¢Òâ£º×î½ü£¬AsyncTaskLoaderÓÃÀ´´¦ÀíÒ»Ğ©¸ü¼Ó¾ßÌåµÄÊı¾İ¼ÓÔØÈÎÎñ£¬ÎÒÃÇÒÔºó»áÔÙÌ¸Ì¸Õâ¸ö)
+
+±íÃæÉÏ£¬ÕâËÆºõºÜ¼òµ¥£¬Äã¶¨ÒåÒ»Ğ©´úÂëÔÚºóÌ¨Ïß³ÌÖĞÔËĞĞ£¬È»ºó¶¨ÒåÒ»Ğ©´úÂëÔËĞĞÔÚUIÏß³ÌÖĞ£¬ÔÚºóÌ¨ÈÎÎñ´¦ÀíÍêÖ®ºó£¬ËüÔÚUIÏß³Ì»á´¦Àí´ÓºóÌ¨ÈÎÎñ´«µİ¹ıÀ´µÄÖ´ĞĞ½á¹û¡£
+
+    private class CallWebServiceTask extends AsyncTask<String, Result, Void> {
+ 
+        protected Result doInBackground(String... someData) {
+            Result result = webService.doSomething(someData);
+            return result;
+        }
+ 
+        protected void onPostExecute(Result result) {
+            if (result.isSuccess() {
+                resultText.setText("It worked!");
+            }
+        }
+    }
+Ê¹ÓÃAsyncTaskµÄ×î´óµÄÎÊÌâÊÇÔÚÏ¸½ÚµÄ´¦ÀíÉÏ£¬ÈÃÎÒÃÇÌ¸Ì¸Õâ¸öÎÊÌâ¡£
+
+´íÎó´¦Àí
+ÕâÖÖ¼òµ¥ÓÃ·¨µÄµÚÒ»¸öÎÊÌâ¾ÍÊÇ£º¡°Èç¹û³öÏÖÁË´íÎóÔõÃ´°ì£¿¡±²»ĞÒµÄÊÇ£¬ÔİÊ±Ã»ÓĞ·Ç³£ºÃµÄ½â¾ö·½°¸¡£ËùÒÔºÜ¶àµÄ¿ª·¢Õß×îÖÕÒª¼Ì³ĞAsyncTask£¬ È»ºóÔÚdoInBackground()ÖĞ°ü¹üÒ»¸ötry/catch£¬·µ»ØÒ»¸ö£¬È»ºó¸ù¾İ·¢ÉúµÄÇé¿ö£¬·Ö·¢µ½ĞÂ¶¨ÒåµÄÀıÈçonSuccess()»òÕßÊÇ onError()ÖĞ¡£(ÎÒÒ²Ôø¾­¼û¹ı½ö²¶»ñÒì³£µÄÒıÓÃ£¬È»ºóÔÚ onPostExcecute()ÖĞ½øĞĞ¼ì²éµÄĞ´·¨)
+
+Õâ×îÖÕÊÇÓĞµã°ïÖúµÄ£¬µ«ÊÇÄã±ØĞëÎªÄãµÄÃ¿¸öÏîÄ¿Ğ´ÉÏ¶îÍâµÄ´úÂë£¬Ëæ×ÅÊ±¼äµÄÍÆÒÆ£¬ÕâĞ©×Ô¶¨ÒåµÄ´úÂëÔÚ¿ª·¢ÕßÖ®¼äºÍÏîÄ¿Ö®¼ä£¬¿ÉÄÜ²»»á±£³ÖºÜºÃµÄÒ»ÖÂĞÔºÍ¿ÉÔ¤¼ûĞÔ¡£
+
+ActivityºÍFragmentµÄÉúÃüÖÜÆÚ
+ÁíÍâÒ»¸öÄã±ØĞëÃæ¶ÔµÄÎÊÌâÊÇ£º¡°µ±AsyncTaskÕıÔÚÔËĞĞµÄÊ±ºò£¬Èç¹ûÎÒÍË³öActivity»òÕßÊÇĞı×ªÉè±¸µÄ»°»á·¢ÉúÊ²Ã´£¿¡±àÅ£¬Èç¹ûÄãÖ»ÊÇ ·¢ËÍÒ»Ğ©Êı¾İ£¬Ö®ºó¾Í²»ÔÙ¹ØĞÄ·¢ËÍ½á¹û£¬ÄÇ¿ÉÄÜÊÇÃ»ÓĞÎÊÌâµÄ£¬µ«ÊÇÈç¹ûÄãĞèÒª¸ù¾İTaskµÄ·µ»Ø½á¹û¸üĞÂUIÄØ£¿Èç¹ûÄã²»×öÒ»Ğ©ÊÂÇé×èÖ¹µÄ»°£¬ÄÇÃ´µ±ÄãÊÔ Í¼È¥µ÷ÓÃActivity»òÕßÊÇviewµÄ»°£¬Äã½«µÃµ½Ò»¸ö¿ÕÖ¸ÕëÒì³£µ¼ÖÂ³ÌĞò±ÀÀ££¬ÒòÎªËûÃÇÏÖÔÚÊÇ²»¿É¼û»òÕßÊÇnullµÄ¡£
+
+Í¬Ñù£¬ÔÚÕâ¸öÎÊÌâÉÏAsyncTaskÃ»ÓĞ×öºÜ¶à¹¤×÷È¥°ïÖúÄã¡£×÷ÎªÒ»¸ö¿ª·¢Õß£¬ÄãĞèÒªÈ·±£±£³ÖÒ»¸öTaskµÄÒıÓÃ£¬²¢ÇÒÒªÃ´µ±ActivityÕı ÔÚ±»Ïú»ÙµÄÊ±ºòÈ¡ÏûTask£¬ÒªÃ´µ±ÄãÊÔÍ¼ÔÚonPostExecute()ÀïÃæ¸üĞÂUIµÄÊ±ºò£¬È·±£ActivityÊÇÔÚÒ»¸ö¿É´ï×´Ì¬¡£µ±ÄãÖ»ÏëÃ÷È·µÄ ×öÒ»Ğ©¹¤×÷£¬²¢ÇÒÈÃÏîÄ¿ÈİÒ×Î¬»¤µÄÊ±ºò£¬Õâ½«»á¼ÌĞøÌá¸ßÎ¬»¤ÏîÄ¿µÄÄÑ¶È¡£
+
+×éºÏµÄ¶à¸öWeb Serverµ÷ÓÃ
+ÏÖÔÚ£¬¼ÙÈçËµÎÒÃÇÒÑ¾­Ïë°ì·¨°ÑÉÏÃæµÄÎÊÌâ¶¼½â¾öÁË£¬µ«ÊÇÎÒÃÇÏÖÔÚĞèÒª×öÒ»Ğ©Á¬ĞøµÄÍøÂçÇëÇó£¬Ã¿Ò»¸öÇëÇó¶¼ĞèÒª»ùÓÚÇ°Ò»¸öÇëÇóµÄ½á¹û¡£»òÕßÊÇ£¬ÎÒÃÇÏë×öÒ»Ğ©²¢·¢µÄÍøÂçÇëÇó£¬È»ºó°Ñ½á¹ûºÏ²¢ÔÚÒ»Æğ·¢ËÍµ½UIÏß³Ì£¬µ«ÊÇ£¬ÔÙ´Î±§Ç¸£¬AsyncTaskÔÚÕâÀï°ï²»µ½Äã¡£
+
+Ò»µ©Äã¿ªÊ¼×öÕâÑùµÄÊÂÇé£¬Ëæ×Å¸ü¶àµÄ¸´ÔÓÏß³ÌÄ£ĞÍµÄÔö³¤£¬Ö®Ç°µÄÎÊÌâ»áµ¼ÖÂ´¦ÀíÕâÑùµÄÊÂÇé·Ç³£µÄÍ´¿àºÍ²Ô°×ÎŞÁ¦¡£Èç¹ûÏëÒªÕâĞ©Ïß³ÌÒ»ÆğÔËĞĞ£¬ÒªÃ´Äã ¾ÍÈÃËüÃÇµ¥¶ÀÔËĞĞ£¬È»ºó»Øµ÷£¬ÒªÃ´ÈÃËüÃÇÔÚÒ»¸öºóÌ¨Ïß³ÌÖĞÍ¬²½ÔËĞĞ£¬×îºó¸´ÖÆ×é³É²»Í¬¡£(To chain calls together, you either keep them separate and end up in callback hell, or run them synchronously together in one background task end up duplicating work to compose them differently in other situations.)
+
+Èç¹ûÒª²¢ĞĞÔËĞĞ£¬Äã±ØĞë´´½¨Ò»¸ö×Ô¶¨ÒåµÄexecutorÈ»ºó´«µİ¸øAsyncTaskTask£¬ÒòÎªÄ¬ÈÏµÄAsyncTask²»Ö§³Ö²¢ĞĞ¡£²¢ÇÒÎª ÁËĞ­µ÷²¢ĞĞÏß³Ì£¬ÄãĞèÒªÊ¹ÓÃÏñÊÇCountDownLatchs, Threads, Executors ºÍ FuturesÈ¥½µµÍ¸ü¸´ÔÓµÄÍ¬²½Ä£Ê½¡£
+
+¿É²âÊÔĞÔ
+Å×¿ªÕâĞ©²»Ëµ£¬Èç¹ûÄãÏ²»¶²âÊÔÄãµÄ´úÂë£¬AsyncTask²¢²»ÄÜ¸øÄã´øÀ´Ê²Ã´°ïÖú¡£Èç¹ûÎÒÃÇ²»×ö¶îÍâµÄ¹¤×÷£¬²âÊÔAsyncTask·Ç³£À§ÄÑ£¬ËüºÜ´àÈõ²¢ÇÒÄÑÒÔÎ¬³Ö¡£ÕâÊÇÒ»ÆªÓĞ¹ØÈçºÎ³É¹¦²âÊÔAsyncTaskµÄÌû×Ó¡£
+
+
+
+
+
+ÀıÈç£ºÔ­ÏÈÔÚactivityÀï£¬ĞèÒª´´½¨Ò»¸ö¹¤¾ßÀà£¬ÔÚÀàÀïÃæÍ¨¹ıAsyncTask·ÃÎÊÍøÂçÏÂÔØÍ¼Æ¬£¬½«ÏÂÔØµÄÍ¼Æ¬ÔÙÍ¨¹ı»Øµ÷·µ»Ø¸øactivity,È»ºóÔÚÇ°Ì¨µÄimageviewÀïÃæÏÔÊ¾Í¼Æ¬¡£Õâ¸öÌ«Âé·³ÁË£¬Ê¹ÓÃ
+rxandroidÀ´×ö
+
+DownLoadUtils.java
+public class DownLoadUtils
+{
+    public Observable<byte[]> downloadImage(String path)
+    {
+        Observable<byte[]> observable= rx.Observable.create(new Observable.OnSubscribe<byte[]>() {
+            @Override
+            public void call(Subscriber<? super byte[]> subscriber) {
+                if(!subscriber.isUnsubscribed())
+                {
+                    //·ÃÎÊÍøÂç²Ù×÷
+                    byte[] data=response.bytes();
+                    if(data!=null)
+                    {
+                        subscriber.onNext(data);
+                    }
+                    subscriber.onCompleted();
+                }
+            }
+        });
+        return observable;
+    }
+}
+
+
+Activity.java
+°´¼ü´¥·¢
+public void createMethod(android.view.View view)
+{
+	±íÊ¾Ê¹ÓÃÍøÂçÀ´·ÃÎÊ£¬ÔËĞĞÔÚ°²×¿uiÖ÷Ïß³ÌÉÏ
+	util.downloadImage("hello").observeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).subscribe(new Subscriber<byte[]>() {
+		@Override
+		public void onCompleted() {
+			Log.i("EV_LOG","onCompleted");
+		}
+
+		@Override
+		public void onError(Throwable e) {
+			Log.i("EV_LOG",e.getMessage());
+		}
+
+		@Override
+		public void onNext(byte[] bytes) {
+			Bitmap bitmap= BitmapFactory.decodeByteArray(bytes,0,bytes.length);
+			imageView.setImageBitmap(bitmap);
+		}
+	});
+
+}
+
+
+*MVPÉè¼ÆË¼Ïë
+MVCÃ´£º
+
+View£º¶ÔÓ¦ÓÚ²¼¾ÖÎÄ¼ş
+Model£ºÒµÎñÂß¼­ºÍÊµÌåÄ£ĞÍ
+Controllor£º¶ÔÓ¦ÓÚActivity
+¿´ÆğÀ´µÄÈ·ÏñÄÇÃ´»ØÊÂ£¬µ«ÊÇÏ¸Ï¸µÄÏëÏëÕâ¸öView¶ÔÓ¦ÓÚ²¼¾ÖÎÄ¼ş£¬ÆäÊµÄÜ×öµÄÊÂÇéÌØ±ğÉÙ£¬Êµ¼ÊÉÏ¹ØÓÚ¸Ã²¼¾ÖÎÄ¼şÖĞµÄÊı¾İ°ó¶¨µÄ²Ù×÷£¬ÊÂ¼ş´¦ÀíµÄ´úÂë¶¼ÔÚActivityÖĞ£¬Ôì³ÉÁËActivity¼ÈÏñViewÓÖÏñController
+
+½«¼Ü¹¹¸ÄÎªMVPÒÔºó£¬PresenterµÄ³öÏÖ£¬½«ActvityÊÓÎªView²ã£¬Presenter¸ºÔğÍê³ÉView²ãÓëModel²ãµÄ½»»¥¡£ÏÖÔÚÊÇÕâÑùµÄ£º
+
+View ¶ÔÓ¦ÓÚActivity£¬¸ºÔğViewµÄ»æÖÆÒÔ¼°ÓëÓÃ»§½»»¥
+Model ÒÀÈ»ÊÇÒµÎñÂß¼­ºÍÊµÌåÄ£ĞÍ
+Presenter ¸ºÔğÍê³ÉViewÓÚModel¼äµÄ½»»¥
+
+ÆäÊµ×îÃ÷ÏÔµÄÇø±ğ¾ÍÊÇ£¬MVCÖĞÊÇÔÊĞíModelºÍView½øĞĞ½»»¥µÄ£¬¶øMVPÖĞºÜÃ÷ÏÔ£¬ModelÓëViewÖ®¼äµÄ½»»¥ÓÉPresenterÍê³É¡£»¹ÓĞÒ»µã¾ÍÊÇPresenterÓëViewÖ®¼äµÄ½»»¥ÊÇÍ¨¹ı½Ó¿ÚµÄ£¨´úÂëÖĞ»áÌåÏÖ)¡£
+
+
+³ÌĞò½á¹¹ÈçÏÂ,ÒªÊµÏÖµÄ¹¦ÄÜÊÇµÇÂ½ÑéÖ¤
+com.example.mvp.Model²ã
+   User.java
+   IUserBiz.java
+   UserBiz.java
+   OnLoginListener.java
+com.example.mvp.present²ã
+   UserLoginPresenter.java
+com.example.mvp.view²ã
+   IUserLoginView.java
+   MainActivity.java   
+
+
+//ÊµÌåÀà²»ÓÃËµ
+public class User 
+{
+	private String login;
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+	
+}
+Model²ã:
+//ÏòÏÂ²Ù×÷ÒµÎñ½Ó¿Ú
+public interface IUserBiz
+{
+	public void Login(final String loginstr,final OnLoginListener loginListener);
+}
+
+//ÏòÏÂ²Ù×÷ÒµÎñÀà
+public class UserBiz implements IUserBiz {
+
+	@Override
+	public void Login(final String loginstr,final OnLoginListener loginListener) {
+		// TODO Auto-generated method stub
+		//Ä£Äâ×ÓÏß³ÌºÄÊ±²Ù×÷
+        new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+                //Ä£ÄâµÇÂ¼³É¹¦
+                if ("hello".equals(loginstr))
+                {
+                    User user = new User();
+                    user.setLogin("×¢²áÍê³É:"+loginstr);
+                    loginListener.loginSuccess(user.getLogin());
+                } else
+                {
+                    loginListener.loginFailed();
+                }
+            }
+        }.start();
+	}
+
+}
+
+//ÓÉÓÚÊÇºÄÊ±²Ù×÷£¬ËùÒÔÎÒÃÇÍ¨¹ıÒ»¸ö»Øµ÷½Ó¿ÚÀ´Í¨ÖªµÇÂ¼µÄ×´Ì¬
+public interface OnLoginListener{
+    void loginSuccess(String rst);
+
+    void loginFailed();
+}
+
+
+P²ã£º
+public class UserLoginPresenter 
+{
+	private IUserBiz userBiz;
+	private IUserLoginView userLoginView;
+	private Handler mHandler=new Handler();
+	public UserLoginPresenter(IUserLoginView userLoginView) {
+		this.userLoginView = userLoginView;
+		this.userBiz=new UserBiz();
+	}
+	public void login()
+	{
+		userLoginView.showLoading();
+		userBiz.Login(userLoginView.getLoginstr(), new OnLoginListener() {
+			
+			@Override
+			public void loginSuccess(final String rst) {
+				// TODO Auto-generated method stub
+				 //ĞèÒªÔÚUIÏß³ÌÖ´ĞĞ
+                mHandler.post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        userLoginView.toMainActivity(rst);
+                        userLoginView.hideLoading();
+                    }
+                });
+			}
+			
+			@Override
+			public void loginFailed() {
+				// TODO Auto-generated method stub
+				//ĞèÒªÔÚUIÏß³ÌÖ´ĞĞ
+                mHandler.post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        userLoginView.showFailedError();
+                        userLoginView.hideLoading();
+                    }
+                });
+			}
+		});
+	}
+	
+}
+
+V²ã£º
+public interface IUserLoginView 
+{
+	String getLoginstr();
+	void showLoading();
+    void hideLoading();
+    void toMainActivity(String rst);
+    void showFailedError();
+}
+
+ÊµÏÖÀà
+public class MainActivity extends Activity implements IUserLoginView{
+	ProgressDialog dialog= null;
+	TextView txt;
+	private UserLoginPresenter mUserLoginPresenter = new UserLoginPresenter(this);
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        txt=(TextView)findViewById(R.id.txt);
+        Button btn=(Button)findViewById(R.id.btn);
+        btn.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				mUserLoginPresenter.login();
+			}
+		});
+    }
+
+	@Override
+	public String getLoginstr() {
+		// TODO Auto-generated method stub
+		return "hello";
+	}
+
+	@Override
+	public void showLoading() {
+		// TODO Auto-generated method stub
+		dialog= ProgressDialog.show(this,"ÕıÔÚÑéÖ¤ÖĞ","ÇëÉÔºò...");
+	}
+
+	@Override
+	public void hideLoading() {
+		// TODO Auto-generated method stub
+		dialog.dismiss();
+	}
+
+	@Override
+	public void toMainActivity(String rst) {
+		// TODO Auto-generated method stub
+		txt.setText("ÒÑ¾­×¢²á="+rst);
+	}
+
+	@Override
+	public void showFailedError() {
+		// TODO Auto-generated method stub
+		txt.setText("×¢²áÊ§°Ü");
+	}
+
+
+}   
+
+
+Õâ¸öÄ£ĞÍÓĞÒ»¸öÎÊÌâÊÇ£ºÈç¹ûactivityµÄ½çÃæ±»¸ÉµôÁË£¬ÒıÓÃ»¹ÔÚ£¬ÄÇpresster»Øµ÷´Ëactivity£¬ÔÚ»Øµ÷·½·¨ÖĞÓĞÊ¹ÓÃ½çÃæÔªËØ£¬Ôò»á³öÏÖnullponitExceptionµÄÎÊÌâ¡£
+ËùÒÔ¾ÍĞèÒªRxBinding¿ò¼ÜĞ£ÑéÁË¡£
+
+
+	
 
 	
