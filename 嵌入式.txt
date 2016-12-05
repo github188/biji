@@ -50457,7 +50457,7 @@ observable.subscribe(showsub);//关联被观察者
     }
 }
 
-5.button调用
+5).button调用
 新版android studio可以直接Onclick绑定方法createMethod
 <Button
 	android:text="Button"
@@ -50488,6 +50488,68 @@ public class MainActivity extends AppCompatActivity {
 11-28 22:15:22.008 9753-9753/com.example.user.myapplication I/RxUtils: cout>>json data
 11-28 22:15:22.008 9753-9753/com.example.user.myapplication I/RxUtils: onCompleted
 
+4.简化版编写方法
+public class RxUtils
+{
+    //获得当前类名称
+    private static final String TAG=RxUtils.class.getSimpleName();
+    public static void createprint()
+    {
+        rx.Observable.create(new rx.Observable.OnSubscribe<Integer>() {
+            @Override
+            public void call(Subscriber<? super Integer> subscriber) {
+                if(!subscriber.isUnsubscribed())
+                {
+                    for(int i=1;i<=10;i++)
+                    {
+                        subscriber.onNext(i);
+                    }
+                    subscriber.onCompleted();
+                }
+            }
+        }).subscribe(new Subscriber<Integer>() {
+            @Override
+            public void onCompleted() {
+                Log.i(TAG,"onCompleted");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.i(TAG,e.getMessage());
+            }
+
+            @Override
+            public void onNext(Integer i) {
+                Log.i(TAG,"cout>>"+i);
+            }
+        });
+    }
+}
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+    }
+    public void CreateMethod(View view)
+    {
+        RxUtils.createprint();
+    }
+}
+打印
+12-04 14:32:14.235 28515-28515/com.example.user.myapplication I/RxUtils: cout>>1
+12-04 14:32:14.235 28515-28515/com.example.user.myapplication I/RxUtils: cout>>2
+12-04 14:32:14.235 28515-28515/com.example.user.myapplication I/RxUtils: cout>>3
+12-04 14:32:14.235 28515-28515/com.example.user.myapplication I/RxUtils: cout>>4
+12-04 14:32:14.235 28515-28515/com.example.user.myapplication I/RxUtils: cout>>5
+12-04 14:32:14.235 28515-28515/com.example.user.myapplication I/RxUtils: cout>>6
+12-04 14:32:14.235 28515-28515/com.example.user.myapplication I/RxUtils: cout>>7
+12-04 14:32:14.235 28515-28515/com.example.user.myapplication I/RxUtils: cout>>8
+12-04 14:32:14.235 28515-28515/com.example.user.myapplication I/RxUtils: cout>>9
+12-04 14:32:14.235 28515-28515/com.example.user.myapplication I/RxUtils: cout>>10
+12-04 14:32:14.235 28515-28515/com.example.user.myapplication I/RxUtils: onCompleted
 
 
 
@@ -50806,6 +50868,778 @@ public class MainActivity extends Activity implements IUserLoginView{
 所以就需要RxBinding框架校验了。
 
 
+*retrofit网络框架
+1. 首先在build.gradle引入依赖
+compile 'com.squareup.retrofit2:retrofit:2.+'
+compile 'com.squareup.retrofit2:converter-gson:2.+'
+2.他通过注解的方式设置访问参数，例如
+@GET是指GET请求，@POST是POST请求，
+GET请求需要的：
+@Headers是头信息参数，@Path路径参数，替换url地址中{和}所括号的部分
+@Query查询参数，将增加类似"page=1"的字符串，提交给服务器端的请求参数
+@QueryMap查询参数集合将增加类似"page=1&count=30"
+
+POST请求需要的：
+@FormUrlEncoded对表单中填写的内容编码处理，避免乱码
+@Field制定表单中空间的名字name以及数值
+@FieldMap表单参数集合
+@Multipart 如果上传文件，必须制定这个
+@Part POST提交分块请求
+@Body POST提交分块请求
+
+3.实现步骤
+1)定义一个接口，封装URL地址和数据请求
+2)实例化Retrofit
+3)通过实例创建接口服务和对象
+4)在接口服务对象中调用接口定义的方法，获得Call对象
+5)Call对象执行同步，或者异步请求
+既然call.enqueue是异步的访问数据，那么同步的访问方式为call.execute
+
+4.接口写法例子：
+无参数的Get请求
+@GET("article/list/latest?page=1")
+Call<ResponseBody>getLatestString();
+
+制定@Path参数和@Query参数的Get请求
+@GET("article/list/{type}?")
+Call<QiushiModel>getLatestList(@Path("type")String type,@Query("page")int page);
+
+制定@QueryMap参数的Get请求
+@GET("MyWeb/RegServlet")
+Call<ResponseBody>getKeyValue(@QueryMap Map<String,String>map);
+
+无参数的Get请求,但是@Url中定义完整的URL路径，使得BaseUrl被忽略
+@GET("http://xxxx.jpg")
+Call<ResponseBody>getLatestString();
+
+
+5.示例
+1）无参数的Get请求
+public interface GeInterface1 {
+    //(1)定义一个接口，封装URL地址和数据请求
+    //GET是retrofit里的，在这里把参数值都写了，函数里面就不用写参数变量了
+    @GET("article/details/51046512")
+    Call<ResponseBody>getJsonString();//ResponseBody是okhttp里的
+}
+
+public class MainActivity extends AppCompatActivity {
+    private TextView text;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        initView();
+//        initRetrofit();
+    }
+    private void initRetrofit()
+    {
+        //(2)实例化Retrofit
+        Retrofit retrofit=new Retrofit.Builder()
+                .baseUrl("http://blog.csdn.net/ljd2038")
+                .build();
+        //(3)通过实例创建接口服务和对象
+        GeInterface1 geInterface1=retrofit.create(GeInterface1.class);
+        //(4)在接口服务对象中调用接口定义的方法，获得Call对象
+        Call<ResponseBody>call= geInterface1.getJsonString();
+        //(5)Call对象执行同步请求
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                if(response.isSuccessful())
+                {
+                    String result=response.body().toString();
+                    text.setText(result);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
+
+            }
+        });
+    }
+    private void initView()
+    {
+        text=(TextView) findViewById(R.id.text);
+
+    }
+}
+
+
+2）返回是JSON的GET请求
+public interface IUserBiz
+{
+    @GET("users")
+    Call<List<User>> getUsers();
+}
+
+
+Retrofit retrofit = new Retrofit.Builder()
+        .baseUrl("http://192.168.31.242:8080/springmvc_users/user/")
+        .addConverterFactory(GsonConverterFactory.create())//返回时JSON，需要转换
+        .build();
+IUserBiz userBiz = retrofit.create(IUserBiz.class);
+Call<List<User>> call = userBiz.getUsers();
+        call.enqueue(new Callback<List<User>>()
+        {
+            @Override
+            public void onResponse(Call<List<User>> call, Response<List<User>> response)
+            {
+                Log.e(TAG, "normalGet:" + response.body() + "");
+            }
+
+            @Override
+            public void onFailure(Call<List<User>> call, Throwable t)
+            {
+
+            }
+        });
+
+
+3）动态的url访问@PATH
+例如通过不同的username访问不同用户的信息，返回数据为json字符串
+//用于访问zhy的信息
+http://192.168.1.102:8080/springmvc_users/user/zhy
+//用于访问lmj的信息
+http://192.168.1.102:8080/springmvc_users/user/lmj
+
+public interface IUserBiz
+{
+    @GET("{username}")
+    Call<User> getUser(@Path("username") String username);
+}
+可以看到我们定义了一个getUser方法，方法接收一个username参数，并且我们的@GET注解中使用{username}声明了访问路径，这里你可以把{username}当做占位符，而实际运行中会通过@PATH("username")所标注的参数进行替换。
+
+
+//省略了retrofit的构建代码
+Call<User> call = userBiz.getUser("zhy");
+//Call<User> call = userBiz.getUser("lmj");
+call.enqueue(new Callback<User>()
+{
+
+    @Override
+    public void onResponse(Call<User> call, Response<User> response)
+    {
+        Log.e(TAG, "getUsePath:" + response.body());
+    }
+
+    @Override
+    public void onFailure(Call<User> call, Throwable t)
+    {
+
+    }
+});
+
+
+4）查询参数的设置@Query
+http://baseurl/users?sortby=username
+http://baseurl/users?sortby=id
+
+public interface IUserBiz
+{
+    @GET("users")
+    Call<List<User>> getUsersBySort(@Query("sortby") String sort);
+}
+
+//省略retrofit的构建代码
+Call<List<User>> call = userBiz.getUsersBySort("username");
+//Call<List<User>> call = userBiz.getUsersBySort("id");
+//省略call执行相关代码
+
+
+当然相同的方式也适用于POST，只需要把注解修改为@POST即可。
+
+
+5）POST请求体的方式向服务器传入json字符串@Body
+public interface IUserBiz
+{
+ @POST("add")
+ Call<List<User>> addUser(@Body User user);
+}
+
+//省略retrofit的构建代码
+ Call<List<User>> call = userBiz.addUser(new User(1001, "jj", "123,", "jj123", "jj@qq.com"));
+//省略call执行相关代码
+可以看到其实就是使用@Body这个注解标识我们的参数对象即可，那么这里需要考虑一个问题，retrofit是如何将user对象转化为字符串呢
+
+
+6）表单的方式传递键值对@FormUrlEncoded
+public interface IUserBiz
+{
+    @POST("login")
+    @FormUrlEncoded
+    Call<User> login(@Field("username") String username, @Field("password") String password);
+}
+
+//省略retrofit的构建代码
+Call<User> call = userBiz.login("zhy", "123");
+//省略call执行相关代码
+
+看起来也很简单，通过@POST指明url，添加FormUrlEncoded，然后通过@Field添加参数即可
+
+
+
+7）单文件上传@Multipart
+public interface IUserBiz
+{
+    @Multipart
+    @POST("register")
+    Call<User> registerUser(@Part MultipartBody.Part photo, @Part("username") RequestBody username, @Part("password") RequestBody password);
+}
+
+这里@MultiPart的意思就是允许多个@Part了，我们这里使用了3个@Part，第一个我们准备上传个文件，使用了MultipartBody.Part类型，其余两个均为简单的键值对。
+File file = new File(Environment.getExternalStorageDirectory(), "icon.png");
+RequestBody photoRequestBody = RequestBody.create(MediaType.parse("image/png"), file);
+MultipartBody.Part photo = MultipartBody.Part.createFormData("photos", "icon.png", photoRequestBody);
+
+Call<User> call = userBiz.registerUser(photo, RequestBody.create(null, "abc"), RequestBody.create(null, "123"));
+
+蛮好理解~~多个@Part，每个Part对应一个RequestBody。
+
+
+8）多文件上传@PartMap
+public interface IUserBiz
+ {
+     @Multipart
+     @POST("register")
+      Call<User> registerUser(@PartMap Map<String, RequestBody> params,  @Part("password") RequestBody password);
+}
+
+这里使用了一个新的注解@PartMap，这个注解用于标识一个Map，Map的key为String类型，代表上传的键值对的key(与服务器接受的key对应),value即为RequestBody，有点类似@Part的封装版本。
+
+File file = new File(Environment.getExternalStorageDirectory(), "messenger_01.png");
+        RequestBody photo = RequestBody.create(MediaType.parse("image/png", file);
+Map<String,RequestBody> photos = new HashMap<>();
+photos.put("photos\"; filename=\"icon.png", photo);
+photos.put("username",  RequestBody.create(null, "abc"));
+
+Call<User> call = userBiz.registerUser(photos, RequestBody.create(null, "123"));
+
+可以在Map中put进一个或多个文件，键值对等，当然你也可以分开，单独的键值对也可以使用@Part，这里又看到设置文件的时候，相对应的key很奇怪，例如上例"photos\"; filename=\"icon.png",前面的photos就是与服务器对应的key，后面filename是服务器得到的文件名，ok，参数虽然奇怪，但是也可以动态的设置文件名，不太影响使用~~
+
+
+9）下载文件
+@GET("download")
+Call<ResponseBody> downloadTest();
+
+Call<ResponseBody> call = userBiz.downloadTest();
+call.enqueue(new Callback<ResponseBody>()
+{
+    @Override
+    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response)
+    {
+        InputStream is = response.body().byteStream();
+        //save file
+    }
+
+    @Override
+    public void onFailure(Call<ResponseBody> call, Throwable t)
+    {
+
+    }
+});
+
+10配置OkHttpClient
+这个需要简单提一下，很多时候，比如你使用retrofit需要统一的log管理，给每个请求添加统一的header等，这些都应该通过okhttpclient去操作，比如addInterceptor
+
+OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new Interceptor()//log，统一的header等
+{
+    @Override
+    public okhttp3.Response intercept(Chain chain) throws IOException
+    {
+        return null;
+    }
+}).build();
+
+Retrofit retrofit = new Retrofit.Builder()
+    .callFactory(OkHttpUtils.getClient())
+    .build();
+
+callFactory方法接受一个okhttp3.Call.Factory对象，OkHttpClient即为一个实现类。
+
+
+
+
+*android中application 关于全局变量
+application是用来保存全局变量的，并且是在package创建的时候就跟着存在了。所以当我们需要创建全局变量的时候，不需要再像 j2se那样需要创建public权限的static变量，而直接在application中去实现。只需要调用Context的 getApplicationContext或者Activity的getApplication方法来获得一个application对象，再做出相应的处理。
+
+因小工程中涉及到的文件比较多，这里就贴代码撒。
+
+application文件：
+
+Java代码:
+
+public class TestApplication extends Application {
+
+private int curIndex;
+
+public int getCurIndex() {
+
+return curIndex;
+
+}
+
+public void setCurIndex(int curIndex) {
+
+this.curIndex = curIndex;
+
+}
+
+@Override
+
+public void onCreate() {
+
+super.onCreate();
+
+}
+
+@Override
+
+public void onTerminate() {
+
+super.onTerminate();
+
+}
+
+}
+
+application中有一个curIndex和setter getter方法。
+
+第一个acitivty中对application进行的操作：
+
+Java代码：
+
+TestApplication application = (TestApplication) this.getApplication();
+
+Log.i("data", ""+application.getCurIndex());
+
+application.setCurIndex(5);
+
+第二个Activity：
+
+Java代码：
+
+TestApplication application = (TestApplication)this.getApplication();
+
+Log.i("data", ""+application.getCurIndex());
+
+application.setCurIndex(6);
+
+第三个Activity：
+
+Java代码
+
+final TestApplication application = (TestApplication) this.getApplication();
+
+Log.i("data", ""+application.getCurIndex());
+
+在运行过程中，每一次都kill掉对应的Activity，再进入下一个Activity。
+
+*Dagger框架
+好处就是模块间解耦！ 就拿当前Android非常流行的开发模式MVP来说，使用Dagger2可以将MVP中的V 层与P层进一步解耦，这样便可以提高代码的健壮性和可维护性。
+如果在 Class A 中，有 Class B 的实例，则称 Class A 对 Class B 有一个依赖。
+
+如果不用Dagger2的情况下我们应该这么写：
+
+public class A {
+    ...
+    B b;
+    ...    public A() {
+        b = new B();
+    }
+}
+
+上面例子面临着一个问题，一旦某一天B的创建方式（如构造参数）发生改变，那么你不但需要修改A中创建B的代码，还要修改其他所有地方创建B的代码。
+
+如果我们使用了Dagger2的话，就不需要管这些了，只需要在需要B的地方写下：
+
+@InjectB b;
+
+1. 注解
+
+
+Dagger2 通过注解来生成代码，定义不同的角色，主要的注解如下：
+
+@Module: Module类里面的方法专门提供依赖，所以我们定义一个类，用@Module注解，这样Dagger在构造类的实例的时候，就知道从哪里去找到需要的依赖。
+把封装第三方类库的代码放到Moudle中
+    @Module
+	public class MoudleClass
+	{
+		A provider()
+		{return A();}	
+	}
+	Component里面的modules属性可以把多个Module类加入进去
+
+@Provides: 在Module中，我们定义的方法是用这个注解，以此来告诉Dagger我们想要构造对象并提供这些依赖。
+
+@Inject: 通常在需要依赖的地方使用这个注解。换句话说，你用它告诉Dagger这个类或者字段需要依赖注入。这样，Dagger就会构造一个这个类的实例并满足他们的依赖。
+    普通写法：calss A
+	          {B b=new B();}
+	注解写法：Class A
+	          {
+				@Inject
+				B b;
+			  }
+	总之，需要生产各种实例，可以通过Inject和Module来实现
+@Component: Component从根本上来说就是一个注入器，也可以说是@Inject和@Module的桥梁，它的主要作用就是连接这两个部分。将Module中产生的依赖对象自动注入到需要依赖实例的Container中
+Component也是一个注解类，一个类想要Component，必须用@Component标注，并且该类要是接口或者抽象类。
+
+@Scope: Dagger2可以通过自定义注解限定注解作用域，来管理每个对象实例的生命周期。
+
+@Qualifier: 当类的类型不足以鉴别一个依赖的时候，我们就可以使用这个注解标示。例如：在Android中，我们会需要不同类型的context，所以我们就可以定义 qualifier注解“@perApp”和“@perActivity”，这样当注入一个context的时候，我们就可以告诉 Dagger我们想要哪种类型的context。
+
+2. 结构
+
+Dagger2要实现一个完整的依赖注入，必不可少的元素有三种：Module，Component，Container。
+?我先说下Dagger2的注释思路：关键的点是@Component，这个是个连接器，用来连接提供方和使用方的，所以它是桥梁。它使用在组件里面标记使用的Module（标记用到了哪个Module，主要是看使用方需要哪些对象进行构造，然后将它的提供方@module写在这里） 然后我们写入一个void inject(MainActivity activity); 这里后面的参数，就是我们的使用方了。如此一来，我们在使用的地方，使用类似这种方式（DaggerMainActivityComponent.builder().build().inject(this);）的动作，将使用方类里面的标记 为@Inject的类初始化掉，完成自动初始化的动作。
+
+为了便于理解，其实可以把component想象成针管，module是注射瓶，里面的依赖对象是注入的药水，build方法是插进患者（Container），inject方法的调用是推动活塞。
+
+----------------                               -------------
+通过Inject和       Component注入器，桥梁       目标类，需要Component把初始化后的类实例注入给我，
+Module生产类实例   ----------------->          帮我初始化实例属性 
+----------------                               -------------
+
+3.示例
+1)简单示例
+(1)配置Module的gradle
+apply plugin: 'com.android.application'
+//3.添加表达式语言的插件
+apply plugin: 'com.neenbedankt.android-apt' // 注释处理
+apply plugin: 'me.tatarka.retrolambda'// lambda 表达式
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+    }
+}
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "25.0.1"
+    defaultConfig {
+        applicationId "com.example.administrator.myapplication"
+        minSdkVersion 15
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    //2.添加jdk1.8的支持，为了可使用Lambda表达式
+    // 注释冲突
+    packagingOptions {
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
+    }
+
+    // 使用Java1.8
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    testCompile 'junit:junit:4.12'
+    //1.配置
+    compile 'com.jakewharton:butterknife:7.0.1'
+    // dagger2 依赖部分
+    provided 'javax.annotation:jsr250-api:1.0'
+    compile 'com.google.dagger:dagger:2.0.2'
+    compile 'com.google.dagger:dagger-compiler:2.0.2'
+}
+
+
+
+
+(2)配置Application的gradle
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.2'
+        //使用lambda表达式还需要在项目的build.gradle下配置
+        classpath 'me.tatarka:gradle-retrolambda:3.2.5'
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+(3)
+public class Test3
+{
+    @Inject
+    //这里可以看到加入了注解方式
+    public Test3()
+    {
+        Log.i("EV_JNI","hello test3");
+    }
+}
+
+(4)
+@Singleton
+//用这个标注标识是一个连接器
+@Component
+public interface MainActivityComponent
+{
+    //这个连接器要注入的对象。这个inject标注的意思是，我后面的参数对象里面有标注为@Inject的属性，
+    // 这个标注的属性是需要这个连接器注入进来的。
+    void inject(MainActivity activity);
+}
+
+(5)
+public class MainActivity extends AppCompatActivity {
+    @Inject
+    Test3 test3;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+    }
+
+    /**
+     * @param view
+     * 调用注解
+     */
+    public void CreateMethod(View view)
+    {
+		//因为Component接口叫MainActivityComponent，所以实例名字叫Dagger+连接器名字
+        DaggerMainActivityComponent.builder().build().inject(this);
+    }
+}
+
+
+2)常规使用方法使用Moudle
+//1.是一个实例模块，里面实现了一些提供的实例构造
+@Module
+public class AndroidMoudle
+{
+    private final DemoApplication application;
+    public AndroidMoudle(DemoApplication application)
+    {
+        this.application=application;
+    }
+    //2.实现一些提供方法，作为这个模块能给外界提供的构造类
+    @Provides
+    @Singleton
+    Context ApplicationContext()
+    {
+        return application;
+    }
+
+    //这个模块能够提供获取到一个Context和一个LocationManager对象
+    @Provides
+    @Singleton
+    LocationManager providerLocationManager()
+    {
+        return (LocationManager) application.getSystemService(Context.LOCATION_SERVICE);
+    }
+}
+
+
+//3.标注一个Component,用来指示我是生成的实例，用户到时候用的是这个
+//moudles标记下这个Component会将AndroidMoudle里面提供的类生成出来
+@Singleton
+@Component(modules = AndroidMoudle.class)
+public interface ApplicationComponent {
+    //4.inject作用是哪里需要注入，就写这一个接口即可
+    void inject(DemoApplication application);
+    void inject(MainActivity activity);
+}
+
+
+public class DemoApplication extends Application
+{
+    //5.需要注入一个LocationManager的实例
+    @Inject
+    LocationManager locationManager;
+    private ApplicationComponent component;
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        //6.使用dagger生成的类，构造出来，将AndroidMoudle设置进去，完成初始化，然后使用
+        //inject注入进来
+		//因为Component接口叫ApplicationComponent，所以实例名字叫Dagger+连接器名字
+        component=DaggerApplicationComponent.builder().androidMoudle(new AndroidMoudle(this)).build();
+        component().inject(this);
+    }
+    public ApplicationComponent component()
+    {
+        return component;
+    }
+}
+
+
+3)带参数的一个效果
+（1）
+public class Test
+{
+    private Context mcontext;
+    //1.在类的构造函数上写入Inject标记，参数必须在某个Module标记过的，才能提供出来
+    @Inject
+    public Test(Context context)
+    {
+        mcontext=context;
+    }
+}
+
+
+//2是一个实例模块，里面实现了一些提供的实例构造
+@Module
+public class AndroidMoudle {
+    private final DemoApplication application;
+    public AndroidMoudle(DemoApplication application)
+    {
+        this.application=application;
+    }
+    //3.实现一些提供方法，作为这个模块能给外界提供的构造类。我们看到了
+    //context的实例生成方案
+    @Provides
+    @Singleton
+    Context ApplicationContext()
+    {
+        return application;
+    }
+
+    //这个模块能够提供获取到一个Context和一个LocationManager对象
+    @Provides
+    @Singleton
+    LocationManager providerLocationManager()
+    {
+        return (LocationManager) application.getSystemService(Context.LOCATION_SERVICE);
+    }
+}
+
+
+//4.标注一个Component,用来指示我是生成的实例，用户到时候用的是这个
+//moudles标记下这个Component会将AndroidMoudle里面提供的类生成出来
+@Singleton
+@Component(modules = AndroidMoudle.class)
+public interface ApplicationComponent {
+    //5.inject作用是哪里需要注入，就写这一个接口即可
+    void inject(DemoApplication application);
+    void inject(MainActivity activity);
+}
+
+
+public class DemoApplication extends Application {
+    //7.需要注入一个LocationManager的实例
+    @Inject
+    LocationManager locationManager;
+    private ApplicationComponent component;
+
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        //8.使用dagger生成的类，构造出来，将AndroidMoudle设置进去，完成初始化，然后使用
+        //inject注入进来
+        //因为Component接口叫ApplicationComponent，所以实例名字叫Dagger+连接器名字
+        component=DaggerApplicationComponent.builder().androidMoudle(new AndroidMoudle(this))
+                .build();
+        component().inject(this);
+    }
+
+    public ApplicationComponent component()
+    {
+        return component;
+    }
+}
+
+
+public class MainActivity extends AppCompatActivity {
+    @Inject
+    Test test;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+    }
+
+    /**
+     * @param view
+     * 调用注解
+     */
+    public void CreateMethod(View view)
+    {
+//      //因为Component接口叫ApplicationComponent，所以实例名字叫Dagger+连接器名字
+       DaggerApplicationComponent.builder().androidMoudle(new AndroidMoudle((DemoApplication) getApplication()))
+               .build().inject(this);
+    }
+}
+
+（2）当我们创建两个实例的时候，发现地址是独立的
+public class MainActivity extends AppCompatActivity {
+    @Inject
+    Test test;
+    @Inject
+    Test test1;这两个地址是独立的
+	。。。。。
+}
+想要共用同一个地址，需要在类那里设置单例模式
+@Singleton            //设置单例模式
+public class Test
+{
+    private Context mcontext;
+    //1.在类的构造函数上写入Inject标记，参数必须在某个Module标记过的，才能提供出来
+    @Inject
+    public Test(Context context)
+    {
+        mcontext=context;
+    }
+}
+
+
+4)换种经常使用的方式:将提供的构造，放入@module里面
+@Module
+public class AndroidMoudle {
+    private final DemoApplication application;
+    public AndroidMoudle(DemoApplication application)
+    {
+        this.application=application;
+    }
+    //3.实现一些提供方法，作为这个模块能给外界提供的构造类。我们看到了
+    //context的实例生成方案
+    @Provides
+    @Singleton
+    Context ApplicationContext()
+    {
+        return application;
+    }
+
+    //这个模块能够提供获取到一个Context和一个LocationManager对象
+    @Provides
+    @Singleton
+    LocationManager providerLocationManager()
+    {
+        return (LocationManager) application.getSystemService(Context.LOCATION_SERVICE);
+    }
 	
+	@Provides
+	@Singleton  设置是否使用单例模式
+	Test provideTest()
+	{
+		return new Test(application);
+	}
+}
+这样在调用的时候，就不用new test了
+
 
 	
