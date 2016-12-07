@@ -51255,6 +51255,17 @@ public class A {
 
 @InjectB b;
 
+就是一个类中需要依赖其他对象时,不需要你亲自为那些需要依赖的对象赋值,为那些对象赋值的操作交给了IOC框架.
+依赖提供方Module,负责提供依赖中所需要的对象,实际编码中类似于工厂类
+依赖需求方实例,它声明依赖对象,它在实际编码中对应业务类,例如Activity,当你在Activity中需要某个对象时,你只要在其中声明就行,声明的方法在下面会讲到.
+依赖注入组件Component,负责将对象注入到依赖需求方,它在实际编码中是一个接口,编译时Dagger2会自动为它生成一个实现类.
+Dagger2的主要工作流程分为以下几步:
+
+将依赖需求方实例传入给Component实现类
+Component实现类根据依赖需求方实例中依赖声明,来确定该实例需要依赖哪些对象
+确定依赖对象后,Component会在与自己关联的Module类中查找有没有提供这些依赖对象的方法,有的话就将Module类中提供的对象设置到依赖需求方实例中
+通俗上来讲就好比你现在需要一件衣服,自己做太麻烦了,你就去商店买,你跟商店老板说明你想要购买的类型后,商店老板就会在自己的衣服供应商中查找有没有你所说的类型,有就将它卖给你.其中你就对应上面所说的依赖需求方实例,你只要说明你需要什么,商店老板则对应Component实现类,负责满足别人的需求,而衣服供应商则对应Module类,他负责生产衣服.
+
 1. 注解
 
 
@@ -51265,11 +51276,13 @@ Dagger2 通过注解来生成代码，定义不同的角色，主要的注解如下：
     @Module
 	public class MoudleClass
 	{
+		@Provides
 		A provider()
 		{return A();}	
 	}
 	Component里面的modules属性可以把多个Module类加入进去
-
+	
+	
 @Provides: 在Module中，我们定义的方法是用这个注解，以此来告诉Dagger我们想要构造对象并提供这些依赖。
 
 @Inject: 通常在需要依赖的地方使用这个注解。换句话说，你用它告诉Dagger这个类或者字段需要依赖注入。这样，Dagger就会构造一个这个类的实例并满足他们的依赖。
@@ -51287,11 +51300,47 @@ Component也是一个注解类，一个类想要Component，必须用@Component标注，并且该类要是
 @Scope: Dagger2可以通过自定义注解限定注解作用域，来管理每个对象实例的生命周期。
 
 @Qualifier: 当类的类型不足以鉴别一个依赖的时候，我们就可以使用这个注解标示。例如：在Android中，我们会需要不同类型的context，所以我们就可以定义 qualifier注解“@perApp”和“@perActivity”，这样当注入一个context的时候，我们就可以告诉 Dagger我们想要哪种类型的context。
+例如：
+  Class A
+  {
+private String p;
+@Inject
+public A(){}
+@Inject
+public A(String p){this.p=p}
+  }
+  //这样不知道实际要调用的构造函数
+  Class B
+  {
+@Inject
+A a;
+  }
+  
+  需要改成
+  Class A
+  {
+private String p;
+@Inject
+@NoParams
+public A(){}
+@Inject
+@HasParams
+public A(String p){this.p=p}
+  }
+  //这样不知道实际要调用的构造函数
+  Class B
+  {
+@Inject
+@NoParams
+A a;
+  }
 
 2. 结构
 
 Dagger2要实现一个完整的依赖注入，必不可少的元素有三种：Module，Component，Container。
 ?我先说下Dagger2的注释思路：关键的点是@Component，这个是个连接器，用来连接提供方和使用方的，所以它是桥梁。它使用在组件里面标记使用的Module（标记用到了哪个Module，主要是看使用方需要哪些对象进行构造，然后将它的提供方@module写在这里） 然后我们写入一个void inject(MainActivity activity); 这里后面的参数，就是我们的使用方了。如此一来，我们在使用的地方，使用类似这种方式（DaggerMainActivityComponent.builder().build().inject(this);）的动作，将使用方类里面的标记 为@Inject的类初始化掉，完成自动初始化的动作。
+
+复杂一点的写法注意Appcomponent的实例化方式，Dagger + AppComponent.builder().somModule(new somModule()).build()
 
 为了便于理解，其实可以把component想象成针管，module是注射瓶，里面的依赖对象是注入的药水，build方法是插进患者（Container），inject方法的调用是推动活塞。
 
@@ -51300,7 +51349,19 @@ Dagger2要实现一个完整的依赖注入，必不可少的元素有三种：Module，Component，Contai
 Module生产类实例   ----------------->          帮我初始化实例属性 
 ----------------                               -------------
 
-3.示例
+3.注意点
+写法：每写一个页面时，先考虑是否需要Component，然后考虑这个Component里面需要新建的
+      Module
+注入流程：
+      步骤1：先查找Moudle中是否存在创建该类的方法，就是是否有依赖三方库
+  步骤2：如果存在该类方法，看该方法是否存在参数
+      步骤2.1：若存在参数，递归步骤1开始一次初始化每个参数
+  步骤2.2：若不存在参数，直接实例化该类，一次依赖注入到此结束
+  步骤3：若不存在创建该类的方法，Moudle结束，看Inject注解的构造函数
+          步骤3.1,3.2类似：2.1,2.2	  
+
+		  
+4.示例
 1)简单示例
 (1)配置Module的gradle
 apply plugin: 'com.android.application'
@@ -51382,11 +51443,36 @@ buildscript {
 (3)
 public class Test3
 {
+	private String userid;
+    private String token;
+	
     @Inject
     //这里可以看到加入了注解方式
+	//Dagger2不会默认使用默认构造方法。所以创建依赖，必须手动指定
     public Test3()
     {
         Log.i("EV_JNI","hello test3");
+    }
+	
+	public String getUserid() {
+        return userid;
+    }
+
+    public void setUserid(String userid) {
+        this.userid = userid;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getLogin()
+    {
+        return "Userid="+getUserid()+"Tok="+getToken();
     }
 }
 
@@ -51397,14 +51483,14 @@ public class Test3
 public interface MainActivityComponent
 {
     //这个连接器要注入的对象。这个inject标注的意思是，我后面的参数对象里面有标注为@Inject的属性，
-    // 这个标注的属性是需要这个连接器注入进来的。
+    // 这个标注的属性是需要这个连接器注入进来的,参数表示要注入的位置是activity。
     void inject(MainActivity activity);
 }
 
 (5)
 public class MainActivity extends AppCompatActivity {
     @Inject
-    Test3 test3;
+    Test3 test3;//标注这个test3是需要注入的
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51414,17 +51500,255 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * @param view
-     * 调用注解
+     * 调用注解,开始注入,即是实例化
      */
     public void CreateMethod(View view)
     {
-		//因为Component接口叫MainActivityComponent，所以实例名字叫Dagger+连接器名字
+//因为Component接口叫MainActivityComponent，所以实例名字叫Dagger+连接器名字
+//注意，如果有时候代码提示里面没有生成，可以先编译一下让代码自动生成。
         DaggerMainActivityComponent.builder().build().inject(this);
+		//注入完成后，框架会为我们默认使用构造方法进行初始化。
+		userInfo.setUserid("zhang3");
+        userInfo.setToken("1101");
+        Log.i("EV_JNI",userInfo.getLogin());
     }
 }
 
 
-2)常规使用方法使用Moudle
+(2)第二个例子
+//写一个Cloth类用作依赖对象,它包含一个color属性
+public class Cloth {
+    private String color;
+    public String getColor() {
+        return color;
+    }
+    public void setColor(String color) {
+        this.color = color;
+    }
+    @Override
+    public String toString() {
+        return color + "布料";
+    }
+}
+
+//现在的需求是MainActivity中需要使用到Cloth对象,所以我们要为MainActivity书写一
+// 个Module类用来提供Cloth对象,相当于创建了一个提供商
+//@Module以表明该类是Module类,这样Dagger2才能识别,那@Provides又是干嘛的呢?它的作用是声明Module类中哪些
+//方法是用来提供依赖对象的,当Component类需要依赖对象时,他就会根据返回值的类型来在
+//有@Provides注解的方法中选择调用哪个方法.在一个方法上声明@Provides注解,就相当于创建了一条生产线,这
+//条生产线的产物就是方法的返回值类型.有了这条生产线,供应商就能提供这种类型的商品了,当商店老板发现
+//有人需要这种类型的商品时,供应商就可以提供给他了
+@dagger.Module
+public class MainModule {
+    @Provides
+    public Cloth getCloth() {
+        Cloth cloth = new Cloth();
+        cloth.setColor("红色");
+        return cloth;
+    }
+}
+
+/**
+ * Created by Administrator on 2016/12/7.
+ * @Component注解有modules和dependencies两个属性,这两个属性的类型都是Class数组
+ * ,modules的作用就是声明该Component含有哪几个Module,当Component需要某个依赖对象时,就
+ * 会通过这些Module类中对应的方法获取依赖对象,MainComponent中只包含MainModule,所以令mo
+ * dules=MainModule.class,相当于供应商和商店老板确定合作关系的合同.而dependencies属性
+ * 则是声明Component类的依赖关系
+ */
+@Component(modules = MainModule.class)
+public interface MainComponent {
+    //这个方法可以将依赖需求方对象送到Component类中,Component类就会根据依赖需求方对
+    // 象中声明的依赖关系来注入依赖需求方对象中所需要的对象,本Demo中MainActivity中需
+    // 要Cloth对象,所以我们通过inject方法将MainActivity实例传入到MainComponent中
+    // ,MainComponent就会从MainModule中的getCloth方法获取Cloth实例,并将该实例赋值给MainActivity中
+    // 的cloth字段.相当于你去商店的道路,没有这条路,你就无法去商店和老板说明你所需要的东
+    // 西.但是这里需要注意的是,inject方法的参数不能用子类来接收,例如本Demo中,如果inject的
+    // 参数是Activity,那么Dagger2就会报错.
+    void inject(MainActivity activity);
+}
+
+public class MainActivity extends AppCompatActivity {
+    //声明依赖对象Cloth,就是在cloth字段上添加@Inject注解,Dagger2中声明依赖对象都是通过@Inject注解
+    // ,但是@Inject注解的字段不能是private和protected的.
+    @Inject
+    Cloth cloth;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        //通过Dagger2自动生成的DaggerMainComponent类创建了MainComponent的实例,相当于我们创建了一个
+        // 实实在在的商店,不再是理论上的商店,但是创建商店一定也要创建真实的供应商嘛,所以创建Component实
+        // 现类时一定要传入Module的实例.(注意编写完Component接口后Dagger2并不会自动创建对应的类,需要
+        // 我们点击Android Studio中bulid菜单下的Rebulid Poject选项,或者直接书写代码,编译时Dagger2就会帮你自动
+        // 生成).再将MainActivity通过inject方法发送到MainComponent中,调用完inject方法后,你就
+        // 会发现,MainActivity中的cloth字段已经被赋值,而且该cloth对应的就是我们在MainModule类
+        // getCloth方法中创建的Cloth对象.
+        DaggerMainComponent.builder().mainModule(new MainModule()).build().inject(this);
+        Log.i("EV_JNI","cloth="+cloth.toString());
+    }
+}
+
+(3)直接通过构造函数来实现
+有些读者可能会这样想:为什么不都用这种方法来声明呢?为什么要用Module类?
+答案是这样的,项目中我们会用到别人的jar包,我们无法修改别人的源码,就更别说在人家的类上添加注解了,所以我们只能通过Module类来提供.
+所以如果是自己的代码，可以这样直接写
+
+//我们又创建一个依赖类Shoe
+public class Shoe {
+    //但是这次我们创建的方式和Cloth不一样了,我们在构造函数上声明了@Inject注解,这个注解有什么用呢?作
+    // 用可大了,当Component在所拥有的Module类中找不到依赖需求方需要类型的提供方法时,Dagger2就会检
+    // 查该需要类型的有没有用@Inject声明的构造方法,有则用该构造方法创建一个相当于你去商店购买东西,你
+    // 需要的东西商店的供应商不生产,商店老板就只好帮你去网上看看有没有你需要的东西,有则帮你网购一个
+    @Inject
+    public Shoe() {
+    }
+    @Override
+    public String toString() {
+        return "鞋子";
+    }
+}
+
+public class MainActivity extends AppCompatActivity {
+    //声明依赖对象Cloth,就是在cloth字段上添加@Inject注解,Dagger2中声明依赖对象都是通过@Inject注解
+    // ,但是@Inject注解的字段不能是private和protected的.
+    @Inject
+    Cloth cloth;
+    //在MainActivity中声明Shoe依赖
+    @Inject
+    Shoe shoe;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        //通过Dagger2自动生成的DaggerMainComponent类创建了MainComponent的实例,相当于我们创建了一个
+        // 实实在在的商店,不再是理论上的商店,但是创建商店一定也要创建真实的供应商嘛,所以创建Component实
+        // 现类时一定要传入Module的实例.(注意编写完Component接口后Dagger2并不会自动创建对应的类,需要
+        // 我们点击Android Studio中bulid菜单下的Rebulid Poject选项,或者直接书写代码,编译时Dagger2就会帮你自动
+        // 生成).再将MainActivity通过inject方法发送到MainComponent中,调用完inject方法后,你就
+        // 会发现,MainActivity中的cloth字段已经被赋值,而且该cloth对应的就是我们在MainModule类
+        // getCloth方法中创建的Cloth对象.
+        DaggerMainComponent.builder().mainModule(new MainModule()).build().inject(this);
+        Log.i("EV_JNI","cloth="+cloth.toString()+"shoe="+shoe.toString());
+    }
+}
+
+(4)复杂的类依赖情况
+我们创建的这些依赖类都不用依赖于其它依赖类,但是如果需要依赖于其它依赖类又要怎么弄呢
+//写一个Cloth类用作依赖对象,它包含一个color属性
+public class Cloth {
+    private String color;
+    public String getColor() {
+        return color;
+    }
+    public void setColor(String color) {
+        this.color = color;
+    }
+    @Override
+    public String toString() {
+        return color + "布料";
+    }
+}
+
+//我们又来创建一个衣服类Clothes,制作衣服时需要布料,所以我们在创建
+// Clothes的实例时需要用到Cloth实例
+public class Clothes {
+    private Cloth cloth;
+    public Clothes(Cloth cloth) {
+        this.cloth = cloth;
+    }
+    public Cloth getCloth() {
+        return cloth;
+    }
+    @Override
+    public String toString() {
+        return cloth.getColor() + "的衣服";
+    }
+}
+
+public class MainActivity extends AppCompatActivity {
+    //声明依赖对象Cloth,就是在cloth字段上添加@Inject注解,Dagger2中声明依赖对象都是通过@Inject注解
+    // ,但是@Inject注解的字段不能是private和protected的.
+    @Inject
+    Cloth cloth;
+    //在MainActivity中声明Shoe依赖
+    @Inject
+    Shoe shoe;
+    @Inject
+    Clothes clothes;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        //通过Dagger2自动生成的DaggerMainComponent类创建了MainComponent的实例,相当于我们创建了一个
+        // 实实在在的商店,不再是理论上的商店,但是创建商店一定也要创建真实的供应商嘛,所以创建Component实
+        // 现类时一定要传入Module的实例.(注意编写完Component接口后Dagger2并不会自动创建对应的类,需要
+        // 我们点击Android Studio中bulid菜单下的Rebulid Poject选项,或者直接书写代码,编译时Dagger2就会帮你自动
+        // 生成).再将MainActivity通过inject方法发送到MainComponent中,调用完inject方法后,你就
+        // 会发现,MainActivity中的cloth字段已经被赋值,而且该cloth对应的就是我们在MainModule类
+        // getCloth方法中创建的Cloth对象.
+        DaggerMainComponent.builder().mainModule(new MainModule()).build().inject(this);
+        Log.i("EV_JNI","cloth="+cloth.toString()+"shoe="+shoe.toString()+"clothes="+clothes);
+    }
+}
+
+步骤1：查找Module中是否存在创建该类的方法。
+步骤2：若存在创建类方法，查看该方法是否存在参数
+步骤2.1：若存在参数，则按从步骤1开始依次初始化每个参数
+步骤2.2：若不存在参数，则直接初始化该类实例，一次依赖注入到此结束
+步骤3：若不存在创建类方法，则查找Inject注解的构造函数，看构造函数是否存在参数
+步骤3.1：若存在参数，则从步骤1开始依次初始化每个参数
+步骤3.2：若不存在参数，则直接初始化该类实例，一次依赖注入到此结束
+
+
+2)实际示例
+例子：
+	@Module
+	public class AppModule {
+		private Application application;
+
+		public AppModule(Application application){
+			this.application=application;
+		}
+
+		@Provides
+		public Application provideApplication(){
+			return application;
+		}
+	}
+	
+	@Module
+	public class GithubApiModule {
+
+		@Provides
+		public OkHttpClient provideOkHttpClient() {
+			OkHttpClient okHttpClient = new OkHttpClient();
+			okHttpClient.setConnectTimeout(60 * 1000, TimeUnit.MILLISECONDS);
+			okHttpClient.setReadTimeout(60 * 1000, TimeUnit.MILLISECONDS);
+			return okHttpClient;
+		}
+
+		@Provides
+		public Retrofit provideRetrofit(Application application, OkHttpClient okHttpClient){
+			Retrofit retrofit = new Retrofit.Builder()
+					.baseUrl(application.getString(R.string.api_github))
+					.addCallAdapterFactory(RxJavaCallAdapterFactory.create()) // 添加Rx适配器
+					.addConverterFactory(GsonConverterFactory.create()) // 添加Gson转换器
+					.client(okHttpClient)
+					.build();
+			return retrofit;
+		}
+
+		@Provides
+		protected GithubApiService provideGitHubService(Retrofit retrofit) {
+
+			return retrofit.create(GithubApiService.class);
+		}
+	}
+	在被@Module注解修饰的类内部，使用@Provides注解来表明可以提供的依赖对象。需要注意的是，有些由@Provides 提供的方法需要输入参数，这些参数是怎么来的呢？这对于刚刚接触的新手来说有点棘手。这里就先说了，这些需要传入的参数需要其它用@Provides注解修饰的方法生成，比如在GithubModule.class 中的 provideGitHubService(Retrofit retrofit) 方法中的参数就是由另外一个 @Provides 注解修饰的方法生成的，这里就是public Retrofit provideRetrofit(Application application, OkHttpClient okHttpClient)，那么这个provideRetrofit()方法中的参数又是怎么来的呢？请读者自己去找。
+	
+	
+(1)
 //1.是一个实例模块，里面实现了一些提供的实例构造
 @Module
 public class AndroidMoudle
@@ -51455,9 +51779,10 @@ public class AndroidMoudle
 //3.标注一个Component,用来指示我是生成的实例，用户到时候用的是这个
 //moudles标记下这个Component会将AndroidMoudle里面提供的类生成出来
 @Singleton
-@Component(modules = AndroidMoudle.class)
+@Component(modules = AndroidMoudle.class)//即是这个实例化是实例化类AndroidMoudle里面的
 public interface ApplicationComponent {
     //4.inject作用是哪里需要注入，就写这一个接口即可
+//类AndroidMoudle的构造函数需要一个参数
     void inject(DemoApplication application);
     void inject(MainActivity activity);
 }
@@ -51475,7 +51800,8 @@ public class DemoApplication extends Application
         super.onCreate();
         //6.使用dagger生成的类，构造出来，将AndroidMoudle设置进去，完成初始化，然后使用
         //inject注入进来
-		//因为Component接口叫ApplicationComponent，所以实例名字叫Dagger+连接器名字
+//因为Component接口叫ApplicationComponent，所以实例名字叫Dagger+连接器名字
+//注入器制定构造函数的参数是this
         component=DaggerApplicationComponent.builder().androidMoudle(new AndroidMoudle(this)).build();
         component().inject(this);
     }
@@ -51485,161 +51811,601 @@ public class DemoApplication extends Application
     }
 }
 
-
-3)带参数的一个效果
-（1）
-public class Test
-{
-    private Context mcontext;
-    //1.在类的构造函数上写入Inject标记，参数必须在某个Module标记过的，才能提供出来
-    @Inject
-    public Test(Context context)
-    {
-        mcontext=context;
-    }
-}
-
-
-//2是一个实例模块，里面实现了一些提供的实例构造
+(2)例二
+//这里我们提供了Application和Context的依赖
 @Module
-public class AndroidMoudle {
-    private final DemoApplication application;
-    public AndroidMoudle(DemoApplication application)
+public class ApplicationModule {
+    private Application application;
+    public ApplicationModule(Application application)
     {
         this.application=application;
     }
-    //3.实现一些提供方法，作为这个模块能给外界提供的构造类。我们看到了
-    //context的实例生成方案
-    @Provides
     @Singleton
-    Context ApplicationContext()
+    @Provides
+    public Application application()
     {
         return application;
     }
-
-    //这个模块能够提供获取到一个Context和一个LocationManager对象
-    @Provides
     @Singleton
-    LocationManager providerLocationManager()
+    @Provides
+    public Context context()
     {
-        return (LocationManager) application.getSystemService(Context.LOCATION_SERVICE);
+        return application;
     }
 }
 
+@Module
+public class GsonModule {
+    @Provides
+    public String provideGson()
+    {
+        return "hello";
+    }
+}
 
-//4.标注一个Component,用来指示我是生成的实例，用户到时候用的是这个
-//moudles标记下这个Component会将AndroidMoudle里面提供的类生成出来
+//依赖两个Module
 @Singleton
-@Component(modules = AndroidMoudle.class)
+@Component(modules = {ApplicationModule.class,GsonModule.class})
 public interface ApplicationComponent {
-    //5.inject作用是哪里需要注入，就写这一个接口即可
-    void inject(DemoApplication application);
     void inject(MainActivity activity);
 }
 
-
-public class DemoApplication extends Application {
-    //7.需要注入一个LocationManager的实例
-    @Inject
-    LocationManager locationManager;
-    private ApplicationComponent component;
-
+开始调用：
+写到这，可以放心大胆的编译一下项目了，这时Dagger2会自动生成一些代码，生成的代码是Component前加上Dagger的类，上面的例子生成的就是DaggerApplicationComponent。
+这里只相当于注入器的初始化
+public class DaggerApplication extends Application{
+    private static ApplicationComponent component;
     @Override
     public void onCreate()
     {
         super.onCreate();
-        //8.使用dagger生成的类，构造出来，将AndroidMoudle设置进去，完成初始化，然后使用
-        //inject注入进来
-        //因为Component接口叫ApplicationComponent，所以实例名字叫Dagger+连接器名字
-        component=DaggerApplicationComponent.builder().androidMoudle(new AndroidMoudle(this))
-                .build();
-        component().inject(this);
+        //初始化包含两个module的注射器，所以要applicationModule，gsonModule
+        component=DaggerApplicationComponent.builder().applicationModule(new ApplicationModule(this))
+                .gsonModule(new GsonModule()).build();
     }
 
-    public ApplicationComponent component()
-    {
-        return component;
-    }
+    public static ApplicationComponent component()
+    {return component;}
 }
 
-
+下面我们在MainActivity中注入对象，运行一下，可以看到打印出了日志，至此，我们第一个较为复杂的注入就完成了。这里注入的其实是Application的Context，并不是Activity的Context，为什么呢，以为我们在Application的Module中定义了Context的Provider。
 public class MainActivity extends AppCompatActivity {
     @Inject
-    Test test;
+    Context context;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-    }
-
-    /**
-     * @param view
-     * 调用注解
-     */
-    public void CreateMethod(View view)
-    {
-//      //因为Component接口叫ApplicationComponent，所以实例名字叫Dagger+连接器名字
-       DaggerApplicationComponent.builder().androidMoudle(new AndroidMoudle((DemoApplication) getApplication()))
-               .build().inject(this);
-    }
-}
-
-（2）当我们创建两个实例的时候，发现地址是独立的
-public class MainActivity extends AppCompatActivity {
-    @Inject
-    Test test;
-    @Inject
-    Test test1;这两个地址是独立的
-	。。。。。
-}
-想要共用同一个地址，需要在类那里设置单例模式
-@Singleton            //设置单例模式
-public class Test
-{
-    private Context mcontext;
-    //1.在类的构造函数上写入Inject标记，参数必须在某个Module标记过的，才能提供出来
-    @Inject
-    public Test(Context context)
-    {
-        mcontext=context;
+        component().inject(this);
+        Log.i("EV_JNI","oncreate:"+context.getPackageName());
     }
 }
 
 
-4)换种经常使用的方式:将提供的构造，放入@module里面
+
+3)@Qulifier自定义一个标记:为了区分如果同时返回类型一样的情况
+@Qualifier
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ForBoy {
+}
+
+@Qualifier
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ForGril {
+}
+
+
 @Module
-public class AndroidMoudle {
-    private final DemoApplication application;
-    public AndroidMoudle(DemoApplication application)
-    {
-        this.application=application;
-    }
-    //3.实现一些提供方法，作为这个模块能给外界提供的构造类。我们看到了
-    //context的实例生成方案
+public class Cmodule {
+    @ForBoy
     @Provides
-    @Singleton
-    Context ApplicationContext()
+    Test3 provideboy(LocationManager locationManager)
     {
-        return application;
+        return new Test3(locationManager);
     }
-
-    //这个模块能够提供获取到一个Context和一个LocationManager对象
+    @ForGril
     @Provides
-    @Singleton
-    LocationManager providerLocationManager()
+    Test3 provideboy()
     {
-        return (LocationManager) application.getSystemService(Context.LOCATION_SERVICE);
+        return null;
     }
-	
-	@Provides
-	@Singleton  设置是否使用单例模式
-	Test provideTest()
-	{
-		return new Test(application);
-	}
 }
-这样在调用的时候，就不用new test了
+
+
+public class MainActivity extends AppCompatActivity {
+    //两个实例的地址是一样的
+    @Inject
+    @ForBoy
+    Test3 test3;
+    @Inject
+    @ForGril
+    Test3 test2;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        DaggerMainActivityComponent.builder().applicationComponent(((DemoApplication)getApplication()).component())
+                .cmodule(new Cmodule()).build().inject(this);
+    }
+}
+
+而且这两个注解还能使用在依赖参数上
+@Provides
+   public Clothes getClothes(@ForBoy Cloth cloth){
+       return new Clothes(cloth);
+   }
+
+
+4)@Singleton和@Scope的使用:为了确定生命周期
+同一个生命周期所使用的地址是一样的
+(1)@Singleton单例的生命周期
+//写一个Cloth类用作依赖对象,它包含一个color属性
+public class Cloth {
+    private String color;
+    public String getColor() {
+        return color;
+    }
+    public void setColor(String color) {
+        this.color = color;
+    }
+    @Override
+    public String toString() {
+        return color + "布料";
+    }
+}
+
+//我们又来创建一个衣服类Clothes,制作衣服时需要布料,所以我们在创建
+// Clothes的实例时需要用到Cloth实例
+public class Clothes {
+    private Cloth cloth;
+    public Clothes(Cloth cloth) {
+        this.cloth = cloth;
+    }
+    public Cloth getCloth() {
+        return cloth;
+    }
+    @Override
+    public String toString() {
+        return cloth.getColor() + "的衣服";
+    }
+}
+
+public class MainModule {
+    @Provides
+    public Cloth getCloth() {
+        Cloth cloth = new Cloth();
+        cloth.setColor("红色");
+        return cloth;
+    }
+    //现在我们的MainActivity中需要依赖于Clothes对象,所以我们在MianModule中添加提供Clothes对象的
+    // 方法,但是Clothes需要依赖于Cloth对象,这要怎么办呢
+    @Provides
+    public Clothes getClothes(Cloth cloth){
+        return new Clothes(cloth);
+    }
+}
+
+public class MainActivity extends AppCompatActivity {
+    //声明依赖对象Cloth,就是在cloth字段上添加@Inject注解,Dagger2中声明依赖对象都是通过@Inject注解
+    // ,但是@Inject注解的字段不能是private和protected的.
+    @Inject
+    Cloth cloth;
+    //在MainActivity中声明Shoe依赖
+    @Inject
+    Shoe shoe;
+    @Inject
+    Clothes clothes;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        //通过Dagger2自动生成的DaggerMainComponent类创建了MainComponent的实例,相当于我们创建了一个
+        // 实实在在的商店,不再是理论上的商店,但是创建商店一定也要创建真实的供应商嘛,所以创建Component实
+        // 现类时一定要传入Module的实例.(注意编写完Component接口后Dagger2并不会自动创建对应的类,需要
+        // 我们点击Android Studio中bulid菜单下的Rebulid Poject选项,或者直接书写代码,编译时Dagger2就会帮你自动
+        // 生成).再将MainActivity通过inject方法发送到MainComponent中,调用完inject方法后,你就
+        // 会发现,MainActivity中的cloth字段已经被赋值,而且该cloth对应的就是我们在MainModule类
+        // getCloth方法中创建的Cloth对象.
+        DaggerMainComponent.builder().mainModule(new MainModule()).build().inject(this);
+        //Log.i("EV_JNI","cloth="+cloth.toString()+"shoe="+shoe.toString()+"clothes="+clothes);
+        Log.i("EV_JNI","redCloth=clothes中的cloth吗?:" + (cloth == clothes.getCloth()));
+    }
+}
+
+打印redCloth=clothes中的cloth吗?:false
+说明是创建了两个不同的cloth对象
+
+使用单例注解@Singleton：
+public class MainModule {
+    @Singleton
+    @Provides
+    public Cloth getCloth() {
+        Cloth cloth = new Cloth();
+        cloth.setColor("红色");
+        return cloth;
+    }
+    //现在我们的MainActivity中需要依赖于Clothes对象,所以我们在MianModule中添加提供Clothes对象的
+    // 方法,但是Clothes需要依赖于Cloth对象,这要怎么办呢
+    @Provides
+    public Clothes getClothes(Cloth cloth){
+        return new Clothes(cloth);
+    }
+}
+
+//我们又创建一个依赖类Shoe
+@Singleton
+public class Shoe {
+    @Inject
+    public Shoe() {
+    }
+    @Override
+    public String toString() {
+        return "鞋子";
+    }
+}
+
+
+@Singleton
+@Component(modules = MainModule.class)
+public interface MainComponent {
+    //这个方法可以将依赖需求方对象送到Component类中,Component类就会根据依赖需求方对
+    // 象中声明的依赖关系来注入依赖需求方对象中所需要的对象,本Demo中MainActivity中需
+    // 要Cloth对象,所以我们通过inject方法将MainActivity实例传入到MainComponent中
+    // ,MainComponent就会从MainModule中的getCloth方法获取Cloth实例,并将该实例赋值给MainActivity中
+    // 的cloth字段.相当于你去商店的道路,没有这条路,你就无法去商店和老板说明你所需要的东
+    // 西.但是这里需要注意的是,inject方法的参数不能用子类来接收,例如本Demo中,如果inject的
+    // 参数是Activity,那么Dagger2就会报错.
+    void inject(MainActivity activity);
+}
+
+打印redCloth=clothes中的cloth吗?:true
+说明是创建了同一个的cloth对象
+
+
+(2)@Scope用来声明作用范围的:
+作用一样，Singleton其实是继承@Scope注解的,用这个是涉及到代码可读性了,当依赖需求方是Activity时,我们
+可以自定义一个PerActivity注解,当依赖需求方是Fragment时,我们又可以自定义一个PerFragment注解,这样我们
+就能清楚的区分依赖对象的提供目标了
+@Scope
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PerActivity {
+}
+
+public class MainModule {
+    @PerActivity
+    @Provides
+    public Cloth getCloth() {
+        Cloth cloth = new Cloth();
+        cloth.setColor("红色");
+        return cloth;
+    }
+    //现在我们的MainActivity中需要依赖于Clothes对象,所以我们在MianModule中添加提供Clothes对象的
+    // 方法,但是Clothes需要依赖于Cloth对象,这要怎么办呢
+    @Provides
+    public Clothes getClothes(Cloth cloth){
+        return new Clothes(cloth);
+    }
+}
+
+//我们又创建一个依赖类Shoe
+@PerActivity
+public class Shoe {
+    @Inject
+    public Shoe() {
+    }
+    @Override
+    public String toString() {
+        return "鞋子";
+    }
+}
+注意:单例是在同一个Component实例提供依赖的前提下才有效的,不同的Component实例只能通过Component依赖才能实现单例.也就是说,你虽然在两个Component接口上都添加了PerActivity注解,但是这两个Component提供依赖时是没有联系的,他们只能在各自的范围内实现单例.
+
+5)组件component依赖dependencies的使用
+(1)在实际开发中,我们经常会使用到工具类,工具类一般在整个App的生命周期内都是单例的。
+如果不使用组件依赖，扩展例子
+//作裁剪使用，它的功能就是将cloth加工成clothes,假设我们现在有两个Activity中都要使用该工具类,我们要怎么使
+public class ClothHandler {
+    public Clothes handle(Cloth cloth){
+        return new Clothes(cloth);
+    }
+}
+
+第一个MainActivity中的使用
+@Module
+public class MainModule {
+    @PerActivity
+    @Provides
+    public Cloth getRedCloth() {
+        Cloth cloth = new Cloth();
+        cloth.setColor("红色");
+        return cloth;
+    }
+    
+    @PerActivity
+    @Provides
+    public ClothHandler getClothHandler(){
+        return new ClothHandler();
+    }
+}
+
+@PerActivity
+public interface MainComponent {
+    void inject(MainActivity activity);
+}
+
+public class MainActivity extends AppCompatActivity {
+    private TextView tv;
+    @Inject
+    Cloth redCloth;
+    @Inject
+    ClothHandler clothHandler;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        tv = (TextView) findViewById(R.id.tv);
+        MainComponent build = DaggerMainComponent.builder().mainModule(new MainModule()).build();
+        build.inject(this);
+        tv.setText("红布料加工后变成了" + clothHandler.handle(redCloth) + "\nclothHandler地址:" + clothHandler);
+    }
+	//在布局文件中声明的点击方法
+    public void onClick(View v){
+        Intent intent = new Intent(this,SecondActivity.class);
+        startActivity(intent);
+    }
+}
+
+第二个SecondActivity中的使用
+@Module
+public class SecondModule {
+    @PerActivity
+    @Provides
+    public Cloth getBlueCloth(){
+        Cloth cloth = new Cloth();
+        cloth.setColor("蓝色");
+        return cloth;
+    }
+    @PerActivity
+    @Provides
+    public ClothHandler getClothHandler(){
+        return new ClothHandler();
+    }
+}
+@PerActivity
+@Component(modules = SecondModule.class)
+public interface SecondComponent {
+    void inject(SecondActivity secondActivity);
+}
+
+public class SecondActivity extends AppCompatActivity {
+    private TextView tv;
+    @Inject
+    Cloth blueCloth;
+    @Inject
+    ClothHandler clothHandler;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_second);
+        tv = (TextView) findViewById(R.id.tv);
+        SecondComponent component = DaggerSecondComponent.builder().secondModule(new SecondModule()).build();
+        component.inject(this);
+        tv.setText("蓝布料加工后变成了" + clothHandler.handle(blueCloth) + "\nclothHandler地址:" + clothHandler);
+    }
+}
+
+发现他们的生命周期还是不一样的，而且假如有20个Activity都需要用到ClothHandler,那我们都这样写,不就代码重复了吗
+
+(2)使用依赖
+//写一个Cloth类用作依赖对象,它包含一个color属性
+public class Cloth {
+    private String color;
+    public String getColor() {
+        return color;
+    }
+    public void setColor(String color) {
+        this.color = color;
+    }
+    @Override
+    public String toString() {
+        return color + "布料";
+    }
+}
+
+//我们又来创建一个衣服类Clothes,制作衣服时需要布料,所以我们在创建
+// Clothes的实例时需要用到Cloth实例
+public class Clothes {
+    private Cloth cloth;
+    public Clothes(Cloth cloth) {
+        this.cloth = cloth;
+    }
+    public Cloth getCloth() {
+        return cloth;
+    }
+    @Override
+    public String toString() {
+        return cloth.getColor() + "的衣服";
+    }
+}
+
+
+
+步骤一：基础框架
+//剪刀类
+public class ClothHandler {
+    public Clothes handle(Cloth cloth){
+        return new Clothes(cloth);
+    }
+}
+
+
+@Module
+public class BaseModule {
+    @Singleton//单例，说明这个剪刀类全局有效
+    @Provides
+    public ClothHandler getClothHandler()
+    {
+        return new ClothHandler();
+    }
+}
+
+
+//这个Component怎么有点不一样,怎么没有inject方法呢,但是我们这个BaseComponent是给其他Component提供依赖的,所以我们就
+// 可以不用inject方法,但是BaseComponent中多了一个getClothHandler方法,它的返回值是ClothHandler对象,这个方法有什么用呢?它
+// 的作用就是告诉依赖于BaseComponent的Component,BaseComponent能为你们提供ClothHandler对象
+@Singleton
+@Component(modules = BaseModule.class)
+public interface BaseComponent {
+    ClothHandler getClothHandler();
+}
+
+
+
+//MainComponent和SecondComponent既然依赖BaseComponent,肯定需要你传入一个BaseComponent实例给它.但是
+// 需要注意的是,如果要MainComponent和SecondComponent依赖到的对象是同一个的话(也就是单例),创建它们
+// 是传入的BaseComponent实例也必须是同一个,上面说过,不同的Component实例是无法提供相同的依赖实例的,
+// 因为它们之间是没有联系的.这样的话,我们就需要在MainActivity和SecondActivity中能获取到同一
+// 个BaseComponent实例,怎么样能实现呢.我们一般都会自定义一个Application类,用它来提供BaseComponent实
+// 例,因为在整个App生命周期内都只有一个Application实例,所以其中的BaseComponent实例也不会变.
+public class MyApplication extends Application {
+    private BaseComponent baseComponent;
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        baseComponent = DaggerBaseComponent.builder().baseModule(new BaseModule()).build();
+    }
+    public BaseComponent getBaseComponent() {
+        return baseComponent;
+    }
+}
+
+androidManifest添加基础application
+
+<application
+        android:name=".MyApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SecondActivity"
+            android:label="@string/title_activity_second"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+    </application>
+
+步骤二：上层框架
+
+//定义上层类的生命周期
+@Scope
+@Retention(RetentionPolicy.RUNTIME)
+public @interface PerActivity {
+}
+
+@dagger.Module
+public class MainModule {
+    @PerActivity
+    @Provides
+    public Cloth getCloth() {
+        Cloth cloth = new Cloth();
+        cloth.setColor("红色");
+        return cloth;
+    }
+    //现在我们的MainActivity中需要依赖于Clothes对象,所以我们在MianModule中添加提供Clothes对象的
+    // 方法,但是Clothes需要依赖于Cloth对象,这要怎么办呢
+    @Provides
+    public Clothes getClothes(Cloth cloth){
+        return new Clothes(cloth);
+    }
+}
+
+@Module
+public class SecondModule {
+    @PerActivity
+    @Provides
+    public Cloth getBlueCloth(){
+        Cloth cloth = new Cloth();
+        cloth.setColor("蓝色");
+        return cloth;
+    }
+}
+
+/**
+ * Created by Administrator on 2016/12/7.
+ * @Component注解有modules和dependencies两个属性,这两个属性的类型都是Class数组
+ * ,modules的作用就是声明该Component含有哪几个Module,当Component需要某个依赖对象时,就
+ * 会通过这些Module类中对应的方法获取依赖对象,MainComponent中只包含MainModule,所以令mo
+ * dules=MainModule.class,相当于供应商和商店老板确定合作关系的合同.而dependencies属性
+ * 则是声明Component类的依赖关系
+ */
+@PerActivity
+@Component(modules=MainModule.class,dependencies = BaseComponent.class)
+public interface MainComponent {
+    void inject(MainActivity mainActivity);
+}
+
+
+//声明依赖,就要用到@Component中的dependencies属性了
+@PerActivity
+@Component(modules = SecondModule.class,dependencies = BaseComponent.class)
+public interface SecondComponent {
+    void inject(SecondActivity secondActivity);
+}
+
+
+public class MainActivity extends AppCompatActivity {
+    //声明依赖对象Cloth,就是在cloth字段上添加@Inject注解,Dagger2中声明依赖对象都是通过@Inject注解
+    // ,但是@Inject注解的字段不能是private和protected的.
+    @Inject
+    Cloth cloth;
+    //在MainActivity中声明Shoe依赖
+    @Inject
+    Shoe shoe;
+    @Inject
+    Clothes clothes;
+    @Inject
+    ClothHandler clothhandler;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        //通过Dagger2自动生成的DaggerMainComponent类创建了MainComponent的实例,相当于我们创建了一个
+        // 实实在在的商店,不再是理论上的商店,但是创建商店一定也要创建真实的供应商嘛,所以创建Component实
+        // 现类时一定要传入Module的实例.(注意编写完Component接口后Dagger2并不会自动创建对应的类,需要
+        // 我们点击Android Studio中bulid菜单下的Rebulid Poject选项,或者直接书写代码,编译时Dagger2就会帮你自动
+        // 生成).再将MainActivity通过inject方法发送到MainComponent中,调用完inject方法后,你就
+        // 会发现,MainActivity中的cloth字段已经被赋值,而且该cloth对应的就是我们在MainModule类
+        // getCloth方法中创建的Cloth对象.
+//        DaggerMainComponent.builder().mainModule(new MainModule()).build().inject(this);
+        MainComponent component = DaggerMainComponent
+                .builder()
+                .baseComponent(((MyApplication)getApplication()).getBaseComponent())
+                .mainModule(new MainModule())
+                .build();
+        component.inject(this);
+        //Log.i("EV_JNI","cloth="+cloth.toString()+"shoe="+shoe.toString()+"clothes="+clothes);
+        Log.i("EV_JNI","redCloth=clothes中的cloth吗?:" + (cloth == clothes.getCloth()));
+    }
+}
+
+6)懒加载方法
+可以使用Lazy来包装Container中需要被注入的类型为延迟加载。
+public class Container{
+    @Inject Lazy<B> b; 
+    public void init(){
+        DaggerComponent.create().inject(this);
+        B b=b.get();  //调用get时才创建b
+    }
+}
+
+7)
 
 
 	
