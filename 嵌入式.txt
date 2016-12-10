@@ -51235,6 +51235,79 @@ Log.i("data", ""+application.getCurIndex());
 
 在运行过程中，每一次都kill掉对应的Activity，再进入下一个Activity。
 
+Android的Application对象讲解
+ Android的Application同Activity和Service一样都是Android框架的组成部分。这个Application通常在app启动的时候就会自动创建。Application在app中是一个单例模式，而且Application也是整个app生命周期最长的对象。所有的Activity和Service都是共用着一个Application，所以Application通常用来共享数据，数据传递和数据缓存。
+
+  网上查阅过一些资料，给Application的使用作了一些补充：
+
+
+  1.当两个Activity要传输大数据的时候，应尽量避免使用Intent传输，而是在Application里面建立HashMap，然后发送方Activity把数据放到Application的HashMap里面，然后把数据的索引通过Intent传输到接收方Activity。接收方Activity就可以从Application里面获取到发送方的传递的数据。
+
+  2.当从网络上下载的数据，可以将它暂时放到Application的HashMap里面，当app再次请求数据的时候如果发现Application里面已经有数据了，就不用再次从网上下载。
+
+  3.app的内存是有限制的，所以如果缓存的数据太多，应该要将缓存数据写入到本地的rom或者是sdcard上。、
+
+  4.Application是静态的，因此有一些对象和数据最后不要放到Application的引用。Application的生命周期很长，假如说，如果Application有某一个Activity的控件引用时，则当Activity想要finish的时候，内存会释放不了，造成内存泄漏。
+
+ 
+
+  在做Java SE开发的时候，如果想要多个类共享某一个类，则将该类设置成静态公有对象即可。在Android开发中，个人认为要遵循Android的开发规范，应该将共享的数据放到自己写的Application去。其他类可以通过获取app的Application来获取共享数据。如果要写自己的Application类，需要继承Application类。
+
+
+[java]
+public class MyApplication extends Application { 
+        //需要共享的数据  
+        private int shareData; 
+         
+        @Override 
+        public void onCreate() { 
+            shareData = 100; 
+            super.onCreate(); 
+        } 
+ 
+        //获取共享的数据  
+        public int getShareData() { 
+            return shareData; 
+        } 
+    } 
+
+
+
+  当某个Activity需要访问共享数据的时候就可以通过getApplicationContext()方法获取到app的Application，并强制类型转换成MyApplicaiton对象，即可获取共享数据。
+
+[java]
+public class MyActivity extends Activity { 
+        private MyApplication application; 
+ 
+        @Override 
+        public void onCreate(Bundle savedInstanceState) { 
+                super.onCreate(savedInstanceState); 
+                application = (MyApplication) this.getApplicationContext(); 
+            System.out.println("共享数据为" + application.getShareData()); 
+                setContentView(R.layout.main); //加载XML文件  
+        } 
+    } 
+
+
+ 
+  完成之后，还需在AndroidManifest.xml文件作一些修改，告诉我们的app，我们的Application用MyApplication啦。
+
+
+[java]
+<application 
+        android:name="com.shamoo.testapplication.MyApplication" 
+        android:label="@string/app_name" 
+        android:icon="@drawable/icon" > 
+        <activity 
+            android:name=".MyActivity" > 
+            <intent-filter> 
+                <action android:name="android.intent.action.MAIN" /> 
+ 
+                <category android:name="android.intent.category.LAUNCHER" /> 
+            </intent-filter> 
+        </activity> 
+</application> 
+
 *Dagger框架
 好处就是模块间解耦！ 就拿当前Android非常流行的开发模式MVP来说，使用Dagger2可以将MVP中的V 层与P层进一步解耦，这样便可以提高代码的健壮性和可维护性。
 如果在 Class A 中，有 Class B 的实例，则称 Class A 对 Class B 有一个依赖。
