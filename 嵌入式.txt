@@ -50554,7 +50554,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-使用rxandroid的作用：
+5.使用rxandroid的作用：
 问题一：后台任务
 Android开发者首先遇到的挑战就是如何有效的在后台线程中工作，然后在UI线程中更新UI。这经常是因为需要从web service中获取数据。对于已经有相关经验的你可能会说：“这有什么挑战性？你只需要启动一个AsyncTask，然后所有的工作它就都给你做了。” 如果你是这样想的，那么你有一个机会去改善这种状况。这是因为你已经习惯了这种复杂的方式并且忘记这本应该是很简洁的，或者是说你没有处理所有应该处理的 边界情况。让我们来谈谈这个。
 
@@ -50654,6 +50654,1549 @@ public void createMethod(android.view.View view)
 	});
 
 }
+
+6.更简洁的代码
+比如Observable.just就是用来创建只发出一个事件就结束的Observable对象
+Observable<String> myObservable = Observable.just("Hello, world!");  
+
+接下来看看如何简化Subscriber，上面的例子中，我们其实并不关心OnComplete和OnError，我们只需要在onNext的时候做一些处理，这时候就可以使用Action1类。
+Action1<String> onNextAction = new Action1<String>() {  
+    @Override  
+    public void call(String s) {  
+        System.out.println(s);  
+    }  
+};  
+
+myObservable.subscribe(onNextAction);  
+
+上面的代码最终可以写成这样
+Observable.just("Hello, world!")  
+    .subscribe(new Action1<String>() {  
+        @Override  
+        public void call(String s) {  
+              System.out.println(s);  
+        }  
+    });  
+
+使用java8的lambda可以使代码更简洁
+Observable.just("Hello, world!")  
+    .subscribe(s -> System.out.println(s));  
+
+	
+7.操作符
+比如我想在hello world中加上我的签名，你可能会想到去修改Observable对象：如果你能够改变Observable对象，这当然是可以的，但是如果你不能修改Observable对象呢？比如Observable对象是第三方库提供的？比如我的Observable对象被多个Subscriber订阅，但是我只想在对某个订阅者做修改呢？
+那么在Subscriber中对事件进行修改怎么样呢？
+操作符就是为了解决对Observable对象的变换的问题，操作符用于在Observable和最终的Subscriber之间修改Observable发出的事件。
+1)map操作符，就是用来把把一个事件转换为另一个事件的
+map(new Func1<String, String>()...)第一个String是输入参数，第二个String是输出参数
+
+例子：
+比如我想在hello world中加上我的签名，你可能会想到去修改Observable对象：
+[java] view plain copy
+Observable.just("Hello, world! -Dan")  
+    .subscribe(s -> System.out.println(s));  
+如果你能够改变Observable对象，这当然是可以的，但是如果你不能修改Observable对象呢？比如Observable对象是第三方库提供的？比如我的Observable对象被多个Subscriber订阅，但是我只想在对某个订阅者做修改呢？
+那么在Subscriber中对事件进行修改怎么样呢？比如下面的代码：
+[java] view plain copy
+Observable.just("Hello, world!")  
+    .subscribe(s -> System.out.println(s + " -Dan"));  
+这种方式仍然不能让人满意，因为我希望我的Subscribers越轻量越好，因为我有可能会在mainThread中运行subscriber。另外，根据响应式函数编程的概念，Subscribers更应该做的事情是“响应”，响应Observable发出的事件，而不是去修改。
+
+
+
+
+Observable.just("Hello, world!")  
+  .map(new Func1<String, String>() {  
+      @Override  
+      public String call(String s) {  
+          return s + " -Dan";  
+      }  
+  })  
+  .subscribe(s -> System.out.println(s)); 
+
+使用lambda可以简化为
+Observable.just("Hello, world!")  
+    .map(s -> s + " -Dan")  
+    .subscribe(s -> System.out.println(s));  
+ 
+
+map操作符更有趣的一点是它不必返回Observable对象返回的类型，你可以使用map操作符返回一个发出新的数据类型的observable对象
+比如上面的例子中，subscriber并不关心返回的字符串，而是想要字符串的hash值
+Observable.just("Hello, world!")  
+    .map(new Func1<String, Integer>() {  
+        @Override  
+        public Integer call(String s) {  
+            return s.hashCode();  
+        }  
+    })  
+    .subscribe(i -> System.out.println(Integer.toString(i))); 
+
+我们初始的Observable返回的是字符串，最终的Subscriber收到的却是Integer，当然使用lambda可以进一步简化代码：
+Observable.just("Hello, world!")  
+    .map(s -> s.hashCode())  
+    .subscribe(i -> System.out.println(Integer.toString(i)));  
+ 
+
+前面说过，Subscriber做的事情越少越好，我们再增加一个map操作符
+Observable.just("Hello, world!")  
+    .map(s -> s.hashCode())  
+    .map(i -> Integer.toString(i))  
+    .subscribe(s -> System.out.println(s));  
+
+你需要明白下面的两点:	
+1.Observable和Subscriber可以做任何事情
+Observable可以是一个数据库查询，Subscriber用来显示查询结果；Observable可以是屏幕上的点击事件，Subscriber用来响应点击事件；Observable可以是一个网络请求，Subscriber用来显示请求结果。
+
+2.Observable和Subscriber是独立于中间的变换过程的。
+在Observable和Subscriber中间可以增减任何数量的map。整个系统是高度可组合的，操作数据是一个很简单的过程。
+
+
+2)flatMap():Observable.flatMap()接收一个Observable的输出作为输入，同时输出另外一个Observable。
+
+首先先看一个例子：
+准备工作
+假设我有这样一个方法：
+这个方法根据输入的字符串返回一个网站的url列表（啊哈，搜索引擎）
+[java] view plain copy
+Observable<List<String>> query(String text);   
+现在我希望构建一个健壮系统，它可以查询字符串并且显示结果。根据上一篇blog的内容，我们可能会写出下面的代码：
+[java] view plain copy
+Observable<List<String>> query(String text);   
+query("Hello, world!")  
+    .subscribe(urls -> {  
+        for (String url : urls) {  
+            System.out.println(url);  
+        }  
+    });  
+这种代码当然是不能容忍的，因为上面的代码使我们丧失了变化数据流的能力。一旦我们想要更改每一个URL，只能在Subscriber中来做。我们竟然没有使用如此酷的map()操作符！！！
+
+万幸，还有Observable.from()方法，它接收一个集合作为输入，然后每次输出一个元素给subscriber：
+[java] view plain copy
+Observable.from("url1", "url2", "url3")  
+    .subscribe(url -> System.out.println(url));  
+我们来把这个方法使用到刚才的场景：
+[java] view plain copy
+query("Hello, world!")  
+    .subscribe(urls -> {  
+        Observable.from(urls)  
+            .subscribe(url -> System.out.println(url));  
+    });  
+虽然去掉了for each循环，但是代码依然看起来很乱。多个嵌套的subscription不仅看起来很丑，难以修改	
+改进
+救星来了,他就是flatMap()。Observable.flatMap()接收一个Observable的输出作为输入，同时输出另外一个Observable。
+query("Hello, world!")  
+    .flatMap(new Func1<List<String>, Observable<String>>() {  
+        @Override  
+        public Observable<String> call(List<String> urls) {  
+            return Observable.from(urls);  
+        }  
+    })  
+    .subscribe(url -> System.out.println(url)); 
+现在Subscriber不再收到List<String>，而是收到一些列单个的字符串，就像Observable.from()的输出一样。 	
+使用lambda可以大大简化代码长度：
+query("Hello, world!")  
+    .flatMap(urls -> Observable.from(urls))  
+    .subscribe(url -> System.out.println(url));  
+
+
+
+接着前面的例子，现在我不想打印URL了，而是要打印收到的每个网站的标题。问题来了，我的方法每次只能传入一个URL，并且返回值不是一个String，而是一个输出String的Observabl对象。使用flatMap()可以简单的解决这个问题。
+// 返回网站的标题，如果404了就返回null  
+Observable<String> getTitle(String URL);  
+
+query("Hello, world!")  
+    .flatMap(urls -> Observable.from(urls))  
+    .flatMap(new Func1<String, Observable<String>>() {  
+        @Override  
+        public Observable<String> call(String url) {  
+            return getTitle(url);  
+        }  
+    })  
+    .subscribe(title -> System.out.println(title));  
+
+使用lambda:
+query("Hello, world!")  
+    .flatMap(urls -> Observable.from(urls))  
+    .flatMap(url -> getTitle(url))  
+    .subscribe(title -> System.out.println(title));  	
+
+
+3)filter()输出和输入相同的元素，并且会过滤掉那些不满足检查条件的。
+getTitle()返回null如果url不存在。我们不想输出"null"，那么我们可以从返回的title列表中过滤掉null值！
+query("Hello, world!")  
+    .flatMap(urls -> Observable.from(urls))  
+    .flatMap(url -> getTitle(url))  
+    .filter(title -> title != null)  
+    .subscribe(title -> System.out.println(title));  
+
+4)take()输出最多指定数量的结果。
+如果我们只想要最多5个结果：
+query("Hello, world!")  
+    .flatMap(urls -> Observable.from(urls))  
+    .flatMap(url -> getTitle(url))  
+    .filter(title -> title != null)  
+    .take(5)  
+    .subscribe(title -> System.out.println(title));  
+
+5)doOnNext()允许我们在每次输出一个元素之前做一些额外的事情，比如这里的保存标题。
+如果我们想在打印之前，把每个标题保存到磁盘：
+[java] view plain copy
+query("Hello, world!")  
+    .flatMap(urls -> Observable.from(urls))  
+    .flatMap(url -> getTitle(url))  
+    .filter(title -> title != null)  
+    .take(5)  
+    .doOnNext(title -> saveTitle(title))  
+    .subscribe(title -> System.out.println(title)); 
+
+
+8.使用RxJava，你可以使用subscribeOn()指定观察者代码运行的线程，使用observerOn()指定订阅者运行的线程：
+myObservableServices.retrieveImage(url)
+    .subscribeOn(Schedulers.io())
+    .observeOn(AndroidSchedulers.mainThread())
+    .subscribe(bitmap -> myImageView.setImageBitmap(bitmap));
+
+任何在我的Subscriber前面执行的代码都是在I/O线程中运行。最后，操作view的代码在主线程中运行.
+
+
+8.RxJava 和 RxAndroid 三（生命周期控制和内存优化）
+1）RxJava使我们很方便的使用链式编程，代码看起来既简洁又优雅。但是RxJava使用起来也是有副作用的，使用越来越多的订阅，内存开销也会变得很大，稍不留神就会出现内存溢出的情况，这篇文章就是介绍Rxjava使用过程中应该注意的事项。
+你可以在后面使用这个Subscription对象来操作被观察者和订阅者之间的联系.
+
+subscription.unsubscribe();
+System.out.println("Unsubscribed=" + subscription.isUnsubscribed());
+// Outputs "Unsubscribed=true"
+RxJava的另外一个好处就是它处理unsubscribing的时候，会停止整个调用链。如果你使用了一串很复杂的操作符，调用unsubscribe将会在他当前执行的地方终止。不需要做任何额外的工作！
+
+
+2）线程调度
+Scheduler调度器，相当于线程控制器
+
+Schedulers.immediate() : 直接在当前线程运行，相当于不指定线程。这是默认的 Scheduler。
+
+Schedulers.newThread() :总是启用新线程，并在新线程执行操作.
+
+Schedulers.io():I/O 操作（读写文件、读写数据库、网络信息交互等）所使用的 Scheduler。行为模式和 newThread() 差不多，区别在于 io() 的内部实现是是用一个无数量上限的线程池，可以重用空闲的线程，因此多数情况下 io() 比 newThread() 更有效率。
+
+AndroidSchedulers.mainThread()，它指定的操作将在 Android 主线程运行。
+
+常见的场景：为了不阻塞UI，在子线程加载数据，在主线线程显示数据
+
+      Observable.just( "1" , "2" , "3" )
+            .subscribeOn(Schedulers.io())  //指定 subscribe() 发生在 IO 线程
+            .observeOn( AndroidSchedulers.mainThread() )  //指定 Subscriber 的回调发生在主线程
+            .subscribe(new Action1<String>() {
+                @Override
+                public void call(String s) {
+                    textView.setText( s );
+                }
+            }) ;
+上面这段代码，数据"1"、"2"、"3"将在io线程中发出，在android主线程中接收数据。这种【后台获取数据，前台显示数据】模式适用于大多数的程序策略。
+
+Scheduler 自由多次切换线程。恩，这个更为牛逼
+
+Observable.just(1, 2, 3, 4) // IO 线程，由 subscribeOn() 指定
+ .subscribeOn(Schedulers.io())
+ .observeOn(Schedulers.newThread())
+ .map(mapOperator) // 新线程，由 observeOn() 指定
+ .observeOn(Schedulers.io())
+ .map(mapOperator2) // IO 线程，由 observeOn() 指定
+ .observeOn(AndroidSchedulers.mainThread) 
+ .subscribe(subscriber);  // Android 主线程，由 observeOn() 指定
+从上面的代码可以看出
+
+observeOn() 可以调用多次来切换线程，observeOn 决定他下面的方法执行时所在的线程。
+
+subscribeOn() 用来确定数据发射所在的线程，位置放在哪里都可以，但它是只能调用一次的。
+
+
+3）Rxlifecycle
+RxJava和RxAndroid使用不好，很容易导致内存泄露。Rxlifecycle被用来严格控制由于发布了一个订阅后，由于没有及时取消，导致Activity/Fragment无法销毁导致的内存泄露。
+该项目是为了防止RxJava中subscription导致内存泄漏而诞生的，核心思想是通过监听Activity、Fragment的生命周期，来自动断开subscription以防止内存泄漏。
+集成
+build.gradle添加
+
+复制代码
+   //Rxlifecycle
+   compile 'com.trello:rxlifecycle:0.3.1'
+   compile 'com.trello:rxlifecycle-components:0.3.1'
+
+   //Rxjava
+   compile 'io.reactivex:rxjava:1.0.16'
+
+Rxlifecycle使用
+
+Activity/Fragment需继承RxAppCompatActivity/RxFragment，目前支持的有RxAppCompatActivity、RxFragment、RxDialogFragment、RxFragmentActivity。
+让你的activity继承RxActivity,RxAppCompatActivity,RxFragmentActivity
+让你的fragment继承RxFragment,RxDialogFragment;下面的代码就以RxAppCompatActivity举例
+
+一、bindToLifecycle()方法
+
+在子类使用Observable中的compose操作符，调用，完成Observable发布的事件和当前的组件绑定，实现生命周期同步。从而实现当前组件生命周期结束时，自动取消对Observable订阅。
+
+Observable.interval(1, TimeUnit.SECONDS)? ? ? ? ? ? ? ?
+
+
+.compose(this.bindToLifecycle())
+
+.
+subscribe(new Action1() 
+{
+
+
+@Override
+
+public void call(Long num) 
+{
+
+Log.i(TAG, "? " + num);
+
+}
+
+
+});
+
+二、bindUntilEvent()方法
+
+使用ActivityEvent类，其中的CREATE、START、 RESUME、PAUSE、STOP、 DESTROY分别对应生命周期内的方法。使用bindUntilEvent指定在哪个生命周期方法调用时取消订阅。
+
+Observable.interval(1,TimeUnit.SECONDS)  
+
+.compose(this.bindUntilEvent(ActivityEvent.PAUSE))
+
+.subscribe(mSub);
+
+1.手动设置取消订阅的时机，例子1、例子3
+
+2.绑定生命周期，自动取消订阅，例子2
+示例
+public class MainActivity extends RxAppCompatActivity {
+
+//Note:Activity需要继承RxAppCompatActivity，fragment需要继承RxFragment，等等
+//可以使用的组件在components包下面
+
+private static final String TAG = "RxLifecycle";
+
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    Log.d(TAG, "onCreate()");
+    setContentView(R.layout.activity_main);
+
+    // Specifically bind this until onPause()
+
+    //Note:例子1:
+    Observable.interval(1, TimeUnit.SECONDS)
+            .doOnUnsubscribe(new Action0() {
+                @Override
+                public void call() {
+                    Log.i(TAG, "Unsubscribing subscription from onCreate()");
+                }
+            })
+            //Note:手动设置在activity onPause的时候取消订阅
+            .compose(this.<Long>bindUntilEvent(ActivityEvent.PAUSE))
+            .subscribe(new Action1<Long>() {
+                @Override
+                public void call(Long num) {
+                    Log.i(TAG, "Started in onCreate(), running until onPause(): " + num);
+                }
+            });
+}
+
+@Override
+protected void onStart() {
+    super.onStart();
+    Log.d(TAG, "onStart()");
+
+    //Note:例子2:
+    // Using automatic unsubscription, this should determine that the correct time to
+    // unsubscribe is onStop (the opposite of onStart).
+    Observable.interval(1, TimeUnit.SECONDS)
+            .doOnUnsubscribe(new Action0() {
+                @Override
+                public void call() {
+                    Log.i(TAG, "Unsubscribing subscription from onStart()");
+                }
+            })
+            //Note:bindToLifecycle的自动取消订阅示例，因为是在onStart的时候调用，所以在onStop的时候自动取消订阅
+            .compose(this.<Long>bindToLifecycle())
+            .subscribe(new Action1<Long>() {
+                @Override
+                public void call(Long num) {
+                    Log.i(TAG, "Started in onStart(), running until in onStop(): " + num);
+                }
+            });
+}
+
+@Override
+protected void onResume() {
+    super.onResume();
+    Log.d(TAG, "onResume()");
+
+    //Note:例子3:
+    // `this.<Long>` is necessary if you're compiling on JDK7 or below.
+    // If you're using JDK8+, then you can safely remove it.
+    Observable.interval(1, TimeUnit.SECONDS)
+            .doOnUnsubscribe(new Action0() {
+                @Override
+                public void call() {
+                    Log.i(TAG, "Unsubscribing subscription from onResume()");
+                }
+            })
+            //Note:手动设置在activity onDestroy的时候取消订阅
+            .compose(this.<Long>bindUntilEvent(ActivityEvent.DESTROY))
+            .subscribe(new Action1<Long>() {
+                @Override
+                public void call(Long num) {
+                    Log.i(TAG, "Started in onResume(), running until in onDestroy(): " + num);
+                }
+            });
+}
+
+注意：写成.compose(this.<String>bindUntilEvent(ActivityEvent.PAUSE))用String不行，要用Long
+
+
+示例：
+bindToLifecycle 方法
+在子类使用Observable中的compose操作符，调用，完成Observable发布的事件和当前的组件绑定，实现生命周期同步。从而实现当前组件生命周期结束时，自动取消对Observable订阅。
+
+ public class MainActivity extends RxAppCompatActivity {
+        TextView textView ;
+        
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        textView = (TextView) findViewById(R.id.textView);
+    
+        //循环发送数字
+        Observable.interval(0, 1, TimeUnit.SECONDS)
+            .subscribeOn( Schedulers.io())
+            .compose(this.<Long>bindToLifecycle())   //这个订阅关系跟Activity绑定，Observable 和activity生命周期同步
+            .observeOn( AndroidSchedulers.mainThread())
+            .subscribe(new Action1<Long>() {
+                @Override
+                public void call(Long aLong) {
+                    System.out.println("lifecycle--" + aLong);
+                    textView.setText( "" + aLong );
+                }
+            });
+       }
+    }
+上面的代码是Observable循环的发送数字，并且在textview中显示出来
+1、没加 compose(this.<Long>bindToLifecycle()) 当Activiry 结束掉以后，Observable还是会不断的发送数字，订阅关系没有解除
+2、添加compose(this.<Long>bindToLifecycle()) 当Activity结束掉以后，Observable停止发送数据，订阅关系解除。
+
+从上面的例子可以看出bindToLifecycle() 方法可以使Observable发布的事件和当前的Activity绑定，实现生命周期同步。也就是Activity 的 onDestroy() 方法被调用后，Observable 的订阅关系才解除。那能不能指定在Activity其他的生命状态和订阅关系保持同步，答案是有的。就是 bindUntilEvent()方法。这个逼装的好累！
+
+bindUntilEvent( ActivityEvent event)
+
+ActivityEvent.CREATE: 在Activity的onCreate()方法执行后，解除绑定。
+
+ActivityEvent.START:在Activity的onStart()方法执行后，解除绑定。
+
+ActivityEvent.RESUME:在Activity的onResume()方法执行后，解除绑定。
+
+ActivityEvent.PAUSE: 在Activity的onPause()方法执行后，解除绑定。
+
+ActivityEvent.STOP:在Activity的onStop()方法执行后，解除绑定。
+
+ActivityEvent.DESTROY:在Activity的onDestroy()方法执行后，解除绑定。
+
+ //循环发送数字
+     Observable.interval(0, 1, TimeUnit.SECONDS)
+             .subscribeOn( Schedulers.io())
+             .compose(this.<Long>bindUntilEvent(ActivityEvent.STOP ))   //当Activity执行Onstop()方法是解除订阅关系
+             .observeOn( AndroidSchedulers.mainThread())
+             .subscribe(new Action1<Long>() {
+                 @Override
+                 public void call(Long aLong) {
+                     System.out.println("lifecycle-stop-" + aLong);
+                     textView.setText( "" + aLong );
+                 }
+             });
+经过测试发现，当Activity执行了onStop()方法后，订阅关系已经解除了。
+上面说的都是订阅事件与Activity的生命周期同步，那么在Fragment里面又该怎么处理的？
+
+FragmentEvent 这个类是专门处理订阅事件与Fragment生命周期同步的大杀器
+
+public enum FragmentEvent {
+
+ATTACH,
+CREATE,
+CREATE_VIEW,
+START,
+RESUME,
+PAUSE,
+STOP,
+DESTROY_VIEW,
+DESTROY,
+DETACH
+}
+可以看出FragmentEvent 和 ActivityEvent 类似，都是枚举类，用法是一样的。这里就不举例了！
+
+
+9.RxBinding
+就是把 发布--订阅 的模式用在了android控件的点击，文本变化上。通过 RxBinding 把点击监听转换成 Observable 之后，就有了对它进行扩展的可能。
+一般的包下面就用
+
+compile 'com.jakewharton.rxbinding:rxbinding:0.4.0'
+
+代码示例
+Button 防抖处理
+
+ button = (Button) findViewById( R.id.bt ) ;
+
+     RxView.clicks( button )
+             .throttleFirst( 2 , TimeUnit.SECONDS )   //两秒钟之内只取一个点击事件，防抖操作
+             .subscribe(new Action1<Void>() {
+                 @Override
+                 public void call(Void aVoid) {
+                     Toast.makeText(MainActivity.this, "点击了", Toast.LENGTH_SHORT).show();
+                 }
+             }) ;
+按钮的长按时间监听
+
+ button = (Button) findViewById( R.id.bt ) ;
+
+ //监听长按时间
+ RxView.longClicks( button)
+      .subscribe(new Action1<Void>() {
+          @Override
+         public void call(Void aVoid) {
+         Toast.makeText(MainActivity.this, "long click  ！！", Toast.LENGTH_SHORT).show();
+         }
+     }) ;
+listView 的点击事件、长按事件处理
+
+listView = (ListView) findViewById( R.id.listview );
+
+ List<String> list = new ArrayList<>() ;
+     for ( int i = 0 ; i < 40 ; i++ ){
+         list.add( "sss" + i ) ;
+     }
+
+ final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1 );
+     adapter.addAll( list );
+
+ listView.setAdapter( adapter );
+
+ //item click event
+ RxAdapterView.itemClicks( listView )
+     .subscribe(new Action1<Integer>() {
+         @Override
+         public void call(Integer integer) {
+         Toast.makeText(ListActivity.this, "item click " + integer , Toast.LENGTH_SHORT).show();
+             }
+         }) ;
+
+ //item long click
+ RxAdapterView.itemLongClicks( listView)
+     .subscribe(new Action1<Integer>() {
+         @Override
+         public void call(Integer integer) {
+             Toast.makeText(ListActivity.this, "item long click " + integer , Toast.LENGTH_SHORT).show();
+             }
+         }) ;
+- 用户登录界面，勾选同意隐私协议，登录按钮就变高亮
+button = (Button) findViewById( R.id.login_bt );
+checkBox = (CheckBox) findViewById( R.id.checkbox );
+
+RxCompoundButton.checkedChanges( checkBox )
+    .subscribe(new Action1<Boolean>() {
+        @Override
+        public void call(Boolean aBoolean) {
+            button.setEnabled( aBoolean );
+            button.setBackgroundResource( aBoolean ? R.color.button_yes : R.color.button_no );
+            }
+        }) ;
+```
+效果图
+
+
+搜索的时候，关键词联想功能 。debounce()在一定的时间内没有操作就会发送事件。
+
+ editText = (EditText) findViewById( R.id.editText );
+ listView = (ListView) findViewById( R.id.listview );
+
+ final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_expandable_list_item_1 );
+ listView.setAdapter( adapter );
+
+ RxTextView.textChanges( editText )
+             .debounce( 600 , TimeUnit.MILLISECONDS )
+             .map(new Func1<CharSequence, String>() {
+                 @Override
+                 public String call(CharSequence charSequence) {
+                     //get the keyword
+                     String key = charSequence.toString() ;
+                     return key ;
+                 }
+             })
+             .observeOn( Schedulers.io() )
+             .map(new Func1<String, List<String>>() {
+                 @Override
+                 public List<String> call(String keyWord ) {
+                     //get list
+                     List<String> dataList = new ArrayList<String>() ;
+                     if ( ! TextUtils.isEmpty( keyWord )){
+                         for ( String s : getData()  ) {
+                             if (s != null) {
+                                 if (s.contains(keyWord)) {
+                                     dataList.add(s);
+                                 }
+                             }
+                         }
+                     }
+                     return dataList ;
+                 }
+             })
+             .observeOn( AndroidSchedulers.mainThread() )
+             .subscribe(new Action1<List<String>>() {
+                 @Override
+                 public void call(List<String> strings) {
+                     adapter.clear();
+                     adapter.addAll( strings );
+                     adapter.notifyDataSetChanged();
+                 }
+             }) ;
+			 
+			 
+10.综合示例
+1)通过例1和例2，说明，Rxjava默认运行在当前线程中。如果当前线程是子线程，则rxjava运行在子线程；同样，当前线程是主线程，则rxjava运行在主线程
+例1
+
+Observable
+               .create(new Observable.OnSubscribe<String>() {
+                   @Override
+                   public void call(Subscriber<? super String> subscriber) {
+                       Logger.v( "rx_call" , Thread.currentThread().getName()  );
+ 
+                       subscriber.onNext( "dd");
+                       subscriber.onCompleted();
+                   }
+               })
+               .map(new Func1<String, String >() {
+                   @Override
+                   public String call(String s) {
+                       Logger.v( "rx_map" , Thread.currentThread().getName()  );
+                       return s + "88";
+                   }
+               })
+               .subscribe(new Action1<String>() {
+                   @Override
+                   public void call(String s) {
+                       Logger.v( "rx_subscribe" , Thread.currentThread().getName()  );
+                   }
+               }) ;
+　　结果
+
+/rx_call: main           -- 主线程
+/rx_map: main        --  主线程
+/rx_subscribe: main   -- 主线程
+
+例2
+
+  new Thread(new Runnable() {
+           @Override
+           public void run() {
+               Logger.v( "rx_newThread" , Thread.currentThread().getName()  );
+               rx();
+           }
+       }).start();
+ 
+void rx(){
+       Observable
+               .create(new Observable.OnSubscribe<String>() {
+                   @Override
+                   public void call(Subscriber<? super String> subscriber) {
+                       Logger.v( "rx_call" , Thread.currentThread().getName()  );
+ 
+                       subscriber.onNext( "dd");
+                       subscriber.onCompleted();
+                   }
+               })
+               .map(new Func1<String, String >() {
+                   @Override
+                   public String call(String s) {
+                       Logger.v( "rx_map" , Thread.currentThread().getName()  );
+                       return s + "88";
+                   }
+               })
+               .subscribe(new Action1<String>() {
+                   @Override
+                   public void call(String s) {
+                       Logger.v( "rx_subscribe" , Thread.currentThread().getName()  );
+                   }
+               }) ;
+ 
+   }
+　
+
+      结果
+
+/rx_newThread: Thread-564   -- 子线程
+/rx_call: Thread-564              -- 子线程
+/rx_map: Thread-564            -- 子线程 
+/rx_subscribe: Thread-564    -- 子线程			 
+
+
+2)通过例3、例4 可以看出  .subscribeOn(Schedulers.io())  和 .observeOn(AndroidSchedulers.mainThread()) 写的位置不一样，造成的结果也不一样。从例4中可以看出 map() 操作符默认运行在事件产生的线程之中。事件消费只是在 subscribe（） 里面。
+对于 create() , just() , from()   等                 --- 事件产生   
+               map() , flapMap() , scan() , filter()  等    --  事件加工
+
+              subscribe()                                          --  事件消费
+
+  事件产生：默认运行在当前线程，可以由 subscribeOn()  自定义线程
+         事件加工：默认跟事件产生的线程保持一致, 可以由 observeOn() 自定义线程
+
+       事件消费：默认运行在当前线程，可以有observeOn() 自定义
+	   
+例3
+
+Observable
+               .create(new Observable.OnSubscribe<String>() {
+                   @Override
+                   public void call(Subscriber<? super String> subscriber) {
+                       Logger.v( "rx_call" , Thread.currentThread().getName()  );
+ 
+                       subscriber.onNext( "dd");
+                       subscriber.onCompleted();
+                   }
+               })
+ 
+               .subscribeOn(Schedulers.io())
+               .observeOn(AndroidSchedulers.mainThread())
+ 
+               .map(new Func1<String, String >() {
+                   @Override
+                   public String call(String s) {
+                       Logger.v( "rx_map" , Thread.currentThread().getName()  );
+                       return s + "88";
+                   }
+               })
+               .subscribe(new Action1<String>() {
+                   @Override
+                   public void call(String s) {
+                       Logger.v( "rx_subscribe" , Thread.currentThread().getName()  );
+                   }
+               }) ;
+　　结果
+
+/rx_call: RxCachedThreadScheduler-1    --io线程
+/rx_map: main                                     --主线程
+/rx_subscribe: main                              --主线程
+
+ 
+
+例4
+
+Observable
+               .create(new Observable.OnSubscribe<String>() {
+                   @Override
+                   public void call(Subscriber<? super String> subscriber) {
+                       Logger.v( "rx_call" , Thread.currentThread().getName()  );
+ 
+                       subscriber.onNext( "dd");
+                       subscriber.onCompleted();
+                   }
+               })
+               .map(new Func1<String, String >() {
+                   @Override
+                   public String call(String s) {
+                       Logger.v( "rx_map" , Thread.currentThread().getName()  );
+                       return s + "88";
+                   }
+               })
+ 
+               .subscribeOn(Schedulers.io())
+               .observeOn(AndroidSchedulers.mainThread())
+ 
+               .subscribe(new Action1<String>() {
+                   @Override
+                   public void call(String s) {
+                       Logger.v( "rx_subscribe" , Thread.currentThread().getName()  );
+                   }
+               }) ;　
+      结果
+
+/rx_call: RxCachedThreadScheduler-1     --io线程
+/rx_map: RxCachedThreadScheduler-1   --io线程
+/rx_subscribe: main                              --主线程
+
+例5  多次切换线程
+
+Observable
+                .create(new Observable.OnSubscribe<String>() {
+                    @Override
+                    public void call(Subscriber<? super String> subscriber) {
+                        Logger.v( "rx_call" , Thread.currentThread().getName()  );
+ 
+                        subscriber.onNext( "dd");
+                        subscriber.onCompleted();
+                    }
+                })
+ 
+                .observeOn( Schedulers.newThread() )    //新线程
+ 
+                .map(new Func1<String, String >() {
+                    @Override
+                    public String call(String s) {
+                        Logger.v( "rx_map" , Thread.currentThread().getName()  );
+                        return s + "88";
+                    }
+                })
+ 
+                .observeOn( Schedulers.io() )      //io线程
+ 
+                .filter(new Func1<String, Boolean>() {
+                    @Override
+                    public Boolean call(String s) {
+                        Logger.v( "rx_filter" , Thread.currentThread().getName()  );
+                        return s != null ;
+                    }
+                })
+ 
+                .subscribeOn(Schedulers.io())     //定义事件产生线程：io线程
+                .observeOn(AndroidSchedulers.mainThread())     //事件消费线程：主线程
+ 
+                .subscribe(new Action1<String>() {
+                    @Override
+                    public void call(String s) {
+                        Logger.v( "rx_subscribe" , Thread.currentThread().getName()  );
+                    }
+                }) ;
+　　结果
+
+/rx_call: RxCachedThreadScheduler-1           -- io 线程
+/rx_map: RxNewThreadScheduler-1             -- new出来的线程
+/rx_filter: RxCachedThreadScheduler-2        -- io线程
+/rx_subscribe: main                                   -- 主线程
+
+
+
+3)从例6可以看出，如果只规定了事件产生的线程，那么事件消费线程将跟随事件产生线程。
+
+    从例7可以看出，如果只规定了事件消费的线程，那么事件产生的线程和 当前线程保持一致。
+例6：只规定了事件产生的线程
+
+Observable
+         .create(new Observable.OnSubscribe<String>() {
+             @Override
+             public void call(Subscriber<? super String> subscriber) {
+                 Log.v( "rx--create " , Thread.currentThread().getName() ) ;
+                 subscriber.onNext( "dd" ) ;
+             }
+         })
+         .subscribeOn(Schedulers.io())
+         .subscribe(new Action1<String>() {
+             @Override
+             public void call(String s) {
+                 Log.v( "rx--subscribe " , Thread.currentThread().getName() ) ;
+             }
+         }) ;
+　　结果
+
+/rx--create: RxCachedThreadScheduler-4                      // io 线程
+/rx--subscribe: RxCachedThreadScheduler-4                 // io 线程
+
+     
+
+例:7：只规定事件消费线程
+
+Observable
+               .create(new Observable.OnSubscribe<String>() {
+                   @Override
+                   public void call(Subscriber<? super String> subscriber) {
+                       Log.v( "rx--create " , Thread.currentThread().getName() ) ;
+                       subscriber.onNext( "dd" ) ;
+                   }
+               })
+               .observeOn( Schedulers.newThread() )
+               .subscribe(new Action1<String>() {
+                   @Override
+                   public void call(String s) {
+                       Log.v( "rx--subscribe " , Thread.currentThread().getName() ) ;
+                   }
+               }) ;
+　　结果
+
+/rx--create: main                                           -- 主线程
+/rx--subscribe: RxNewThreadScheduler-1        --  new 出来的子线程 
+
+
+4)线程调度封装
+在Android 常常有这样的场景，后台处理处理数据，前台展示数据。
+
+一般的用法：
+
+Observable
+             .just( "123" )
+             .subscribeOn( Schedulers.io())
+             .observeOn( AndroidSchedulers.mainThread() )
+             .subscribe(new Action1() {
+                 @Override
+                 public void call(Object o) {
+                 }
+             }) ;
+　　但是项目中这种场景有很多，所以我们就想能不能把这种场景的调度方式封装起来，方便调用。	   
+Transformers 的使用（就是转化器的意思，把一种类型的Observable转换成另一种类型的Observable ）
+
+package lib.app.com.myapplication;
+ 
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+ 
+/**
+ * Created by ${zyj} on 2016/7/1.
+ */
+public class RxUtil {
+ 
+    private final static Observable.Transformer schedulersTransformer = new  Observable.Transformer() {
+        @Override public Object call(Object observable) {
+            return ((Observable)  observable).subscribeOn(Schedulers.newThread())
+                    .observeOn(AndroidSchedulers.mainThread());
+        }
+    };
+ 
+   public static  <T> Observable.Transformer<T, T> applySchedulers() {
+        return (Observable.Transformer<T, T>) schedulersTransformer;
+    }
+ 
+}
+
+
+Observable
+            .just( "123" )
+            .compose( RxUtil.<String>applySchedulers() )
+            .subscribe(new Action1() {
+                @Override
+                public void call(Object o) {
+                }
+            }) ;
+
+			
+*lambda运算符
+指定输入参数->(“转到”或者 “成为”)lambda的主体
+上面的代码最终可以写成这样
+Observable.just("Hello, world!")  
+    .subscribe(new Action1<String>() {  
+        @Override  
+        public void call(String s) {  
+              System.out.println(s);  
+        }  
+    });  
+
+使用java8的lambda可以使代码更简洁
+Observable.just("Hello, world!")  
+    .subscribe(s -> System.out.println(s));
+
+
+*glide图片加载框架
+Glide 是一个 Android 上的图片加载和缓存库，它不仅能实现平滑的图片列表滚动效果，还支持远程图片的获取、大小调整和展示，并且可以加载Gif动态图
+
+1.集成
+在build.gradle中添加依赖：
+    compile 'com.github.bumptech.glide:glide:3.7.0'
+需要support-v4库的支持，如果你的项目没有support-v4库(项目默认已经添加了)，还需要添加support-v4依赖：
+     compile 'com.android.support:appcompat-v7:23.1.1'
+Glide的网络请求部分可以使用当前最流行的网络请求框架Volley或OkHttp，也可以通过Glide的ModelLoader接口自己写网络请求。 
+Glide默认使用HttpUrlConnection进行网络请求
+
+Volley集成 
+第一步、添加依赖
+
+dependencies {
+    compile 'com.github.bumptech.glide:volley-integration:1.2.2'
+    compile 'com.mcxiaoke.volley:library:1.0.5'
+}
+
+第二步、创建Volley集成库的GlideModule
+
+<meta-data
+ android:name="com.bumptech.glide.integration.volley.VolleyGlideModule"
+    android:value="GlideModule" />
+
+（2）OkHttp集成 
+第一步、添加依赖
+
+dependencies {
+    compile 'com.github.bumptech.glide:okhttp-integration:1.2.2'
+    compile 'com.squareup.okhttp:okhttp:2.0.0'
+}
+
+第二步、创建Volley集成库的GlideModule
+
+<meta-data
+    android:name="com.bumptech.glide.integration.okhttp.OkHttpGlideModule"
+    android:value="GlideModule" />
+
+（3）集成转换器（此处只介绍集成库，使用后面再讲） 
+第一步、gradle添加依赖
+
+repositories {
+    jcenter()
+    mavenCentral()  // GPUImage for Android
+}
+
+dependencies {
+    compile 'jp.wasabeef:glide-transformations:2.0.1'
+    // If you want to use the GPU Filters
+    compile 'jp.co.cyberagent.android.gpuimage:gpuimage-library:1.3.0'
+}
+
+通过这个转换器库，可以实现各式各样的图片，非常强大。
+
+
+
+2.使用
+Glide
+    .with(this)
+    .load("http://inthecheesefactory.com/uploads/source/nestedfragment/fragments.png")
+    .into(imageView);
+
+Glide.with()使用
+
+with(Context context). 使用Application上下文，Glide请求将不受Activity/Fragment生命周期控制。
+with(Activity activity).使用Activity作为上下文，Glide的请求会受到Activity生命周期控制。
+with(FragmentActivity activity).Glide的请求会受到FragmentActivity生命周期控制。
+with(android.app.Fragment fragment).Glide的请求会受到Fragment 生命周期控制。
+with(android.support.v4.app.Fragment fragment).Glide的请求会受到Fragment生命周期控制。
+返回关联了相应上下文的RequestManager实例。
+
+requestManager.load()使用
+
+Glide基本可以load任何可以拿到的媒体资源，如： 
+load SD卡资源：load("file://"+ Environment.getExternalStorageDirectory().getPath()+"/test.jpg") 
+load assets资源：load("file:///android_asset/f003.gif") 
+load raw资源：load("Android.resource://com.frank.glide/raw/raw_1")或load("android.resource://com.frank.glide/raw/"+R.raw.raw_1) 
+load drawable资源：load("android.resource://com.frank.glide/drawable/news")或load("android.resource://com.frank.glide/drawable/"+R.drawable.news) 
+load ContentProvider资源：load("content://media/external/images/media/139469") 
+load http资源：load("http://img.my.csdn.NET/uploads/201508/05/1438760757_3588.jpg") 
+load https资源：load("https://img.alicdn.com/tps/TB1uyhoMpXXXXcLXVXXXXXXXXXX-476-538.jpg_240x5000q50.jpg_.webp") 
+当然，load不限于String类型，还可以： 
+load(Uri uri)，load(File file)，load(Integer resourceId)，load(URL url)，load(byte[] model)，load(T model)，loadFromMediaStore(Uri uri)。
+
+
+into()就是加载资源完成后作什么处理，它接受三种参数：
+// 显示在控件上
+into(ImageView imageView);
+
+// 通过回调获得加载结果，可能在项目中，一个图片在多个地方使用，可以在回调中获得该图片的Bitmap操作
+into(Target target);
+Glide.with(mContext).load(url).asBitmap().into(new SimpleTarget<Bitmap>() {
+            @Override
+            public void onResourceReady(Bitmap resource, GlideAnimation glideAnimation) {
+                image.setImageBitmap(resource);
+            }
+        });
+Glide.with(mContext).load(url).asBitmap().into(new Target<Bitmap>() {
+            @Override
+            public void onLoadStarted(Drawable placeholder) {
+                // 设置加载过程中的Drawable
+            }
+
+            @Override
+            public void onLoadFailed(Exception e, Drawable errorDrawable) {
+                // 设置加载失败的Drawable
+            }
+
+            @Override
+            public void onResourceReady(Bitmap resource, GlideAnimation<? super Bitmap> glideAnimation) {
+                // 设置加载成功的Bitmap
+            }
+
+            @Override
+            public void onLoadCleared(Drawable placeholder) {
+                // 设置加载被取消时的Drawable
+            }
+
+            @Override
+            public void getSize(SizeReadyCallback cb) {}
+
+            @Override
+            public void setRequest(Request request) {}
+
+            @Override
+            public Request getRequest() {
+                return null;
+            }
+
+            @Override
+            public void onStart() {}
+
+            @Override
+            public void onStop() {}
+
+            @Override
+            public void onDestroy() {}
+        });
+
+// 指定期望的图片大小，返回一个Bitmap对象，要在子线程中获取，我觉得这个可以在应用使用，比如在主页我需要显示这个图片，我可以在欢迎页面加载这个图片，到了主页可以直接使用，至于为何要在线程中使用，有待研究。
+into(int w, int h);
+new Thread(new Runnable() {
+        @Override
+        public void run() {
+            Bitmap bitmap = Glide.with(context)  
+                .load(url)  
+                .into(200， 200)
+                .get();
+        }
+    }).start();
+
+
+3.Glide配置 
+Glide如同ImageLoader一样，也是可以配置一些属性的，Glide可以在GlideModel中统一配置其属性
+第一步：
+public class GlideModelConfig implements GlideModule {
+
+    int diskSize = 1024 * 1024 * 100;
+    int memorySize = (int) (Runtime.getRuntime().maxMemory()) / 8;  // 取1/8最大内存作为最大缓存
+
+    @Override
+    public void applyOptions(Context context, GlideBuilder builder) {
+        // 定义缓存大小和位置
+        builder.setDiskCache(new InternalCacheDiskCacheFactory(context, diskSize));  //内存中
+        builder.setDiskCache(new ExternalCacheDiskCacheFactory(context, "cache", diskSize)); //sd卡中
+
+        // 默认内存和图片池大小
+        MemorySizeCalculator calculator = new MemorySizeCalculator(context);
+        int defaultMemoryCacheSize = calculator.getMemoryCacheSize(); // 默认内存大小
+        int defaultBitmapPoolSize = calculator.getBitmapPoolSize(); // 默认图片池大小
+        builder.setMemoryCache(new LruResourceCache(defaultMemoryCacheSize)); // 该两句无需设置，是默认的
+        builder.setBitmapPool(new LruBitmapPool(defaultBitmapPoolSize));
+
+        // 自定义内存和图片池大小
+        builder.setMemoryCache(new LruResourceCache(memorySize));
+        builder.setBitmapPool(new LruBitmapPool(memorySize));
+
+        // 定义图片格式
+        builder.setDecodeFormat(DecodeFormat.PREFER_ARGB_8888);
+        builder.setDecodeFormat(DecodeFormat.PREFER_RGB_565); // 默认
+    }
+
+    @Override
+    public void registerComponents(Context context, Glide glide) {
+    }
+}
+
+第二步： 
+这GlideModel可以在AndroidManifest.xml文件中注册，以便Glide能够找到你的Module
+
+<meta-data
+            android:name="com.example.jianglei.glidedemo.GlideModelConfig"
+            android:value="GlideModule" />
+
+可能遇到的问题： 
+Glide允许一个应用当中存在多个GlideModules，但是Glide并不会按照一个特殊的顺序去调用已注册的GlideModules，如果一个应用的多个依赖工程当中有多个相同的Modules，就有可能会产生冲突。 
+如果一个冲突是不可避免的，应用应该默认去定义一个自己的Module,用来手动地处理这个冲突，在进行Manifest合并的时候，可以用下面的标签排除冲突的Module：
+
+<meta-data android:name=”com.example.jianglei.glidedemo.GlideModelConfig” tools:node=”remove”/>
+
+
+4.详细使用
+1)设置bitmap或者gif
+.asBitmap();
+.asGif();
+这两句话，有时候不设置是可以的，但是有时候配合其他属性一起设置的时候，如果没有这个属性的话，其他属性无法实现，所以大家还是规范一些，写完整些。 
+
+2)设置图片大小
+
+.override(int w, int h); 
+指定加载bitmap的大小，比如原图是500 x 500，into(100， 100)，加载出的bitmap就是100 x 100，这样就可以适配各种所需的UI大小，Glide已经为你做好了比例缩放，经过我的试验，如果图片是720 x 1280，将其设置成720 x 500，该图片将会以500这个尺寸比例缩放。
+
+Glide.with(this).load(R.mipmap.login).asBitmap().override(720, 500).into(imageView);
+
+这里写图片描述  这里写图片描述 
+如上图所示，左边为未使用override方法，右边使用override方法宽不变，高变成500，所以图片以短的为标准缩放图片。
+
+
+3)加载缩略图
+
+thumbnail(0.1f);
+它是在你into的view中先加载设置的缩略图，然后才会加载大图，注：参数范围为0~1。
+
+4)设置占位图或者加载错误图：
+
+.placeholder(R.drawable.placeholder)  
+.error(R.drawable.imagenotfound) 
+在实际项目中，为了优化显示，比如头像在下载过程中，会使用一张默认的图片先在UI上面显示，则用placeholder，若加载成功，则显示下载图片，否则就显示加载失败的图片，使用error。
+
+5)加载完成动画
+
+.animate(Animator animator);//或者int animationId 
+
+初次加载出Bitmap时展示的动画，可以是属性动画，也可以是Tween动画，可以是加载代码动画，也可以是动画资源文件，方便的很。 
+注：这个动画只在初次加载出来时使用，已经加载过了，下载再从缓存中取是不会动画的。
+
+6).图片适配scaleType
+
+.centerCrop(); // 长的一边撑满
+.fitCenter(); // 短的一边撑满
+
+7)暂停\回复请求
+
+Glide.with(context).resumeRequests(); 
+Glide.with(context).pauseRequests(); 
+当列表在滑动的时候，调用pauseRequests()取消请求，滑动停止时，调用resumeRequests()恢复请求。
+
+8)在后台线程当中进行加载和缓存
+
+downloadOnly(int width, int height)
+downloadOnly(Y target)// Y extends Target<File>
+into(int width, int height)
+Glide的downloadOnly()是将Image的二进制文件下载到硬盘缓存当中，以便在后续使用，可以在UI线程当中异步下载，也可以在异步线程当中同步调用下载，值得注意的是，如果在同步线程当中， 
+downloadOnly使用一个target作为参数，而在异步线程当中则是使用width和height。 
+在后台线程当中下载图片，可以通过如下的方式：
+
+new Thread(new Runnable() {
+        @Override
+        public void run() {
+            FutureTarget<File> future = Glide.with(applicationContext)
+                                             .load(yourUrl)
+                                             .downloadOnly(500, 500);
+            File cacheFile = future.get();
+        }
+    }).start();
+上面的调用只能在异步线程当中，如果在main Thread当中调用.get()，会阻塞主线程，会导致Crash。 
+这个其实就是可以获取该Image的缓存路径，目前还没想好怎么封装一个获取缓存路径的通用类，有待研究。至于Glide的缓存策略，这里也简要介绍下，也是配置： 
+缓存策略
+
+.diskCacheStrategy(DiskCacheStrategy.ALL) //这个是设置缓存策略。
+DiskCacheStrategy.NONE：不缓存 
+DiskCacheStrategy.SOURCE：缓存原始图片 
+DiskCacheStrategy.RESULT：缓存压缩过的结果图片 
+DiskCacheStrategy.ALL：两个都缓存
+
+
+9)转换器 
+第七点中的centerCrop和fitCenter是Glide默认的两种转换器，现在已经有了Glide集成库，提供各式各样的Api可以将图片转为各种形状，例如圆形，圆角型等等，库呢在上面已经介绍过啦，下面就来使用这些库看看效果。 
+（1）单独转换器效果（毛玻璃为例）
+
+Glide.with(this).load(R.mipmap.login).bitmapTransform(new BlurTransformation(this, 20)).into(imageView);
+
+先来看看效果： 
+这里写图片描述 
+可以看到毛玻璃效果，BlurTransformation就是库提供的类，20这个数字是毛玻璃的模糊程度设置，注意范围是1~25，否则图片将不会显示出来。 
+（2）复合转换器效果
+
+Glide.with(this).load(R.mipmap.login).bitmapTransform(new BlurTransformation(this, 20), new CropCircleTransformation(this)).into(imageView);
+1
+同样先来看看效果： 
+这里写图片描述 
+可以看到，图片不仅变成毛玻璃，还变成了圆形。 
+我们可以来看看bitmapTransform这个方法：
+
+public DrawableRequestBuilder<ModelType> bitmapTransform(Transformation<Bitmap>... bitmapTransformations) {
+        GifBitmapWrapperTransformation[] transformations =
+                new GifBitmapWrapperTransformation[bitmapTransformations.length];
+        for (int i = 0; i < bitmapTransformations.length; i++) {
+            transformations[i] = new GifBitmapWrapperTransformation(glide.getBitmapPool(), bitmapTransformations[i]);
+        }
+        return transform(transformations);
+    }
+可以通过看代码发现，bitmapTransform这个方法可以传入多种转换器，实现不同的效果，变通性很强。 
+下面我来列一下多种Transformations，具体的我也不展示了，留给大家去尝试： 
+Crop 
+默认：CropTransformation, 
+圆形：CropCircleTransformation, 
+方形：CropSquareTransformation, 
+圆角：RoundedCornersTransformation
+
+Color 
+颜色覆盖：ColorFilterTransformation, 
+置灰：GrayscaleTransformation
+
+Blur 
+毛玻璃：BlurTransformation
+
+Mask 
+还未弄明白：MaskTransformation
+
+
+
+
+
+*AndroidAutoLayout
+本框架使用AutoLayout框架,实现控件自适应,直接填写设计图上的像素尺寸即可完成适配。
+拿到设计稿，在布局文件里面直接填写对应的px即可，px:这里的px并非是Google不建议使用的px，在内部会进行转化处理。
+再也不用拿着设计稿去想这控件的宽高到底取多少dp
+再也不用去为多个屏幕去写多个dimens
+再也不用去计算百分比了（如果使用百分比控件完成适配）
+再也不用去跟UI MM去解释什么是dp了
+你所要做的就是抄抄设计稿上面的px，直接写入布局文件。
+
+1.将autolayout引入
+build.gradle
+dependencies {
+    compile project(':autolayout')
+}
+
+也可以直接
+
+dependencies {
+    compile 'com.zhy:autolayout:1.4.5'
+}
+
+
+在你的项目的AndroidManifest中注明你的设计稿的尺寸
+
+<meta-data android:name="design_width" android:value="768"></meta-data>
+<meta-data android:name="design_height" android:value="1280"></meta-data>
+
+
+在你的Activity的onCreate里面写入
+@Override
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        AutoLayout.getInstance().auto(this, true);
+    }
+
+在布局文件中编写时，将：
+
+目前支持属性
+layout_width
+layout_height
+layout_margin(left,top,right,bottom)
+pading(left,top,right,bottom)
+textSize
+maxWidth, minWidth, maxHeight, minHeight
+
+默认使用的高度是设备的可用高度，也就是不包括状态栏和底部的操作栏的，如果你希望拿设备的物理高度进行百分比化：
+
+可以在Application的onCreate方法中进行设置:
+
+public class UseDeviceSizeApplication extends Application
+{
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        AutoLayoutConifg.getInstance().useDeviceSize();
+    }
+}
+
+
+2.ListView、RecyclerView类的Item的适配
+
+sample中包含ListView、RecyclerView例子，具体查看sample
+
+对于ListView
+对于ListView这类控件的item，默认根局部写“px”进行适配是无效的，因为外层非AutoXXXLayout，而是ListView。但是，不用怕，一行代码就可以支持了：
+
+@Override
+public View getView(int position, View convertView, ViewGroup parent)
+{
+    ViewHolder holder = null;
+    if (convertView == null)
+    {
+        holder = new ViewHolder();
+        convertView = LayoutInflater.from(mContext).inflate(R.layout.list_item, parent, false);
+        convertView.setTag(holder);
+        //对于listview，注意添加这一行，即可在item上使用高度
+        AutoUtils.autoSize(convertView);
+    } else
+    {
+        holder = (ViewHolder) convertView.getTag();
+    }
+
+    return convertView;
+}
+注意AutoUtils.autoSize(convertView);这行代码的位置即可。demo中也有相关实例。
+
+对于RecyclerView
+public ViewHolder(View itemView)
+{
+      super(itemView);
+      AutoUtils.autoSize(itemView);
+}
+
+//...
+@Override
+public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
+{
+     View convertView = LayoutInflater.from(mContext).inflate(R.layout.recyclerview_item, parent, false);
+     return new ViewHolder(convertView);
+}
+一定要记得LayoutInflater.from(mContext).inflate使用三个参数的方法！
+
+
+
+*RecyclerView控件
+RecyclerView 是Android L版本中新添加的一个用来取代ListView的SDK，它的灵活性与可替代性比listview更好。
+使用LayoutManager来确定每一个item的排列方式。
+
+Adapter：使用RecyclerView之前，你需要一个继承自RecyclerView.Adapter的适配器，作用是将数据与每一个item的界面进行绑定。
+
+LayoutManager：用来确定每一个item如何进行排列摆放，何时展示和隐藏。回收或重用一个View的时候，LayoutManager会向适配器请求新的数据来替换旧的数据，这种机制避免了创建过多的View和频繁的调用findViewById方法（与ListView原理类似）。
+目前SDK中提供了三种自带的LayoutManager:
+
+LinearLayoutManager
+GridLayoutManager
+StaggeredGridLayoutManager
+
+1.RecyclerView使用方法
+1)、添加依赖
+在AS的build.gradle中添加依赖，然后同步一下就可以引入依赖包：
+
+dependencies {
+...
+compile 'com.android.support:recyclerview-v7:21.0.+'
+}
+2)、编写代码
+添加完依赖之后，就开始写代码了，与ListView用法类似，也是先在xml布局文件中创建一个RecyclerView的布局：
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/my_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"/>
+</RelativeLayout>
+创建完布局之后在MainActivity中获取这个RecyclerView，并声明LayoutManager与Adapter，代码如下：
+
+mRecyclerView = (RecyclerView)findViewById(R.id.my_recycler_view);
+//创建默认的线性LayoutManager
+mLayoutManager = new LinearLayoutManager(this);
+mRecyclerView.setLayoutManager(mLayoutManager);
+//如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
+mRecyclerView.setHasFixedSize(true);
+//创建并设置Adapter
+mAdapter = newMyAdapter(getDummyDatas());
+mRecyclerView.setAdapter(mAdapter);
+接下来的问题就是Adapter的创建：
+
+public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
+    public String[] datas = null;
+    public MyAdapter(String[] datas) {
+        this.datas = datas;
+    }
+    //创建新View，被LayoutManager所调用
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item,viewGroup,false);
+        ViewHolder vh = new ViewHolder(view);
+        return vh;
+    }
+    //将数据与界面进行绑定的操作
+    @Override
+    public void onBindViewHolder(ViewHolder viewHolder, int position) {
+        viewHolder.mTextView.setText(datas[position]);
+    }
+    //获取数据的数量
+    @Override
+    public int getItemCount() {
+        return datas.length;
+    }
+    //自定义的ViewHolder，持有每个Item的的所有界面元素
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        public TextView mTextView;
+        public ViewHolder(View view){
+        super(view);
+            mTextView = (TextView) view.findViewById(R.id.text);
+        }
+    }
+}
+3)、运行
+写完这些代码这个例子既可以跑起来了。从例子也可以看出来，RecyclerView的用法并不比ListView复杂，反而更灵活好用，它将数据、排列方式、数据的展示方式都分割开来，因此可定制型，自定义的形式也非常多，非常灵活。
+
+横向布局
+如果想要一个横向的List只要设置LinearLayoutManager如下就行，注意要声明mLayoutManager的类型是LinearLayoutManager而不是父类LayoutManager：
+
+mLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+Grid布局
+如果想要一个Grid布局的列表，只要声明LayoutManager为GridLayoutManager即可：
+
+mLayoutManager = new GridLayoutManager(context,columNum);
+mRecyclerView.setLayoutManager(mLayoutManager);
+注意，在Grid布局中也可以设置列表的Orientation属性，来实现横向和纵向的Grid布局。
+
+瀑布流布局
+瀑布流就使用StaggeredGridLayoutManager吧，具体方法与上面类似，就不做介绍啦。
+
+
+
+2.RecyclerView的高级方法
+RecyclerView的高级方法
+
+
+当使用了一段时间的RecyclerView，发现为其每一项添加点击事件并没有ListView那么轻松，像ListView直接加个OnItemClickListener就行了。实际上我们不要把RecyclerView当做ListView的一个升级版，希望大家把他看做一个容器，同时里面包含了很多不同的Item，它们可以以不同方式排列组合，非常灵活，点击方式你可以按照你自己的意愿进行实现。
+
+本节主要讲解如何为RecyclerView添加点击事件, 并简单介绍如何进行Item增加删除。
+
+添加点击事件
+上一节中我们讲了如何使用RecyclerView的Adpater，其实我们会发现，Adapter是添加点击事件一个很好的地方，里面是构造布局等View的主要场所，也是数据和布局进行绑定的地方。首先我们在Adapter中创建一个实现点击接口，其中view是点击的Item，data是我们的数据，因为我们想知道我点击的区域部分的数据是什么，以便我下一步进行操作：
+
+public static interface OnRecyclerViewItemClickListener {
+    void onItemClick(View view , DataModel data);
+}
+定义完接口，添加接口和设置Adapter接口的方法：
+
+private OnRecyclerViewItemClickListener mOnItemClickListener = null;
+    public void setOnItemClickListener(OnRecyclerViewItemClickListener listener) {
+    this.mOnItemClickListener = listener;
+}
+那么这个接口用在什么地方呢？如下代码所示，我们为Adapter实现OnClickListener方法：
+
+public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> implements View.OnClickListener{
+    @Override
+    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
+        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item, viewGroup, false);
+        ViewHolder vh = new ViewHolder(view);
+        //将创建的View注册点击事件
+        view.setOnClickListener(this);
+        return vh;
+    }
+    @Override
+    public void onBindViewHolder(ViewHolder viewHolder, final int i) {
+        viewHolder.mTextView.setText(datas.get(i).title);
+        //将数据保存在itemView的Tag中，以便点击时进行获取
+        viewHolder.itemView.setTag(datas.get(i));
+    }
+    ...
+    @Override
+    public void onClick(View v) {
+        if (mOnItemClickListener != null) {
+            //注意这里使用getTag方法获取数据
+            mOnItemClickListener.onItemClick(v,(DataModel)v.getTag());
+        }
+    }
+    ...
+}
+做完这些事情，我们就可以在Activity或其他地方为RecyclerView添加项目点击事件了，如在MainActivity中：
+
+mAdapter = new MyAdapter(getDummyDatas());
+mRecyclerView.setAdapter(mAdapter);
+mAdapter.setOnItemClickListener(new MyAdapter.OnRecyclerViewItemClickListener() {
+    @Override
+    public void onItemClick(View view, DataModel data) {
+        //DO your fucking bussiness here!
+    }
+});
+完成了以上代码就可以为RecyclerView添加项目点击事件了，下面我们来看看RecyclerView如何添加和删除数据并在界面上显示。
+
+
+3.添加删除数据
+加数据：
+
+public void addItem(DataModel content, int position) {
+    datas.add(position, content);
+    notifyItemInserted(position); //Attention!
+}
+删除数据：
+
+public void removeItem(DataModel model) {
+    int position = datas.indexOf(model);
+    datas.remove(position);
+    notifyItemRemoved(position);//Attention!
+}	
 
 
 *MVP设计思想
