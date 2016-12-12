@@ -54021,7 +54021,366 @@ public class Container{
     }
 }
 
-7)
+*rxcache
+ 在异步处理网络数据时, 使用广泛。 
+我们也可以使用一些Rx的特性, 优雅地缓存网络数据.
+
+缓存模式: 读取数据库, 显示, 请求数据, 存储到数据库, 再更新页面.
+1)无缓存
+依赖注入三个关键部分, Application/Component/Module.
+public class RcApplication extends Application {
+    private ApiComponent mApiComponent;
+
+    @Override public void onCreate() {
+        super.onCreate();
+        mApiComponent = DaggerApiComponent.builder()
+                .apiModule(new ApiModule(this)).build();
+    }
+
+    public ApiComponent getApiComponent() {
+        return mApiComponent;
+    }
+}
+
+@Singleton
+@Component(modules = ApiModule.class)
+public interface ApiComponent {
+    void inject(NocacheActivity activity);
+
+    void inject(CacheActivity activity);
+}
+
+@Module
+public class ApiModule {
+    private Application mApplication;
+
+    public ApiModule(Application application) {
+        mApplication = application;
+    }
+
+    @Provides
+    @Singleton
+    public Application provideApplication() {
+        return mApplication;
+    }
+
+    @Provides
+    @Singleton GitHubClient provideGitHubClient() {
+        return new GitHubClient();
+    }
+
+    @Provides ObservableRepoDb provideObservableRepoDb() {
+        return new ObservableRepoDb(mApplication);
+    }
+}
+
+模块提供应用信息, GitHub的网络请求, 数据库. 
+@Singleton表示单例模式, 全部注入拥有一个实例.
+页面, 使用RecyclerView显示列表信息, 在加载时显示ProgressBar.
+
+/**
+ * 无缓存Activity
+ * <p>
+ * Created by wangchenlong on 16/1/18.
+ */
+public class NocacheActivity extends Activity {
+
+    @Bind(R.id.nocache_rv_list) RecyclerView mRvList;
+    @Bind(R.id.nocache_pb_progress) ProgressBar mPbProgress;
+
+    @Inject Application mApplication;
+    @Inject GitHubClient mGitHubClient;
+
+    private ListAdapter mListAdapter;// RecyclerView适配器
+
+    @Override protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_nocache);
+        ButterKnife.bind(this);//绑定
+		//注入
+        ((RcApplication) getApplication()).getApiComponent().inject(this);
+		
+		//设置RecyclerView
+        LinearLayoutManager layoutManager = new LinearLayoutManager(mApplication);
+        mRvList.setLayoutManager(layoutManager);
+		//配置RecyclerView的数据源
+        mListAdapter = new ListAdapter();
+        mRvList.setAdapter(mListAdapter);
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+
+        // 延迟3秒, 模拟效果
+        mGitHubClient.getRepos("SpikeKing")
+                .delay(3, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::onSuccess, this::onError);
+
+        mPbProgress.setVisibility(View.VISIBLE);
+    }
+
+    private void onSuccess(ArrayList<Repo> repos) {
+        mListAdapter.setRepos(repos);
+        mPbProgress.setVisibility(View.INVISIBLE);
+    }
+
+    private void onError(Throwable throwable) {
+        mPbProgress.setVisibility(View.INVISIBLE);
+    }
+}
+
+2)缓存
+数据库的观察者
+这一部分是关键, 实现网络请求同步插入数据库和更新页面. 
+关联PublishSubject, 在插入数据完成后, 调用绑定观察者, 更新页面. 
+即.concatWith(mPublishSubject)和mPublishSubject.onNext(repos).
+/**
+ * Redo的观察者
+ * <p>
+ * Created by wangchenlong on 16/1/18.
+ */
+public class ObservableRepoDb {
+    private PublishSubject<ArrayList<Repo>> mPublishSubject; // 发表主题
+    private RepoDbHelper mDbHelper; // 数据库
+
+    public ObservableRepoDb(Context context) {
+        mDbHelper = new RepoDbHelper(context);
+        mPublishSubject = PublishSubject.create();
+    }
+
+    // 返回观察者
+    public Observable<ArrayList<Repo>> getObservable() {
+        Observable<ArrayList<Repo>> firstObservable = Observable.fromCallable(this::getRepoList);
+        return firstObservable.concatWith(mPublishSubject); // 连接发表主题
+    }
+
+    // 从数据库获得数据
+    private ArrayList<Repo> getRepoList() {
+        mDbHelper.openForRead();
+        ArrayList<Repo> repos = new ArrayList<>();
+        Cursor c = mDbHelper.getAllRepo();
+        if (!c.moveToFirst()) {
+            return repos; // 返回空
+        }
+
+        do {
+            // 添加数据
+            repos.add(new Repo(
+                    c.getString(RepoDbHelper.REPO_ID_COLUMN_POSITION),
+                    c.getString(RepoDbHelper.REPO_NAME_COLUMN_POSITION),
+                    c.getString(RepoDbHelper.REPO_DESCRIPTION_COLUMN_POSITION),
+                    new Repo.Owner(c.getString(RepoDbHelper.REPO_OWNER_COLUMN_POSITION), "", "", "")));
+        } while (c.moveToNext());
+        c.close();
+        mDbHelper.close();
+        return repos;
+    }
+
+    // 插入Repo列表
+    public void insertRepoList(ArrayList<Repo> repos) {
+        mDbHelper.open();
+        mDbHelper.removeAllRepo();
+        for (Repo repo : repos) {
+            mDbHelper.addRepo(
+                    repo.getId(),
+                    repo.getName(),
+                    repo.getDescription(),
+                    repo.getOwner().getLogin()
+            );
+        }
+        mDbHelper.close();
+        mPublishSubject.onNext(repos); // 会调用更新数据
+    }
+}
+
+public class CacheActivity extends Activity {
+
+    @Bind(R.id.cache_rv_list) RecyclerView mRvList; // 列表
+    @Bind(R.id.cache_srl_swipe) SwipeRefreshLayout mSrlSwipe; // 刷新
+
+    @Inject Application mApplication;
+    @Inject ObservableRepoDb mRepoDb;
+    @Inject GitHubClient mGitHubClient;
+
+    private ListAdapter mListAdapter; // RecyclerView适配器
+
+    @Override protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_cache);
+        ButterKnife.bind(this);
+
+        // 注入类
+        ((RcApplication) getApplication()).getApiComponent().inject(this);
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(mApplication);
+        mRvList.setLayoutManager(layoutManager);
+
+        mListAdapter = new ListAdapter();
+        mRvList.setAdapter(mListAdapter);
+
+        mSrlSwipe.setOnRefreshListener(this::fetchUpdates);
+    }
+
+    @Override protected void onResume() {
+        super.onResume();
+        mRepoDb.getObservable()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(this::setData);
+
+        fetchUpdates();
+        Toast.makeText(mApplication, "正在更新", Toast.LENGTH_SHORT).show();
+    }
+
+    // 设置数据, 更新完成会调用
+    private void setData(ArrayList<Repo> repos) {
+        mListAdapter.setRepos(repos);
+        Toast.makeText(mApplication, "更新完成", Toast.LENGTH_SHORT).show();
+    }
+
+    private void fetchUpdates() {
+        // 延迟3秒, 模拟效果
+        mGitHubClient.getRepos("SpikeKing")
+                .delay(3, TimeUnit.SECONDS)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(mRepoDb::insertRepoList, this::fetchError, this::fetchComplete);
+    }
+
+    private void fetchError(Throwable throwable) {
+        mSrlSwipe.setRefreshing(false);
+    }
+
+    private void fetchComplete() {
+        mSrlSwipe.setRefreshing(false);
+    }
+}
+
+* LeakCanary内存泄露检测
+当内存吃紧的时候，到处都有可能引发 OO。在创建大对象，比如 bitmap 的时候，更有可能发生。OOM 只是一个表象，更深层次的问题可能是: 内存泄露。
+一些对象有着有限的生命周期。当这些对象所要做的事情完成了，我们希望他们会被回收掉。但是如果有一系列对这个对象的引用，那么在我们期待这个对象生命周期结束的时候被收回的时候，它是不会被回收的。它还会占用内存，这就造成了内存泄露。持续累加，内存很快被耗尽。
+
+比如，当 Activity.onDestroy 被调用之后，activity 以及它涉及到的 view 和相关的 bitmap 都应该被回收。但是，如果有一个后台线程持有这个 activity 的引用，那么 activity 对应的内存就不能被回收。这最终将会导致内存耗尽，然后因为 OOM 而 crash。
+
+1.示例
+class Cat {
+}
+
+class Box {
+  Cat hiddenCat;
+}
+class Docker {
+    // 静态变量，将不会被回收，除非加载 Docker 类的 ClassLoader 被回收。
+    static Box container;
+}
+
+// ...
+
+Box box = new Box();
+
+// 薛定谔之猫
+Cat schrodingerCat = new Cat();
+box.hiddenCat = schrodingerCat;
+Docker.container = box;
+
+创建一个RefWatcher，监控对象引用情况。
+
+// 我们期待薛定谔之猫很快就会消失（或者不消失），我们监控一下
+refWatcher.watch(schrodingerCat);
+当发现有内存泄露的时候，你会看到一个很漂亮的 leak trace 报告:
 
 
+2.监控 Activity 泄露
+1)
+在 build.gradle 中加入引用，不同的编译使用不同的引用：
+
+ dependencies {
+   debugCompile 'com.squareup.leakcanary:leakcanary-android:1.3'
+   releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.3'
+ }
+ 
+
+2) 
+在 Application 中：
+
+public class ExampleApplication extends Application {
+
+  ......
+  //在自己的Application中添加如下代码
+public static RefWatcher getRefWatcher(Context context) {
+    ExampleApplication application = (ExampleApplication) context
+            .getApplicationContext();
+    return application.refWatcher;
+}
+
+  //在自己的Application中添加如下代码
+private RefWatcher refWatcher;
+
+@Override
+public void onCreate() {
+    super.onCreate();
+    ......
+        //在自己的Application中添加如下代码
+    refWatcher = LeakCanary.install(this);
+    ......
+}
+
+.....
+}
+这样，就万事俱备了！ 在 debug build 中，如果检测到某个 activity 有内存泄露，LeakCanary 就是自动地显示一个通知。	
+
+
+3)在Activity中进行配置
+在 API 14 之后，即当 Activity.onDestroy() 被调用之后，如果这个 Activity 没有被销毁，logcat 就会打印出如下信息告诉你内存泄漏发生了。
+在API 14 之前监测 Activity 泄漏，可以重载 Activity.onDestroy() 方法，然后在这个方法里调用 RefWatcher.watch(this) 来实现。
+public class MainActivity extends AppCompatActivity {
+
+    ......
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+            //在自己的应用初始Activity中加入如下两行代码
+        RefWatcher refWatcher = ExampleApplication.getRefWatcher(this);
+        refWatcher.watch(this);
+
+        textView = (TextView) findViewById(R.id.tv);
+        textView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startAsyncTask();
+            }
+        });
+
+    }
+    
+
+
+}
+
+4)在AndroidMainfest.xml 中进行配置,添加如下代码
+<service
+	android:name="com.squareup.leakcanary.DisplayLeakService"
+	android:enabled="false" />
+
+
+3.监控 Fragment 泄漏
+同样，14之前
+public abstract class BaseFragment extends Fragment {
+
+    @Override 
+    public void onDestroy() {
+        super.onDestroy();
+        RefWatcher refWatcher = ExampleApplication.getRefWatcher(getActivity());
+        refWatcher.watch(this);
+    }
+}
+
+4.监控其他泄漏
+ RefWatcher refWatcher = ExampleApplication.getRefWatcher(getActivity());
+    refWatcher.watch(someObjNeedGced);
 	
+	
+
