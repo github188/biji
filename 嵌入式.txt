@@ -54878,3 +54878,467 @@ public abstract class BaseFragment extends Fragment {
 	
 	
 
+*MVP+retrofit+rxjava的架构
+1.简单示例
+首先在项目的build.gradle文件的dependencies加入gradle依赖包：
+compile 'io.reactivex:rxandroid:1.0.1'  
+compile 'io.reactivex:rxjava:1.0.14'  
+
+//retrofit  
+compile 'com.squareup.retrofit2:retrofit:2.0.0-beta4'  
+compile 'com.squareup.retrofit2:converter-gson:2.0.0-beta4'  
+
+//RxJava 适配器  
+compile 'com.squareup.retrofit2:adapter-rxjava:2.0.0-beta4'  
+
+bean全局实体类
+/** 
+ * bean类 
+ * 
+ * Created by kuyu.yaojt on 16/5/19. 
+ */  
+public class GithubUser {  
+    private String login;  
+    private int id;  
+    private int contributions;  
+  
+    @Override  
+    public String toString() {  
+        return "GithubUser{" +  
+                "login='" + login + '\'' +  
+                ", id=" + id +  
+                ", contributions=" + contributions +  
+                '}';  
+    }  
+  
+    public GithubUser(String login, int id, int contributions) {  
+        this.login = login;  
+        this.id = id;  
+        this.contributions = contributions;  
+    }  
+  
+    public String getLogin() {  
+        return login;  
+    }  
+  
+    public void setLogin(String login) {  
+        this.login = login;  
+    }  
+  
+    public int getId() {  
+        return id;  
+    }  
+  
+    public void setId(int id) {  
+        this.id = id;  
+    }  
+  
+    public int getContributions() {  
+        return contributions;  
+    }  
+  
+    public void setContributions(int contributions) {  
+        this.contributions = contributions;  
+    }  
+}  
+
+
+Model层：
+/** 
+ * retrofit定义一个请求github的接口 
+ * 
+ * Created by kuyu.yaojt on 16/5/19. 
+ */  
+public interface GitHubNetworkInterface {  
+  
+    /** 
+     * @GET 使用get方法请求数据 
+     * 括号里面的是网站的后缀url地址 
+     * 而在baseurl则是在retrofit里面设定了 
+     * {user} ＝ 要传入的参数 由函数参数传参——》@Path("user") String user 
+     * {psw} ＝ 要传入的参数 由函数参数传参——》@Path("psw") String psw 
+     * 最后拼成的url地址为：https://api.github.com/repos/user/psw/contributors 
+     * 
+     * @param user user 
+     * @param psw psw 
+     * @return Call<List<GithubUser>> 
+     */  
+    @GET("repos/{user}/{psw}/contributors")  
+    Call<List<GithubUser>> getDataByLs(@Path("user") String user, @Path("psw") String psw);  
+}  
+
+
+
+/** 
+ * 实际登陆操作类 
+ * <p/> 
+ * Created by tanksu on 16/5/4. 
+ */  
+public class LoginModel {  
+    private int mCount;  
+  
+    private boolean mBoolean = true;  
+  
+    public LoginModel() {  
+  
+    }  
+    /** 
+     * 从Github上面获取数据 
+     * 
+     * @param name 
+     * @param psw 
+     * @return 
+     */  
+    public Observable<List<GithubUser>> getDataFromGithub(String name, String psw) {  
+        Observable mOservable = Observable.create(new Observable.OnSubscribe<List<GithubUser>>() {  
+            @Override  
+            public void call(Subscriber<? super List<GithubUser>> subscriber) {  
+                Retrofit retrofit = new Retrofit.Builder()  
+                        .baseUrl("https://api.github.com/")  
+                        .addConverterFactory(GsonConverterFactory.create())//添加 json 转换器  
+                        .addCallAdapterFactory(RxJavaCallAdapterFactory.create())//添加 RxJava 适配器  
+                        .build();  
+                //这里用到一个创建一个接口，来调用方法,请求网络retrofit调用
+                //Create an implementation of the API endpoints defined by the {@code service} interface.  
+                GitHubNetworkInterface gitHub = retrofit.create(GitHubNetworkInterface.class);  
+                Call<List<GithubUser>> call = gitHub.getDataByLs("square", "retrofit");  
+                List<GithubUser> list = null;  
+                try {  
+                    //execute() - 同步操作  
+                    //enqueue(Callback<T> callback) - 异步操作－用不到了，因为在观察者模式里面已经设置了在非ui线程中执行操作  
+                    //最后返回一个反序列化的结果  
+                    list = call.execute().body();  
+                } catch (IOException e) {  
+                    e.printStackTrace();  
+                }  
+                subscriber.onNext(list);  
+                subscriber.onCompleted();  
+            }  
+        });  
+        return mOservable;  
+    }  
+  
+} 
+
+
+V层：
+接口
+/** 
+ * 登陆页面的视图控制层接口 
+ * 
+ * Created by kuyu.yaojt on 16/5/14. 
+ */  
+public interface LoginView extends BaseCustomView{  
+    void loginSuccess(JSONObject jsonObject);  
+    void getDataSueecss(List<GithubUser> githubUserList);  
+}  
+
+V层接口的实现：
+MainActivity implements LoginView
+{
+	定义了一个取数据返回成功的接口方法getDataSueecss()，然后你要做的就是在activity里面实现这个接口，并做更新ui的操作。  
+我这里LoginView.java的实现是这样的：  
+//接口实现  
+ @Override  
+    public void getDataSueecss(List<GithubUser> githubUserList) {  
+        for(GithubUser githubUser : githubUserList){  
+            System.out.println("-=-=-=-=>>toString() = " + githubUser.toString());  
+        }  
+        ToastUtils.makeText(this, "--->get Data From github Sueecss");  
+    } 
+	
+	@Override  
+    public void loginSuccess(JSONObject jsonObject)
+	{..........}	
+}
+
+P层：
+LoginPresenter是作为分发者的角色，m和v的唯一沟通协调人，因为我们在p里面所做的一切都是逻辑和消息分发处理，但是不做耗时的操作。耗时的操作是在m里面实现的。
+public class LoginPresenter {  
+private LoginView mLoginView;  
+    private LoginModel mLoginModel;  
+    private Context mContext;  
+  
+    /** 
+     * 构造函数 
+     * 
+     * @param context 
+     * @param baseCustomView 
+     */  
+    public LoginPresenter(Context context, LoginView baseCustomView) {  
+        this.mContext = (Context) baseCustomView;  
+        this.mLoginView = baseCustomView;  
+        mLoginModel = new LoginModel();  
+    }  
+  
+/** 
+     * 在github上面获取数据 ,使用观察者rxjava模式
+     * 
+     * @param name 
+     * @param psw 
+     */  
+    public void getDataFromGithub(String name, String psw) {  
+    // 设置个2000ms的延迟，模拟网络访问、数据库操作等等延时操作  
+    SystemClock.sleep(2000);  
+        mLoginView.showProgressDialog();//在activity实现的通用用户友好体验的提示  
+        mLoginModel.getDataFromGithub(name, psw)  
+                .subscribeOn(Schedulers.io())//在非UI线程进行耗时操作  
+                .observeOn(AndroidSchedulers.mainThread())//在UI线程进行观察监听  
+                .subscribe(new Subscriber<List<GithubUser>>() {//开始订阅观察监听  
+                    @Override  
+                    public void onCompleted() {  
+                        mLoginView.hideProgressDialog();  
+                    }  
+  
+                    @Override  
+                    public void onError(Throwable e) {  
+                        mLoginView.showError("--->>" + e.getMessage());  
+                        Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_SHORT).show();  
+                    }  
+  
+                    @Override  
+                    public void onNext(List<GithubUser> githubUsers) {  
+                        mLoginView.hideProgressDialog();  
+                        mLoginView.getDataSueecss(githubUsers);  
+                    }  
+                });  
+    }  
+} 
+
+
+
+示例2：有关联接口的情况
+api  包下存放网络请求接口
+bean  包下存放全局实体类
+model  M层
+presenter P层
+view   V层
+
+bean层:
+public class WeatherData
+{....}
+网络传输层：
+/**
+ * @className：ApiManagerService
+ * Created by lidong on 2016/3/2.
+ */
+public interface ApiManagerService {
+//http://v.juhe.cn/weather/index?format=2&cityname=%E8%8B%8F%E5%B7%9E&key=ad1d20bebafe0668502c8eea5ddd0333
+    /**
+     * 获取数据
+     * @param cityname
+     * @param key
+     * @return
+     */
+    @GET("/weather/index")
+    Observable<WeatherData> getWeatherData(@Query("format") String format,@Query("cityname") String cityname,@Query("key") String key);
+
+}
+
+/**
+ * Created by lidong on 2016/3/2.
+ */
+public class ApiManager {
+
+    private static final String ENDPOINT = "http://v.juhe.cn";
+
+    private static final Retrofit sRetrofit = new Retrofit .Builder()
+            .baseUrl(ENDPOINT)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(RxJavaCallAdapterFactory.create()) // 使用RxJava作为回调适配器
+            .build();
+
+    private static final ApiManagerService apiManager = sRetrofit.create(ApiManagerService.class);
+
+    /**
+     * 获取天气数据
+     * @param city
+     * @return
+     */
+    public static Observable<WeatherData> getWeatherData(String format, String city) {
+        return apiManager.getWeatherData(format,city,"ad1d20bebafe0668502c8eea5ddd0333");
+    }
+
+
+}
+
+model层:
+/**
+ *
+ * Created by lidong on 2016/3/2.
+ */
+public interface WeatherModel {
+    /**
+     * 获取天气信息
+     * @param format
+     * @param city
+     */
+    Subscription getWeatherData(String format, String city);
+
+
+}
+
+/**
+ * Created by lidong on 2016/3/2.
+ */
+public class WeatherModelImp  implements WeatherModel {
+
+    private WeatherOnListener mWeatherOnListener;
+
+
+    public WeatherModelImp(WeatherOnListener mWeatherOnListener) {
+        this.mWeatherOnListener = mWeatherOnListener;
+    }
+
+    @Override
+    public void getWeatherData(String format,String city) {
+@Override
+    public Subscription getWeatherData(String format,String city) {
+
+        Observable<WeatherData> request = com.lidong.demo.mvp_dagger2.api.ApiManager.getWeatherData(format, city).cache();
+
+        Subscription sub = request.subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Action1<WeatherData>() {
+                    @Override
+                    public void call(WeatherData weatherData) {
+                        mWeatherOnListener.onSuccess(weatherData);
+                    }
+                }, new Action1<Throwable>() {
+                    @Override
+                    public void call(Throwable throwable) {
+                        mWeatherOnListener.onFailure(throwable);
+                    }
+                });
+        return  sub;
+    }
+    /**
+    *回调接口
+    */
+    public interface WeatherOnListener{
+        void onSuccess(WeatherData s);
+        void onFailure(Throwable e);
+    }
+}
+
+
+view层：
+/**
+*WeatherView 用于处理界面显示
+*/
+public interface WeatherView {
+
+    void showProgress();
+    void hideProgress();
+    void loadWeather(WeatherData weatherData);
+}
+
+/**
+*展示天气详情
+*/
+public class WeatherActivity extends AppCompatActivity implements WeatherView {
+	@Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_weather);
+        ButterKnife.bind(this);
+        setSupportActionBar(toolbar);
+        mWeatherPresenter = new WeatherPresenterImp(this);
+        mWeatherPresenter.getWeatherData("2", "苏州");
+    }
+	
+	void showProgress(){...};
+    void hideProgress(){...};
+    void loadWeather(WeatherData weatherData){...};
+	
+	@Override
+ protected void onDestroy() {
+     super.onDestroy();
+     //取消注册
+     mWeatherPresenter.onUnsubscribe();
+ }
+}
+
+
+presenter层:
+/**
+ * Created by lidong on 16/9/10.
+ */
+public class BasePresenter {
+
+
+    protected CompositeSubscription mCompositeSubscription;
+
+    //RXjava取消注册，以避免内存泄露
+    public void onUnsubscribe() {
+        if (mCompositeSubscription != null && mCompositeSubscription.hasSubscriptions()) {
+            mCompositeSubscription.unsubscribe();
+        }
+    }
+
+    //RXjava注册
+    public void addSubscription(Subscription subscriber) {
+        if (mCompositeSubscription == null) {
+            mCompositeSubscription = new CompositeSubscription();
+        }
+        mCompositeSubscription.add(subscriber);
+    }
+}
+
+
+/**
+ * Created by lidong on 2016/3/2.
+ */
+public abstract class WeatherPresenter extends BasePresenter{
+  /**
+     * 获取天气信息
+     * @param format
+     * @param city
+     */
+  public abstract void getWeatherData(String format, String city);
+}
+
+package com.lidong.demo.mvp.presenter;
+
+import android.util.Log;
+
+import com.lidong.demo.mvp.bean.WeatherData;
+import com.lidong.demo.mvp.model.WeatherModel;
+import com.lidong.demo.mvp.model.WeatherModelImp;
+import com.lidong.demo.mvp.view.WeatherView;
+
+/**
+ * Created by lidong on 2016/3/2.WeatherModelImp.WeatherOnListener是回调接口
+ */
+public class WeatherPresenterImp  extends WeatherPresenter  implements WeatherModelImp.WeatherOnListener{
+
+    /**
+     * WeatherModel和WeatherView都是通过接口来实现，这就Java设计原则中依赖倒置原则使用
+     */
+   private WeatherModel mWeatherModel;
+   private WeatherView mWeatherView;
+
+    public WeatherPresenterImp( WeatherView mWeatherView) {
+        this.mWeatherModel = new WeatherModelImp(this);
+        this.mWeatherView = mWeatherView;
+    }
+
+    @Override
+    public void getWeatherData(String format, String city) {
+        mWeatherView.showProgress();
+        addSubscription(mWeatherModel.getWeatherData(format,city));
+    }
+
+    @Override
+    public void onSuccess(WeatherData s) {
+        mWeatherView.loadWeather(s);
+        mWeatherView.hideProgress();
+        Log.d("-------", "onSuccess() called with: " + "s = [" + s.toString() + "]");
+    }
+
+    @Override
+    public void onFailure(Throwable e) {
+        mWeatherView.hideProgress();
+        Log.d("-------", "onFailure" + e.getMessage());
+    }
+}
