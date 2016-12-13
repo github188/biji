@@ -52457,7 +52457,9 @@ Call<ResponseBody>getLatestString();
 
 
 5.示例
-1）无参数的Get请求
+1）GET请求
+
+(1）无参数的Get请求
 public interface GeInterface1 {
     //(1)定义一个接口，封装URL地址和数据请求
     //GET是retrofit里的，在这里把参数值都写了，函数里面就不用写参数变量了
@@ -52508,8 +52510,22 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
+示例：
+// 服务
+interface SomeService {
+ @GET("/some/endpoint?fixed=query")
+ Call<SomeResponse> someEndpoint();
+}
 
-2）返回是JSON的GET请求
+// 方法调用
+someService.someEndpoint();
+
+// 请求头
+// GET方法： /some/endpoint?fixed=query HTTP/1.1
+
+
+
+(2）返回是JSON的GET请求
 public interface IUserBiz
 {
     @GET("users")
@@ -52538,8 +52554,12 @@ Call<List<User>> call = userBiz.getUsers();
             }
         });
 
+这里需要指出的是：
+接口中的方法必须有返回值，且比如是Call<T>类型
+.addConverterFactory(GsonConverterFactory.create())这里如果使用gson，需要额外导入：
+compile 'com.squareup.retrofit2:converter-gson:2.0.2'
 
-3）动态的url访问@PATH
+(3）动态的url访问@PATH
 例如通过不同的username访问不同用户的信息，返回数据为json字符串
 //用于访问zhy的信息
 http://192.168.1.102:8080/springmvc_users/user/zhy
@@ -52574,7 +52594,7 @@ call.enqueue(new Callback<User>()
 });
 
 
-4）查询参数的设置@Query
+(4）查询参数的设置@Query
 http://baseurl/users?sortby=username
 http://baseurl/users?sortby=id
 
@@ -52593,7 +52613,118 @@ Call<List<User>> call = userBiz.getUsersBySort("username");
 当然相同的方式也适用于POST，只需要把注解修改为@POST即可。
 
 
-5）POST请求体的方式向服务器传入json字符串@Body
+示例：
+// 服务
+interface SomeService {
+ @GET("/some/endpoint")
+ Call<SomeResponse> someEndpoint(
+ @Query("dynamic") String dynamic);
+}
+
+// 方法调用
+someService.someEndpoint("query");
+
+// 请求头
+// GET方法： /some/endpoint?dynamic=query HTTP/1.1
+
+
+(5）动态参数（@QueryMap）
+// 服务
+interface SomeService {
+ @GET("/some/endpoint")
+ Call<SomeResponse> someEndpoint(
+ @QueryMap Map<String, String> dynamic);
+}
+
+// 方法调用
+someService.someEndpoint(
+ Collections.singletonMap("dynamic", "query"));
+// 请求头
+// GET /some/endpoint?dynamic=query HTTP/1.1
+
+省略动态参数：
+interface SomeService {
+ @GET("/some/endpoint")
+ Call<SomeResponse> someEndpoint(
+ @Query("dynamic") String dynamic);
+}
+
+// 方法调用
+someService.someEndpoint(null);
+
+// 请求头
+// GET /some/endpoint HTTP/1.1
+
+
+(6）固定+动态参数
+interface SomeService {
+ @GET("/some/endpoint?fixed=query")
+ Call<SomeResponse> someEndpoint(
+ @Query("dynamic") String dynamic);
+}
+
+// 方法调用
+someService.someEndpoint("query");
+
+// 请求头
+// GET /some/endpoint?fixed=query&dynamic=query HTTP/1.1
+
+
+(7)固定头@Headers
+interface SomeService {
+ @GET("/some/endpoint")
+ @Headers("Accept-Encoding: application/json")
+ Call<SomeResponse> someEndpoint();
+}
+
+someService.someEndpoint();
+
+// GET /some/endpoint HTTP/1.1
+// Accept-Encoding: application/json
+
+
+(8)动态头@Header
+interface SomeService {
+ @GET("/some/endpoint")
+ Call<SomeResponse> someEndpoint(
+ @Header("Location") String location);
+}
+
+someService.someEndpoint("Droidcon NYC 2015");
+
+// GET /some/endpoint HTTP/1.1
+// Location: Droidcon NYC 2015
+
+(9)固定+动态头
+interface SomeService {
+ @GET("/some/endpoint")
+ @Headers("Accept-Encoding: application/json")
+ Call<SomeResponse> someEndpoint(
+ @Header("Location") String location);
+}
+
+someService.someEndpoint("Droidcon NYC 2015");
+
+// GET /some/endpoint HTTP/1.1
+// Accept-Encoding: application/json
+// Location: Droidcon NYC 2015
+
+
+
+
+(2)POST请求
+(1)Post请求，无Body
+interface SomeService {
+ @POST("/some/endpoint")
+ Call<SomeResponse> someEndpoint();
+}
+
+someService.someEndpoint();
+
+// POST /some/endpoint?fixed=query HTTP/1.1
+// Content-Length: 0
+
+(2）POST请求体的方式向服务器传入json字符串@Body
 public interface IUserBiz
 {
  @POST("add")
@@ -52605,8 +52736,25 @@ public interface IUserBiz
 //省略call执行相关代码
 可以看到其实就是使用@Body这个注解标识我们的参数对象即可，那么这里需要考虑一个问题，retrofit是如何将user对象转化为字符串呢
 
+示例
+Post请求有Body
 
-6）表单的方式传递键值对@FormUrlEncoded
+interface SomeService {
+ @POST("/some/endpoint")
+ Call<SomeResponse> someEndpoint(
+ @Body SomeRequest body);
+}
+
+someService.someEndpoint();
+
+// POST /some/endpoint HTTP/1.1
+// Content-Length: 3
+// Content-Type: greeting
+//
+// Hi!
+
+
+（3）表单的方式传递键值对@FormUrlEncoded，@Field
 public interface IUserBiz
 {
     @POST("login")
@@ -52620,9 +52768,44 @@ Call<User> call = userBiz.login("zhy", "123");
 
 看起来也很简单，通过@POST指明url，添加FormUrlEncoded，然后通过@Field添加参数即可
 
+示例
+interface SomeService {
+ @FormUrlEncoded
+ @POST("/some/endpoint")
+ Call<SomeResponse> someEndpoint(
+ @Field("name1") String name1,
+ @Field("name2") String name2);
+}
+
+someService.someEndpoint("value1", "value2");
+
+// POST /some/endpoint HTTP/1.1
+// Content-Length: 25
+// Content-Type: application/x-www-form-urlencoded
+//
+// name1=value1&name2=value2
 
 
-7）单文件上传@Multipart
+(4)表单编码字段@FieldMap
+interface SomeService {
+ @FormUrlEncoded
+ @POST("/some/endpoint")
+ Call<SomeResponse> someEndpoint(
+ @FieldMap Map<String, String> names);
+}
+
+someService.someEndpoint(
+ // ImmutableMap是OKHttp中的工具类
+ ImmutableMap.of("name1", "value1", "name2", "value2"));
+
+// POST /some/endpoint HTTP/1.1
+// Content-Length: 25
+// Content-Type: application/x-www-form-urlencoded
+//
+// name1=value1&name2=value2
+
+
+(4）单文件上传@Multipart，@Part
 public interface IUserBiz
 {
     @Multipart
@@ -52631,16 +52814,21 @@ public interface IUserBiz
 }
 
 这里@MultiPart的意思就是允许多个@Part了，我们这里使用了3个@Part，第一个我们准备上传个文件，使用了MultipartBody.Part类型，其余两个均为简单的键值对。
+
 File file = new File(Environment.getExternalStorageDirectory(), "icon.png");
+// 创建 RequestBody，用于封装构建RequestBody
 RequestBody photoRequestBody = RequestBody.create(MediaType.parse("image/png"), file);
+// MultipartBody.Part  和后端约定好Key，这里的partName是用photos
 MultipartBody.Part photo = MultipartBody.Part.createFormData("photos", "icon.png", photoRequestBody);
 
+
+执行
 Call<User> call = userBiz.registerUser(photo, RequestBody.create(null, "abc"), RequestBody.create(null, "123"));
 
 蛮好理解~~多个@Part，每个Part对应一个RequestBody。
 
 
-8）多文件上传@PartMap
+(5）多文件上传@PartMap
 public interface IUserBiz
  {
      @Multipart
@@ -52661,7 +52849,7 @@ Call<User> call = userBiz.registerUser(photos, RequestBody.create(null, "123"));
 可以在Map中put进一个或多个文件，键值对等，当然你也可以分开，单独的键值对也可以使用@Part，这里又看到设置文件的时候，相对应的key很奇怪，例如上例"photos\"; filename=\"icon.png",前面的photos就是与服务器对应的key，后面filename是服务器得到的文件名，ok，参数虽然奇怪，但是也可以动态的设置文件名，不太影响使用~~
 
 
-9）下载文件
+(6）下载文件建议不用这个框架
 @GET("download")
 Call<ResponseBody> downloadTest();
 
@@ -52682,9 +52870,12 @@ call.enqueue(new Callback<ResponseBody>()
     }
 });
 
-10配置OkHttpClient
+3)配置OkHttpClient
+很多同学会遇到：Retrofit的内部Log都无法输出 , header怎么加入，请求怎么支持https，包括怎么结合RxJava.? 不用担心，这些Retrofit 2.0 都提供了支持okhttp的自定义的Interceptor（拦截器），通过不同的Interceptor可以实现不同的自定义请求形式，比如统一加head，参数，加入证书（ssl）等
+
 这个需要简单提一下，很多时候，比如你使用retrofit需要统一的log管理，给每个请求添加统一的header等，这些都应该通过okhttpclient去操作，比如addInterceptor
 
+(1)开启Log
 OkHttpClient client = new OkHttpClient.Builder().addInterceptor(new Interceptor()//log，统一的header等
 {
     @Override
@@ -52701,6 +52892,309 @@ Retrofit retrofit = new Retrofit.Builder()
 callFactory方法接受一个okhttp3.Call.Factory对象，OkHttpClient即为一个实现类。
 
 
+或者：
+Retrofit retrofit = new Retrofit.Builder().client(new OkHttpClient.Builder()
+        .addNetworkInterceptor(
+        new   HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.HEADERS)) 
+       .build())
+
+(2)增加头部信息
+通用请求头
+new Retrofit.Builder()
+           .addConverterFactory(GsonConverterFactory.create())
+
+           .client(new OkHttpClient.Builder()
+                   .addInterceptor(new Interceptor() {
+                       @Override
+                       public Response intercept(Chain chain) throws IOException {
+                           Request request = chain.request()
+                                   .newBuilder()
+                                   .addHeader("mac", "f8:00:ea:10:45")
+                                   .addHeader("uuid", "gdeflatfgfg5454545e")
+                                   .addHeader("userId", "Fea2405144")
+                                   .addHeader("netWork", "wifi")
+                                   .build();
+                           return chain.proceed(request);
+                       }
+                   })
+
+                   .build()
+
+单独加入
+@Headers({ "Accept: application/vnd.github.v3.full+json", "User-Agent: Retrofit-your-App"})
+@get("users/{username}")
+Call<User>   getUser(@Path("username") String username);
+
+(3)添加证书Pinning
+OkHttpClient client = new OkHttpClient.Builder()
+    .certificatePinner(new CertificatePinner.Builder()
+            .add("YOU API.com", "sha1/DmxUShsZuNiqPQsX2Oi9uv2sCnw=")
+            .add("YOU API..com", "sha1/SXxoaOSEzPC6BgGmxAt/EAcsajw=")
+            .add("YOU API..com", "sha1/blhOM3W9V/bVQhsWAcLYwPU6n24=")
+            .add("YOU API..com", "sha1/T5x9IXmcrQ7YuQxXnxoCmeeQ84c=")
+            .build())
+
+(4)支持https
+加密和普通http客户端请求支持https一样，步骤如下：
+1 CertificateFactory 得到Context.getSocketFactory
+2 添加证书源文件
+3 绑定到okhttpClient
+4设置okhttpClient到retrofit中
+
+我们可以把证书放到raw路径下
+SLSocketFactory sslSocketFactory =getSSLSocketFactory_Certificate(context,"BKS", R.raw.XXX);
+准备证书源文件
+绑定证书
+protected static SSLSocketFactory getSSLSocketFactory(Context context, int[] certificates) {
+
+if (context == null) {
+    throw new NullPointerException("context == null");
+}
+
+CertificateFactory certificateFactory;
+try {
+    certificateFactory = CertificateFactory.getInstance("X.509");
+    KeyStore keyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+    keyStore.load(null, null);
+
+    for (int i = 0; i < certificates.length; i++) {
+        InputStream certificate = context.getResources().openRawResource(certificates[i]);
+        keyStore.setCertificateEntry(String.valueOf(i), certificateFactory.generateCertificate(certificate));
+
+        if (certificate != null) {
+            certificate.close();
+        }
+    }
+    SSLContext sslContext = SSLContext.getInstance("TLS");
+    TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+    trustManagerFactory.init(keyStore);
+    sslContext.init(null, trustManagerFactory.getTrustManagers(), new SecureRandom());
+   return sslContext.getSocketFactory();
+
+构建HostnameVerifier
+ protected static HostnameVerifier getHostnameVerifier(final String[] hostUrls) {
+
+    HostnameVerifier TRUSTED_VERIFIER = new HostnameVerifier() {
+
+        public boolean verify(String hostname, SSLSession session) {
+            boolean ret = false;
+            for (String host : hostUrls) {
+                if (host.equalsIgnoreCase(hostname)) {
+                    ret = true;
+                }
+            }
+            return ret;
+        }
+    };
+
+return TRUSTED_VERIFIER;
+
+设置setSocketFactory
+okhttpBuilder.socketFactory(HttpsFactroy.getSSLSocketFactory(context, certificates));
+
+certificates 是你raw下证书源ID, int[] certificates = {R.raw.myssl}
+
+设置setNameVerifie
+okhttpBuilder.hostnameVerifier(HttpsFactroy.getHostnameVerifier(hosts));
+
+hosts是你的host数据 列如 String hosts[]`= {“https//:aaaa,com”, “https//:bbb.com”}
+
+实现自定义 添加到Retrofit
+okHttpClient = okhttpBuilder.build(); 
+Retrofit retrofit = new Retrofit.Builder() .client(okHttpClient) .build();
+
+
+6.上传文件
+可以MultipartBody.Part代替
+1)一个基本的用法
+public interface FileUploadService {  
+ @Multipart
+ @POST("upload")
+ Call<ResponseBody> upload(@Part("description") RequestBody description,
+                          @Part MultipartBody.Part file);
+}
+
+
+使用：
+// 创建 RequestBody，用于封装构建RequestBody
+RequestBody requestFile =
+        RequestBody.create(MediaType.parse("multipart/form-data"), file);
+
+// MultipartBody.Part  和后端约定好Key，这里的partName是用image
+MultipartBody.Part body =
+        MultipartBody.Part.createFormData("image", file.getName(), requestFile);
+
+// 添加描述
+String descriptionString = "hello, 这是文件描述";
+RequestBody description =
+        RequestBody.create(
+                MediaType.parse("multipart/form-data"), descriptionString);
+
+// 执行请求
+Call<ResponseBody> call = service.upload(description, body);
+call.enqueue(new Callback<ResponseBody>() {
+    @Override
+    public void onResponse(Call<ResponseBody> call,
+                           Response<ResponseBody> response) {
+        Log.v("Upload", "success");
+    }
+
+    @Override
+    public void onFailure(Call<ResponseBody> call, Throwable t) {
+        Log.e("Upload error:", t.getMessage());
+      }
+    });
+}
+
+
+2)上报图片
+上报一张图片
+@Multipart
+ @POST("you methd url upload/")
+Call<ResponseBody> uploadFile(
+        @Part("avatar\\\\\\\\\\\\\\\\"; filename=\\\\\\\\\\\\\\\\"avatar.jpg") RequestBody file);
+
+上报数量确定的多张图片
+@POST("upload/")
+Call<ResponseBody> uploadFiles(@Part("filename") String description,
+                                     @Part("pic\\\\\\\\\\\\\\\\"; filename=\\\\\\\\\\\\\\\\"image1.png") RequestBody imgs1,
+                                     @Part("pic\\\\\\\\\\\\\\\\"; filename=\\\\\\\\\\\\\\\\"image2.png") RequestBody imgs2,
+                                     @Part("pic\\\\\\\\\\\\\\\\"; filename=\\\\\\\\\\\\\\\\"image3.png") RequestBody imgs3,
+                                     @Part("pic\\\\\\\\\\\\\\\\"; filename=\\\\\\\\\\\\\\\\"image4.png") RequestBody imgs4);
+
+如果图片数量不确定
+ @Multipart
+ @POST()
+  Observable<ResponseBody> uploadFiles(
+        @Url String url,
+        @Part("filename") String description,
+        @PartMap() Map<String, RequestBody> maps);
+或者：
+@Multipart
+@POST()
+Observable<ResponseBody> uploads(
+        @Url String url,
+        @Part("description") RequestBody description,
+        @Part("filekey") MultipartBody.Part file);
+
+图文同时上报
+@Multipart
+@POST("upload/")
+Call<ResponseBody> register(
+                                   @FieldMap Map<String , String> usermaps,
+                                   @Part("avatar\\\\\\\\\\\\\\\\"; filename=\\\\\\\\\\\\\\\\"avatar.jpg") RequestBody avatar,
+                                   );
+
+扩展一下：
+@Multipart
+@POST
+Observable<ResponseBody> uploadFileWithPartMap(
+        @Url() String url,
+        @PartMap() Map<String, RequestBody> partMap,
+        @Part("file") MultipartBody.Part file);
+
+使用：
+RequestBody requestFile =
+            RequestBody.create(MediaType.parse("multipart/form-data"), file);
+
+    // MultipartBody.Part is used to send also the actual file name
+    MultipartBody.Part filePart = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
+
+    // create a map of data to pass along
+    RequestBody tokenBody = RequestBody.create(
+            MediaType.parse("multipart/form-data"), token);
+
+    HashMap<String, RequestBody> map = new HashMap<>();
+    map.put("token", tokenBody);
+
+    Call<ResponseBody> call = service.uploadFileWithPartMap(url, requestBody );
+   // 执行
+  call.enqueue(new Callback<ResponseBody>() {
+   @Override
+   public void onResponse(Call<ResponseBody> call,
+    Response<ResponseBody> response) {
+       Log.v("Upload", "success");
+    }
+
+   @Override
+    public void onFailure(Call<ResponseBody> call, Throwable t) {
+      Log.e("Upload error:", t.getMessage());
+    }
+  });
+
+
+更简单的用Body方式：
+@POST()
+Call<ResponseBody> upLoad(
+   @Url() String url,
+   @Body RequestBody Body);
+
+使用：
+//构建body
+   RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
+      .addFormDataPart("name", name)
+      .addFormDataPart("name", psd)
+      .addFormDataPart("file", file.getName(), RequestBody.create(MediaType.parse("image/*"), file))
+      .build();
+
+   Call<ResponseBody> call = service.upload(url, requestBody );
+  // 执行
+ call.enqueue(new Callback<ResponseBody>() {
+   @Override
+   public void onResponse(Call<ResponseBody> call,
+    Response<ResponseBody> response) {
+       Log.v("Upload", "success");
+    }
+
+   @Override
+    public void onFailure(Call<ResponseBody> call, Throwable t) {
+      Log.e("Upload error:", t.getMessage());
+    }
+  });
+此种方式让你很好的解决了用户注册问题,包含用户全部信息和头像，完美解决你想用表单一起将文字和图片一起提交的情况！
+
+
+
+3)表单提交
+@Multipart
+@POST("upload/")
+Call<ResponseBody> register(
+       @Body RequestBody body
+                                   );
+
+使用
+  RequestBody requestFile =
+RequestBody.create(MediaType.parse("multipart/form-data"), file);
+
+  Call<ResponseBody> call = service.register(body);  
+Response<ResponseBody> response = call.execute();
+
+
+4）Json提交
+@POST("/uploadJson")
+Observable<ResponseBody> uploadjson(
+        @Body RequestBody jsonBody);
+
+upLoadJson 也可以具体指明Content-Type 为 “application/json”格式的
+
+使用：
+RequestBody body= 
+               RequestBody.create(okhttp3.MediaType.parse("application/json; charset=utf-8"), jsonString);
+
+// 执行请求
+Call<ResponseBody> call = service.uploadJson(description, body);
+call.enqueue(new Callback<ResponseBody>() {
+    @Override
+    public void onResponse(Call<ResponseBody> call,
+                           Response<ResponseBody> response) {
+        Log.v("Upload", "success");
+    }
+
+    @Override
+    public void onFailure(Call<ResponseBody> call, Throwable t) {
+        Log.e("Upload error:", t.getMessage());
+    }
+});
 
 
 *android中application 关于全局变量
