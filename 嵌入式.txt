@@ -52199,218 +52199,6 @@ public void removeItem(DataModel model) {
 }	
 
 
-*MVP设计思想
-MVC么：
-
-View：对应于布局文件
-Model：业务逻辑和实体模型
-Controllor：对应于Activity
-看起来的确像那么回事，但是细细的想想这个View对应于布局文件，其实能做的事情特别少，实际上关于该布局文件中的数据绑定的操作，事件处理的代码都在Activity中，造成了Activity既像View又像Controller
-
-将架构改为MVP以后，Presenter的出现，将Actvity视为View层，Presenter负责完成View层与Model层的交互。现在是这样的：
-
-View 对应于Activity，负责View的绘制以及与用户交互
-Model 依然是业务逻辑和实体模型
-Presenter 负责完成View于Model间的交互
-
-其实最明显的区别就是，MVC中是允许Model和View进行交互的，而MVP中很明显，Model与View之间的交互由Presenter完成。还有一点就是Presenter与View之间的交互是通过接口的（代码中会体现)。
-
-
-程序结构如下,要实现的功能是登陆验证
-com.example.mvp.Model层
-   User.java
-   IUserBiz.java
-   UserBiz.java
-   OnLoginListener.java
-com.example.mvp.present层
-   UserLoginPresenter.java
-com.example.mvp.view层
-   IUserLoginView.java
-   MainActivity.java   
-
-
-//实体类不用说
-public class User 
-{
-	private String login;
-
-	public String getLogin() {
-		return login;
-	}
-
-	public void setLogin(String login) {
-		this.login = login;
-	}
-	
-}
-Model层:
-//向下操作业务接口
-public interface IUserBiz
-{
-	public void Login(final String loginstr,final OnLoginListener loginListener);
-}
-
-//向下操作业务类
-public class UserBiz implements IUserBiz {
-
-	@Override
-	public void Login(final String loginstr,final OnLoginListener loginListener) {
-		// TODO Auto-generated method stub
-		//模拟子线程耗时操作
-        new Thread()
-        {
-            @Override
-            public void run()
-            {
-                try
-                {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e)
-                {
-                    e.printStackTrace();
-                }
-                //模拟登录成功
-                if ("hello".equals(loginstr))
-                {
-                    User user = new User();
-                    user.setLogin("注册完成:"+loginstr);
-                    loginListener.loginSuccess(user.getLogin());
-                } else
-                {
-                    loginListener.loginFailed();
-                }
-            }
-        }.start();
-	}
-
-}
-
-//由于是耗时操作，所以我们通过一个回调接口来通知登录的状态
-public interface OnLoginListener{
-    void loginSuccess(String rst);
-
-    void loginFailed();
-}
-
-
-P层：
-public class UserLoginPresenter 
-{
-	private IUserBiz userBiz;
-	private IUserLoginView userLoginView;
-	private Handler mHandler=new Handler();
-	public UserLoginPresenter(IUserLoginView userLoginView) {
-		this.userLoginView = userLoginView;
-		this.userBiz=new UserBiz();
-	}
-	public void login()
-	{
-		userLoginView.showLoading();
-		userBiz.Login(userLoginView.getLoginstr(), new OnLoginListener() {
-			
-			@Override
-			public void loginSuccess(final String rst) {
-				// TODO Auto-generated method stub
-				 //需要在UI线程执行
-                mHandler.post(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        userLoginView.toMainActivity(rst);
-                        userLoginView.hideLoading();
-                    }
-                });
-			}
-			
-			@Override
-			public void loginFailed() {
-				// TODO Auto-generated method stub
-				//需要在UI线程执行
-                mHandler.post(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        userLoginView.showFailedError();
-                        userLoginView.hideLoading();
-                    }
-                });
-			}
-		});
-	}
-	
-}
-
-V层：
-public interface IUserLoginView 
-{
-	String getLoginstr();
-	void showLoading();
-    void hideLoading();
-    void toMainActivity(String rst);
-    void showFailedError();
-}
-
-实现类
-public class MainActivity extends Activity implements IUserLoginView{
-	ProgressDialog dialog= null;
-	TextView txt;
-	private UserLoginPresenter mUserLoginPresenter = new UserLoginPresenter(this);
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        txt=(TextView)findViewById(R.id.txt);
-        Button btn=(Button)findViewById(R.id.btn);
-        btn.setOnClickListener(new View.OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				// TODO Auto-generated method stub
-				mUserLoginPresenter.login();
-			}
-		});
-    }
-
-	@Override
-	public String getLoginstr() {
-		// TODO Auto-generated method stub
-		return "hello";
-	}
-
-	@Override
-	public void showLoading() {
-		// TODO Auto-generated method stub
-		dialog= ProgressDialog.show(this,"正在验证中","请稍候...");
-	}
-
-	@Override
-	public void hideLoading() {
-		// TODO Auto-generated method stub
-		dialog.dismiss();
-	}
-
-	@Override
-	public void toMainActivity(String rst) {
-		// TODO Auto-generated method stub
-		txt.setText("已经注册="+rst);
-	}
-
-	@Override
-	public void showFailedError() {
-		// TODO Auto-generated method stub
-		txt.setText("注册失败");
-	}
-
-
-}   
-
-
-这个模型有一个问题是：如果activity的界面被干掉了，引用还在，那presster回调此activity，在回调方法中有使用界面元素，则会出现nullponitException的问题。
-所以就需要RxBinding框架校验了。
-
-
 *retrofit网络框架
 1. 首先在build.gradle引入依赖
 compile 'com.squareup.retrofit2:retrofit:2.+'
@@ -54876,10 +54664,229 @@ public abstract class BaseFragment extends Fragment {
  RefWatcher refWatcher = ExampleApplication.getRefWatcher(getActivity());
     refWatcher.watch(someObjNeedGced);
 	
+
+*MVP设计思想
+1.普通MVP框架示例
+MVC么：
+
+View：对应于布局文件
+Model：业务逻辑和实体模型
+Controllor：对应于Activity
+看起来的确像那么回事，但是细细的想想这个View对应于布局文件，其实能做的事情特别少，实际上关于该布局文件中的数据绑定的操作，事件处理的代码都在Activity中，造成了Activity既像View又像Controller
+
+将架构改为MVP以后，Presenter的出现，将Actvity视为View层，Presenter负责完成View层与Model层的交互。现在是这样的：
+
+View 对应于Activity，负责View的绘制以及与用户交互
+Model 依然是业务逻辑和实体模型
+Presenter 负责完成View于Model间的交互
+
+其实最明显的区别就是，MVC中是允许Model和View进行交互的，而MVP中很明显，Model与View之间的交互由Presenter完成。还有一点就是Presenter与View之间的交互是通过接口的（代码中会体现)。
+
+
+程序结构如下,要实现的功能是登陆验证
+com.example.mvp.Model层
+   User.java
+   IUserBiz.java
+   UserBiz.java
+   OnLoginListener.java
+com.example.mvp.present层
+   UserLoginPresenter.java
+com.example.mvp.view层
+   IUserLoginView.java
+   MainActivity.java   
+
+
+//bean实体类不用说
+public class User 
+{
+	private String login;
+
+	public String getLogin() {
+		return login;
+	}
+
+	public void setLogin(String login) {
+		this.login = login;
+	}
+	
+}
+Model层:
+//向下操作业务接口
+public interface IUserBiz
+{
+	public void Login(final String loginstr,final OnLoginListener loginListener);
+}
+
+//向下操作业务类
+public class UserBiz implements IUserBiz {
+	//1.实现M层的接口
+	@Override
+	public void Login(final String loginstr,final OnLoginListener loginListener) {
+		// TODO Auto-generated method stub
+		//模拟子线程耗时操作
+        new Thread()
+        {
+            @Override
+            public void run()
+            {
+                try
+                {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e)
+                {
+                    e.printStackTrace();
+                }
+                //模拟登录成功
+                if ("hello".equals(loginstr))
+                {
+                    User user = new User();
+                    user.setLogin("注册完成:"+loginstr);
+                    loginListener.loginSuccess(user.getLogin());//2.回调上传给P层处理接口
+                } else
+                {
+                    loginListener.loginFailed();
+                }
+            }
+        }.start();
+	}
+
+}
+
+//由于是耗时操作，所以我们通过定义一个回调接口来通知登录的状态
+public interface OnLoginListener{
+    void loginSuccess(String rst);
+
+    void loginFailed();
+}
+
+
+V层：
+public interface IUserLoginView 
+{
+	String getLoginstr();
+	void showLoading();
+    void hideLoading();
+    void toMainActivity(String rst);
+    void showFailedError();
+}
+
+实现类
+public class MainActivity extends Activity implements IUserLoginView{
+	ProgressDialog dialog= null;
+	TextView txt;
+	private UserLoginPresenter mUserLoginPresenter;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        txt=(TextView)findViewById(R.id.txt);
+        Button btn=(Button)findViewById(R.id.btn);
+        btn.setOnClickListener(new View.OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				// TODO Auto-generated method stub
+				//2.调用P层来处理逻辑
+				mUserLoginPresenter = new UserLoginPresenter(this);
+				mUserLoginPresenter.login();
+			}
+		});
+    }
+
+	//1.实现V层的接口
+	@Override
+	public String getLoginstr() {
+		// TODO Auto-generated method stub
+		return "hello";
+	}
+
+	@Override
+	public void showLoading() {
+		// TODO Auto-generated method stub
+		dialog= ProgressDialog.show(this,"正在验证中","请稍候...");
+	}
+
+	@Override
+	public void hideLoading() {
+		// TODO Auto-generated method stub
+		dialog.dismiss();
+	}
+
+	@Override
+	public void toMainActivity(String rst) {
+		// TODO Auto-generated method stub
+		txt.setText("已经注册="+rst);
+	}
+
+	@Override
+	public void showFailedError() {
+		// TODO Auto-generated method stub
+		txt.setText("注册失败");
+	}
+
+
+}  
+
+P层：
+public class UserLoginPresenter 
+{	
+	private IUserBiz userBiz;//定义M层的接口
+	private IUserLoginView userLoginView;//定义V层的接口
+	private Handler mHandler=new Handler();
+	
+	public UserLoginPresenter(IUserLoginView userLoginView) {
+		this.userLoginView = userLoginView;//初始化时，直接引用V层的接口
+		this.userBiz=new UserBiz();        //创建新的M层的实例
+	}
+	//当V层调用这个函数时，执行
+	public void login()
+	{
+		userLoginView.showLoading();//直接调用V层的接口
+		//调用M层的函数
+		userBiz.Login(userLoginView.getLoginstr(), new OnLoginListener() {
+			
+			//实现M层的回调接口
+			@Override
+			public void loginSuccess(final String rst) {
+				// TODO Auto-generated method stub
+				 //需要在UI线程执行
+                mHandler.post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        userLoginView.toMainActivity(rst);
+                        userLoginView.hideLoading();
+                    }
+                });
+			}
+			
+			@Override
+			public void loginFailed() {
+				// TODO Auto-generated method stub
+				//需要在UI线程执行
+                mHandler.post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        userLoginView.showFailedError();
+                        userLoginView.hideLoading();
+                    }
+                });
+			}
+		});
+	}
+	
+} 
+
+
+这个模型有一个问题是：如果activity的界面被干掉了，引用还在，那presster回调此activity，在回调方法中有使用界面元素，则会出现nullponitException的问题。
+所以就需要Rxlifecycle框架校验了。
 	
 
-*MVP+retrofit+rxjava的架构
-1.简单示例
+2.MVP+retrofit+rxjava的架构
+1).简单示例
 首先在项目的build.gradle文件的dependencies加入gradle依赖包：
 compile 'io.reactivex:rxandroid:1.0.1'  
 compile 'io.reactivex:rxjava:1.0.14'  
@@ -55055,8 +55062,8 @@ MainActivity implements LoginView
 P层：
 LoginPresenter是作为分发者的角色，m和v的唯一沟通协调人，因为我们在p里面所做的一切都是逻辑和消息分发处理，但是不做耗时的操作。耗时的操作是在m里面实现的。
 public class LoginPresenter {  
-private LoginView mLoginView;  
-    private LoginModel mLoginModel;  
+private LoginView mLoginView;  //V层类
+    private LoginModel mLoginModel; //M层类 
     private Context mContext;  
   
     /** 
@@ -55067,8 +55074,8 @@ private LoginView mLoginView;
      */  
     public LoginPresenter(Context context, LoginView baseCustomView) {  
         this.mContext = (Context) baseCustomView;  
-        this.mLoginView = baseCustomView;  
-        mLoginModel = new LoginModel();  
+        this.mLoginView = baseCustomView; //实例化V层的类 
+        mLoginModel = new LoginModel(); //实例化M层的类 
     }  
   
 /** 
@@ -55081,6 +55088,7 @@ private LoginView mLoginView;
     // 设置个2000ms的延迟，模拟网络访问、数据库操作等等延时操作  
     SystemClock.sleep(2000);  
         mLoginView.showProgressDialog();//在activity实现的通用用户友好体验的提示  
+		//使用rxjava,直接就不用使用M层来回调了
         mLoginModel.getDataFromGithub(name, psw)  
                 .subscribeOn(Schedulers.io())//在非UI线程进行耗时操作  
                 .observeOn(AndroidSchedulers.mainThread())//在UI线程进行观察监听  
@@ -55107,7 +55115,7 @@ private LoginView mLoginView;
 
 
 
-示例2：有关联接口的情况
+3)示例2：有关联接口的情况
 api  包下存放网络请求接口
 bean  包下存放全局实体类
 model  M层
@@ -55313,14 +55321,15 @@ import com.lidong.demo.mvp.view.WeatherView;
 public class WeatherPresenterImp  extends WeatherPresenter  implements WeatherModelImp.WeatherOnListener{
 
     /**
-     * WeatherModel和WeatherView都是通过接口来实现，这就Java设计原则中依赖倒置原则使用
+     * WeatherModel和WeatherView都是通过接口来实现，这就Java设计原则中依赖倒置原则使用。引用V层的WeatherView,
+	   M层的WeatherModel,直接使用 
      */
-   private WeatherModel mWeatherModel;
-   private WeatherView mWeatherView;
+   private WeatherModel mWeatherModel;//定义M层
+   private WeatherView mWeatherView;  //定义V层
 
     public WeatherPresenterImp( WeatherView mWeatherView) {
-        this.mWeatherModel = new WeatherModelImp(this);
-        this.mWeatherView = mWeatherView;
+        this.mWeatherModel = new WeatherModelImp(this);//M层实例化
+        this.mWeatherView = mWeatherView;              //引用V层 
     }
 
     @Override
@@ -55342,3 +55351,27 @@ public class WeatherPresenterImp  extends WeatherPresenter  implements WeatherMo
         Log.d("-------", "onFailure" + e.getMessage());
     }
 }
+
+
+3.MVP+Dagger2
+1)简单示例
+model层
+	bean
+	user 
+//基础类	
+AppApplication
+AppComponent通常提供全局的单例@Single对象以便于其他的组件依赖使用
+AppModule
+
+Activity
+   P层
+      MainActivityPresenter
+   V层
+      MainActivityModule
+      MainActivityComponent
+      ActivityScope自定义生命周期，即@Scope注解
+	  BaseActivity
+	  MainActivity
+
+2)简单详解MVPArms架构
+	  
