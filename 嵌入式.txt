@@ -50083,8 +50083,12 @@ protected void onCreate(Bundle savedInstanceState) {
 3).设置Alt+/：Keymap->Main Menu->Code->Completion->Basic：默认是Ctrl+Space
 4).忽略大小写：Editor->General->Code Completion->Case sensitive 设成None
 5).自动导入包：Alt+Enter,而且在设置中要勾选Editor->General->Auto Import全部打勾
-6).添加注释说明模块:Keymap->Other->Fix doc comment 设成Ctrl+Enter
-7).注释代码：
+6)设置类注释头描述
+      File->Settings->File and Code Templates->选中Templates里面的Class
+	  ->选中Includes tab下面的File Header 	  在最右边的输入框中就可以输入我们想要设置的注释模板了。然后点击ok。以后再创建新
+	  的类时就会自动添加定义的注释模板
+7)添加注释说明模块:Keymap->Other->Fix doc comment 设成Ctrl+Enter
+8).注释代码：
   Ctrl+斜杠：注释或取消注释当前行或选中的代码块，以双斜杠的方式即“//”
   Ctrl+shift+斜杠:注释或取消注释选中的代码块，以“/*……*/”方式注释，
             
@@ -55794,13 +55798,13 @@ Activity包
 		    UserModule里面把UserModel，UserActivity需要的接口都注解了
 		 component包
             UserComponent注入器		 
-		 M包	
+		 Model包	
 		    UserModel
-		 P包
+		 Presenter包
 		    UserPresenter层，也提供了工厂类给注射器
-		 V包 
+		 View包 
 		    UserActivity页面，注入到这个地方 
-		 scope包
+		 Scope包
 	        ActivityScope自定义生命周期 	
 	
 	
