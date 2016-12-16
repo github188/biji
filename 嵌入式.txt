@@ -53135,6 +53135,8 @@ public class MyActivity extends Activity {
 
 *Dagger框架
 好处就是模块间解耦！ 就拿当前Android非常流行的开发模式MVP来说，使用Dagger2可以将MVP中的V 层与P层进一步解耦，这样便可以提高代码的健壮性和可维护性。
+而且非常好的一个是，他不管A类和B类是上层的类，还是下层的类，统一Inject注解后，就相当于放入
+工厂框架处理了，以后所有上层还是下层，需要调用，都可以Dagger2注入调用
 如果在 Class A 中，有 Class B 的实例，则称 Class A 对 Class B 有一个依赖。
 
 如果不用Dagger2的情况下我们应该这么写：
@@ -54304,9 +54306,215 @@ public class Container{
 }
 
 *rxcache
- 在异步处理网络数据时, 使用广泛。 
-我们也可以使用一些Rx的特性, 优雅地缓存网络数据.
+使用注解为Retrofit加入二级缓存(内存,磁盘)的缓存库
+1.RxCache使用方法：
+1)配置
 
+添加JitPack仓库在你的build.gradle文件 (项目根目录下):
+
+allprojects {
+    repositories {
+        jcenter()
+        maven { url "https://jitpack.io" }
+    }
+}
+添加依赖库,在项目模块中
+
+dependencies {
+    compile "com.github.VictorAlbertos.RxCache:core:1.4.6"
+    compile "io.reactivex:rxjava:1.1.5"
+
+	
+2)定义接口
+定义一个缓存接口CacheProvider
+public interface CacheProviders {
+	//这里设置缓存失效时间为2分钟。
+    @LifeCache(duration = 2, timeUnit = TimeUnit.MINUTES)
+    Observable<Reply<List<Repo>>> getRepos(Observable<List<Repo>> oRepos, DynamicKey userName, EvictDynamicKey evictDynamicKey);
+
+    @LifeCache(duration = 2, timeUnit = TimeUnit.MINUTES)
+    Observable<Reply<List<User>>> getUsers(Observable<List<User>> oUsers, DynamicKey idLastUserQueried, EvictProvider evictProvider);
+
+    Observable<Reply<User>> getCurrentUser(Observable<User> oUser, EvictProvider evictProvider);
+}
+使用了注解@LifeCache声明了缓存的超时时间（duration长度,timeUnit时间单位），接口定义了之后，如何实例化这个接口
+创建CacheProviders对象
+providers = new RxCache.Builder()
+                .persistence(cacheDir, new GsonSpeaker())
+                .using(Providers.class);
+之后的使用和Retrofit无异				
+实例化的过程是比较常见的Builder模式，和Retrofit的API的实例化的方式很像，调用using()就创建了接口的实例，和Retrofit的create()方法也十分相似。	
+
+
+
+3)定义retrofit网络接口
+public interface RestApi {
+    String URL_BASE = "https://api.github.com";
+    String HEADER_API_VERSION = "Accept: application/vnd.github.v3+json";
+
+    @Headers({HEADER_API_VERSION})
+    @GET("/users")
+    Observable<List<User>> getUsers(@Query("since") int lastIdQueried, @Query("per_page") int perPage);
+
+	//将RestApi中需要缓存的接口方法在CacheProviders写相应的方法
+    @Headers({HEADER_API_VERSION})
+    @GET("/users/{username}/repos")
+    Observable<List<Repo>> getRepos(@Path("username") String userName);
+
+    @Headers({HEADER_API_VERSION})
+    @GET("/users/{username}") Observable<Response<User>> getUser(@Path("username") String username);
+}
+
+
+4)创建一个RxCache实例并使用它
+最后,使用 RxCache.Builder实例化提供者interface，提供一个有效的文件系统路径允许RxCache写磁盘上。
+默认如果未配置以下参数，所有请求如果有缓存数据将不会重新从服务器获取
+
+@LifeCache设置缓存过期时间. 如果没有设置@LifeCache , 数据将被永久缓存理除非你使用了 EvictProvider,EvictDynamicKey or EvictDynamicKeyGroup .
+
+EvictProvider可以明确地清理清理所有缓存数据.
+EvictDynamicKey可以明确地清理指定的数据 DynamicKey.
+EvictDynamicKeyGroup 允许明确地清理一组特定的数据. DynamicKeyGroup.
+DynamicKey驱逐与一个特定的键使用EvictDynamicKey相关的数据。比如分页，排序或筛选要求
+
+DynamicKeyGroup。驱逐一组与key关联的数据，使用EvictDynamicKeyGroup。比如分页，排序或筛选要求
+
+public class Repository {
+    public static final int USERS_PER_PAGE = 25;
+
+    public static Repository init(File cacheDir) {
+        return new Repository(cacheDir);
+    }
+
+    private final CacheProviders cacheProviders;
+    private final RestApi restApi;
+
+    public Repository(File cacheDir) {
+        //persistence设置为缓存文件路径cacheDir,using设置成你所定义的接口类class
+        cacheProviders = new RxCache.Builder()
+                .persistence(cacheDir)
+                .using(CacheProviders.class);
+
+        restApi = new Retrofit.Builder()
+                .baseUrl(RestApi.URL_BASE)
+                .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build().create(RestApi.class);
+    }
+    /**
+     *
+     * @param update 是否更新,如果设置为true，缓存数据将被清理，并且向服务器请求数据
+     * @return
+     */
+    public Observable<Reply<List<User>>> getUsers(int idLastUserQueried, final boolean update) {
+        //这里设置idLastUserQueried为DynamicKey,
+        return cacheProviders.getUsers(restApi.getUsers(idLastUserQueried, USERS_PER_PAGE), new DynamicKey(idLastUserQueried), new EvictDynamicKey(update));
+    }
+
+    //对应每个不同的userName，配置缓存
+    public Observable<Reply<List<Repo>>> getRepos(final String userName, final boolean update) {
+        //以userName为DynamicKey,如果update为true,将会重新获取数据并清理缓存。
+        return cacheProviders.getRepos(restApi.getRepos(userName), new DynamicKey(userName), new EvictDynamicKey(update));
+    }
+
+	//类似retrofit的使用方法
+    public Observable<Reply<User>> loginUser(final String userName) {
+        return restApi.getUser(userName).map(new Func1<Response<User>, Observable<Reply<User>>>() {
+            @Override public Observable<Reply<User>> call(Response<User> userResponse) {
+
+                if (!userResponse.isSuccess()) {
+                    try {
+                        ResponseError responseError = new Gson().fromJson(userResponse.errorBody().string(), ResponseError.class);
+                        throw new RuntimeException(responseError.getMessage());
+                    } catch (JsonParseException | IOException exception) {
+                        throw new RuntimeException(exception.getMessage());
+                    }
+                }
+                //用户登陆，这里设置 new EvictProvider(true),表示登陆不缓存，为实时登陆
+                return cacheProviders.getCurrentUser(Observable.just(userResponse.body()), new EvictProvider(true));
+            }
+        }).flatMap(new Func1<Observable<Reply<User>>, Observable<Reply<User>>>() {
+            @Override public Observable<Reply<User>> call(Observable<Reply<User>> replyObservable) {
+                return replyObservable;
+            }
+        }).map(new Func1<Reply<User>, Reply<User>>() {
+            @Override public Reply<User> call(Reply<User> userReply) {
+                return userReply;
+            }
+        });
+    }
+
+    public Observable<String> logoutUser() {
+        return cacheProviders.getCurrentUser(Observable.<User>just(null), new EvictProvider(true))
+                .map(new Func1<Reply<User>, String>() {
+                    @Override
+                    public String call(Reply<User> user) {
+                        return "Logout";
+                    }
+                })
+                .onErrorReturn(new Func1<Throwable, String>() {
+                    @Override
+                    public String call(Throwable throwable) {
+                        return "Logout";
+                    }
+                });
+    }
+
+    public Observable<Reply<User>> getLoggedUser(boolean invalidate) {
+        Observable<Reply<User>> cachedUser = cacheProviders.getCurrentUser(Observable.<User>just(null), new EvictProvider(false));
+
+        Observable<Reply<User>> freshUser = cachedUser.flatMap(new Func1<Reply<User>, Observable<Reply<User>>>() {
+            @Override public Observable<Reply<User>> call(Reply<User> userReply) {
+                return loginUser(userReply.getData().getLogin());
+            }
+        });
+
+        if (invalidate) return freshUser;
+        else return cachedUser;
+    }
+
+    private static class ResponseError {
+        private final String message;
+
+        public ResponseError(String message) {
+            this.message = message;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
+}    
+
+
+5)DynamicKeyGroup 的使用
+
+interface Providers {        
+    Observable<List<Mock>> getMocksPaginateWithFiltersEvictingPerFilter(Observable<List<Mock>> oMocks, DynamicKeyGroup filterPage, EvictDynamicKey evictFilter);
+}
+public class Repository {
+    private final Providers providers;
+
+    public Repository(File cacheDir) {
+        providers = new RxCache.Builder()
+                .persistence(cacheDir)
+                .using(Providers.class);
+    }
+
+    public Observable<List<Mock>> getMocksWithFiltersPaginate(final String filter, final int page, final boolean updateFilter) {
+        return providers.getMocksPaginateWithFiltersEvictingPerFilter(getExpensiveMocks(), new DynamicKeyGroup(filter, page), new EvictDynamicKey(updateFilter));
+    }
+
+    //在实际的使用情况下，这里是当你建立你观察到的与昂贵的操作。
+    //如果你正在使用HTTP调用可以改造出来的盒子。
+    private Observable<List<Mock>> getExpensiveMocks() {
+        return Observable.just(Arrays.asList(new Mock("")));
+    }
+}
+
+			
+
+2.示例：
 缓存模式: 读取数据库, 显示, 请求数据, 存储到数据库, 再更新页面.
 1)无缓存
 依赖注入三个关键部分, Application/Component/Module.
@@ -54663,7 +54871,194 @@ public abstract class BaseFragment extends Fragment {
 4.监控其他泄漏
  RefWatcher refWatcher = ExampleApplication.getRefWatcher(getActivity());
     refWatcher.watch(someObjNeedGced);
+
+* AndroidEventBus事件总线
+现Android中的Activity, Fragment, Service之间的交互是比较麻烦的，可能我们第一想到的是使用广播接收器来在它们之间进行交互。例如上述所说在Activity-B中发一个广播，在Activity-A中注册一个广播接收器来接受该广播。但使用广播接收器稍显麻烦，如果你要将一个实体类当做数据在组件之间传递，那么该实体类还得实现序列化接口
+两个Fragment之间的通信：Activity实现某个接口,然后在Fragment-A关联上Activity之后将Activity强转为接口类型,然后在某个时刻Fragment中回调这个接口,然后再从Activity中调用Fragment-B中方法
+
+AndroidEventBus是一个Android平台轻量级的事件总线框架, 它简化了Activity、Fragment、Service等组件之间的交互，很大程度上降低了它们之间的耦合，使得我们的代码更加简洁，耦合性更低，提升我们的代码质量。
+
+1.使用AndroidEventBus
+你可以按照下面几个步骤来使用AndroidEventBus.
+1)首先你要为你的app添加依赖库：
+compile 'de.greenrobot:eventbus:3.0.0-beta1'
+
+2)定义一个事件类
+public class User {
+    private int count;
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
+    }
+}
+或者也可以
+public static class User{
+} 
+
+3) 注册事件接收对象
+public class YourActivity extends Activity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main_activity);
+        // 注册对象
+        EventBus.getDefault().register(this);
+    }
+    @Override
+    protected void onDestroy() {
+        // 不要忘记注销！！！！
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
+}
+这里将当前的这个对象注册到EventBus事件总线中，在android中通常是在Application、Activity、Service、Fragment的onCreate方法中进行
+ 
+4) 通过Subscriber注解来标识事件接收对象中的接收方法 
+public class YourActivity extends Activity {
+    // code ......
+    // 接收方法,默认的tag,执行在UI线程
+    @Subcriber
+    private void updateUser(User user) {
+        Log.e("", "### update user name = " + user.name);
+    }
+    // 含有my_tag,当用户post事件时,只有指定了"my_tag"的事件才会触发该函数,执行在UI线程
+    @Subcriber(tag = "my_tag")
+    private void updateUserWithTag(User user) {
+        Log.e("", "### update user with my_tag, name = " + user.name);
+    }
+    // 含有my_tag,当用户post事件时,只有指定了"my_tag"的事件才会触发该函数,
+    // post函数在哪个线程执行,该函数就执行在哪个线程    
+    @Subcriber(tag = "my_tag", mode=ThreadMode.POST)
+    private void updateUserWithMode(User user) {
+        Log.e("", "### update user with my_tag, name = " + user.name);
+    }
+    // 含有my_tag,当用户post事件时,只有指定了"my_tag"的事件才会触发该函数,执行在一个独立的线程
+    @Subcriber(tag = "my_tag", mode = ThreadMode.ASYNC)
+    private void updateUserAsync(User user) {
+        Log.e("", "### update user async , name = " + user.name + ", thread name = " + Thread.currentThread().getName());
+    }
+}
+ 
+接收函数使用tag来标识可接收的事件类型，与BroadcastReceiver中指定action是一样的,这样可以精准的投递消息。mode可以指定目标函数执行在哪个线程,默认会执行在UI线程,方便用户更新UI。目标方法执行耗时操作时,可以设置mode为ASYNC,使之执行在子线程中。
+
+(1)
+ThreadMode总共四个：
+NAIN UI不管发送方在那个线程发送的消息，接收方（处理方）都在主线程中处理消息（数据），注意主线程不要被阻塞
+BACKGROUND 如果发送方在主线程中发送消息，那么接收方（处理方）就会在后台线程中处理消息，否则在和发送方相同的那个子线程中处理消息（数据）
+POSTING 和发送方在相同的线程中处理消息（数据）
+ASYNC 强制接收方（处理方）在后台线程中处理消息（数据）
+
+(2)订阅事件的优先级
+
+   事件的优先级类似广播的优先级，优先级越高优先获得消息
+
+  @Subscribe(threadMode = ThreadMode.MAIN,priority = 100) //在ui线程执行 优先级100
+    public void onDataSynEvent(DataSynEvent event) {
+        Log.e(TAG, "event---->" + event.getCount());
+    }
 	
+
+5) 在其他组件,例如Activity, Fragment,Service中发布事件
+  EventBus.getDefault().post(new User("android"));
+    // post a event with tag, the tag is like broadcast's action
+    EventBus.getDefault().post(new User("mr.simple"), "my_tag");
+ 
+发布事件之后，注册了该事件类型的对象就会接收到响应的事件.
+
+2)简单示例
+(1)
+public class MainActivity extends Activity {
+
+    private final static String TAG = "EventBusTest";  
+
+    @Override  
+    protected void onCreate(Bundle savedInstanceState) {  
+        super.onCreate(savedInstanceState);  
+        setContentView(R.layout.activity_main);
+        // 1.注册事件订阅者（"登录"）
+        EventBus.getDefault().register(this);  
+    }  
+
+    @Override  
+    protected void onDestroy() {  
+        super.onDestroy();  
+        // 4.解除注册（"注销"）
+        EventBus.getDefault().unregister(this);  
+    }  
+
+    public void testActivity(View view){
+        Intent intent = new Intent(this,TestActivity.class);
+        startActivity(intent);
+    }
+
+    // 3.接收方处理消息（处理数据）-- 主线程中执行  
+    @Subscribe(threadMode = ThreadMode.MainThread)  
+    public void onMainEventBus(MainMessage msg) {  
+        Log.d(TAG, "onEventBus() handling message: " + Thread.currentThread().getName());  
+    }  
+
+    // 3.接收方处理消息（处理数据）-- 后台线程或子线程中执行
+    @Subscribe(threadMode = ThreadMode.BackgroundThread)  
+    public void onBackgroundEventBus(BackgroundMessage msg) {  
+        Log.d(TAG, "onEventBusBackground() handling message: " + Thread.currentThread().getName());  
+    }  
+
+    // 3.接收方处理消息（处理数据）-- 后台线程中执行  
+    @Subscribe(threadMode = ThreadMode.Async)  
+    public void onAsyncEventBus(AsyncMessage msg) { 
+        Log.d(TAG, "onEventBusAsync() handling message: " + Thread.currentThread().getName());  
+    }  
+
+    // 3.接收方处理消息（处理数据）-- 和发送方在同一个线程  
+    @Subscribe(threadMode = ThreadMode.PostThread)  
+    public void onPostEventBus(PostMessage msg) {  
+        Log.d(TAG, "onEventBusPost() handling message: " + Thread.currentThread().getName());  
+    }  
+}
+
+(2)
+public class OtherActivity extends Activity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.other_activity);
+    }
+
+    public void btnClick(View view) {  
+        switch (view.getId()) {  
+            case R.id.btn1:  
+                // 2.发送方发送消息 -- 发送MainMessage这个自己定义的对象，可以丰富这个对象，用来传递消息（数据）
+                EventBus.getDefault().post(new MainMessage("Hello EventBus"));  
+                break;  
+            case R.id.btn2:
+                // 2.发送方发送消息 -- 发送BackgroundMessage这个自己定义的对象，可以丰富这个对象，用来传递消息（数据）
+                // 注意，这里是在主线程中发送消息
+                EventBus.getDefault().post(new BackgroundMessage("Hello EventBus"));  
+                break;  
+            case R.id.btn3:  
+                new Thread(){
+                    public void run() {
+                        // 2.发送方发送消息 -- 发送AsyncMessage这个自己定义的对象，可以丰富这个对象，用来传递消息（数据）
+                        EventBus.getDefault().post(new AsyncMessage("Hello EventBus"));  
+                    };
+                }.start();
+                break;  
+            case R.id.btn4:  
+                new Thread(){
+                    public void run() {
+                        // 2.发送方发送消息 -- 发送PostMessage这个自己定义的对象，可以丰富这个对象，用来传递消息（数据）
+                        EventBus.getDefault().post(new PostMessage("Hello EventBus"));  
+                    };
+                }.start();
+                break;  
+        }  
+    }  
+}
 
 *MVP设计思想
 1.普通MVP框架示例
@@ -55374,4 +55769,384 @@ Activity
 	  MainActivity
 
 2)简单详解MVPArms架构
+工程架构：
+放通用设备
+common包  
+	WeApplication通用基础注入地方	
+	module包
+	  ServiceModule
+	  CacheModule
+	component包
+	  AppComponent 通用注入器 
+	CommonService网络访问
+	CommonCache  缓存  
+	M包
+	  ServiceManager网络访问注入地方	
+	  CacheManager  缓存注入地方	
+	P包
+	V包
+放各个页面架构	
+Activity包
+    testactivity包
+	     implementespack包
+            TestContract存放M层，V层的接口implements定义 		 
+      	 module包
+		    UserModule里面把UserModel，UserActivity需要的接口都注解了
+		 component包
+            UserComponent注入器		 
+		 M包	
+		    UserModel
+		 P包
+		    UserPresenter层，也提供了工厂类给注射器
+		 V包 
+		    UserActivity页面，注入到这个地方 
+		 scope包
+	        ActivityScope自定义生命周期 	
+	
+	
+1)
+(1)通用总的
+public class WEApplication extends BaseApplication {
+    private AppComponent mAppComponent;
+    private RefWatcher mRefWatcher;//leakCanary观察器
+
+	//注入实例化
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        mAppComponent = DaggerAppComponent
+                .builder()
+                .appModule(getAppModule())//baseApplication提供
+                .clientModule(getClientModule())//baseApplication提供
+                .imageModule(getImageModule())//baseApplication提供
+                .serviceModule(new ServiceModule())//需自行创建
+                .cacheModule(new CacheModule())//需自行创建
+                .build();
+
+        if (BuildConfig.LOG_DEBUG) {//Timber日志打印
+            Timber.plant(new Timber.DebugTree());
+        }
+
+        installLeakCanary();//leakCanary内存泄露检查
+    }
+
+
+    /**
+     * 安装leakCanary检测内存泄露
+     */
+    protected void installLeakCanary() {
+        this.mRefWatcher = BuildConfig.USE_CANARY ? LeakCanary.install(this) : RefWatcher.DISABLED;
+    }
+
+    /**
+     * 获得leakCanary观察器
+     *
+     * @param context
+     * @return
+     */
+    public static RefWatcher getRefWatcher(Context context) {
+        WEApplication application = (WEApplication) context.getApplicationContext();
+        return application.mRefWatcher;
+    }
+
+
+    @Override
+    public String getBaseUrl() {
+        return Api.APP_DOMAIN;
+    }
+
+    /**
+     * 将AppComponent返回出去,供其它地方使用, AppComponent接口中声明的方法返回的实例, 在getAppComponent()拿到对象后都可以直接使用
+     *
+     * @return
+     */
+    public AppComponent getAppComponent() {
+        return mAppComponent;
+    }
+
+
+    /**
+     * 这里可以提供一个全局处理http响应结果的处理类,
+     * 这里可以比客户端提前一步拿到服务器返回的结果,可以做一些操作,比如token超时,重新获取
+     * 默认不实现,如果有需求可以重写此方法
+     *
+     * @return
+     */
+    @Override
+    public GlobeHttpHandler getHttpHandler() {
+        return new GlobeHttpHandler() {
+            @Override
+            public Response onHttpResultResponse(String httpResult, Interceptor.Chain chain, Response response) {
+                //这里可以先客户端一步拿到每一次http请求的结果,可以解析成json,做一些操作,如检测到token过期后
+                //重新请求token,并重新执行请求
+                try {
+                    JSONArray array = new JSONArray(httpResult);
+                    JSONObject object = (JSONObject) array.get(0);
+                    String login = object.getString("login");
+                    String avatar_url = object.getString("avatar_url");
+                    Timber.tag(TAG).w("result ------>" + login + "    ||   avatar_url------>" + avatar_url);
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+                //这里如果发现token过期,可以先请求最新的token,然后在拿新的token放入request里去重新请求
+                //注意在这个回调之前已经调用过proceed,所以这里必须自己去建立网络请求,如使用okhttp使用新的request去请求
+                // create a new request and modify it accordingly using the new token
+//                    Request newRequest = chain.request().newBuilder().header("token", newToken)
+//                            .build();
+
+//                    // retry the request
+//
+//                    response.body().close();
+                //如果使用okhttp将新的请求,请求成功后,将返回的response  return出去即可
+
+                //如果不需要返回新的结果,则直接把response参数返回出去
+                return response;
+            }
+
+            @Override
+            public Request onHttpRequestBefore(Interceptor.Chain chain, Request request) {
+                //如果需要再请求服务器之前做一些操作,则重新返回一个做过操作的的requeat如增加header,不做操作则返回request
+
+                //return chain.request().newBuilder().header("token", tokenId)
+//                .build();
+                return request;
+            }
+        };
+    }
+
+    @Override
+    protected ResponseErroListener getResponseErroListener() {
+        return new ResponseErroListener() {
+            @Override
+            public void handleResponseError(Context context, Exception e) {
+                Timber.tag(TAG).w("------------>" + e.getMessage());
+                UiUtils.SnackbarText("net error");
+            }
+        };
+    }
+}	
+
+
+@Singleton
+@Component(modules = {AppModule.class, ClientModule.class, ServiceModule.class, ImageModule.class, CacheModule.class})
+public interface AppComponent {
+    Application Application();
+
+    //服务管理器,retrofitApi
+    ServiceManager serviceManager();
+
+    //缓存管理器
+    CacheManager cacheManager();
+
+    //Rxjava错误处理管理类
+    RxErrorHandler rxErrorHandler();
+
+    //用于请求权限,适配6.0的权限管理
+    RxPermissions rxPermissions();
+
+    OkHttpClient okHttpClient();
+
+    //图片管理器,用于加载图片的管理类,默认使用glide,使用策略模式,可替换框架
+    ImageLoader imageLoader();
+
+    //gson
+    Gson gson();
+}
+
+
+(2)Service网络模块
+public interface CommonService {
+
+    String HEADER_API_VERSION = "Accept: application/vnd.github.v3+json";
+
+    @Headers({HEADER_API_VERSION})
+    @GET("/users")
+    Observable<List<User>> getUsers(@Query("since") int lastIdQueried, @Query("per_page") int perPage);
+
+}
+
+@Module
+public class ServiceModule {
+
+    @Singleton
+    @Provides
+    CommonService provideCommonService(Retrofit retrofit) {
+        return retrofit.create(CommonService.class);
+    }
+
+}
+
+AppComponent 通用注入器设置注入ServiceModule模块到serviceManager中
+
+@Singleton
+public class ServiceManager extends BaseServiceManager {
+    private CommonService mCommonService;
+
+    /**
+     * 如果需要添加service只需在构造方法中添加对应的service,在提供get方法返回出去,只要在ServiceModule提供了该service
+     * Dagger2会自行注入
+     * @param commonService
+     */
+	 //表示整个ServiceManager实例化
+    @Inject 
+	public ServiceManager(CommonService commonService){
+        this.mCommonService = commonService;
+    }
+
+    public CommonService getCommonService() {
+        return mCommonService;
+    }
+}
+
+(3)Cache缓存模块类似：	
+public interface CommonCache {
+
+    @LifeCache(duration = 2, timeUnit = TimeUnit.MINUTES)
+    Observable<Reply<List<User>>> getUsers(Observable<List<User>> oUsers, DynamicKey idLastUserQueried, EvictProvider evictProvider);
+
+}
+
+@Module
+public class CacheModule {
+
+    @Singleton
+    @Provides
+    CommonCache provideCommonService(RxCache rxCache) {
+        return rxCache.using(CommonCache.class);
+    }
+
+
+}
+
+AppComponent将所有的Cache注入到CacheManager中,所有Model层都可以拿到所有的Cache对象
+
+@Singleton
+public class CacheManager extends BaseCacheManager{
+    private CommonCache mCommonCache;
+
+／／如果需要添加Cache只需在构造方法中添加对应的Cache,
+在提供get方法返回出去,只要在CacheModule提供了该Cache Dagger2会自行注入
+    @Inject
+	public CacheManager(CommonCache commonCache) {
+        this.mCommonCache = commonCache;
+    }
+
+    public CommonCache getCommonCache() {
+        return mCommonCache;
+    }
+}
+
+2)Activity
+(1)Contract中定义M层和V层的接口
+public interface TestContract {
+    //对于经常使用的关于UI的方法可以定义到BaseView中,如显示隐藏进度条,和显示文字消息
+    interface View extends BaseView {
+
+    }
+
+    //Model层定义接口,外部只需关心model返回的数据,无需关心内部细节,及是否使用缓存
+    interface Model {
+
+    }
+}
+
+(2)View注入到这个页面
+//UserContract.View用来实现V层定义的接口
+public class UserActivity extends WEActivity<UserPresenter> implements UserContract.View {
+
+	//2.注入到这里，同时关联上被注入P层接口UserPresenter
+    @Override
+    protected void setupActivityComponent(AppComponent appComponent) {
+        DaggerUserComponent
+                .builder()
+                .appComponent(appComponent)
+                .userModule(new UserModule(this))
+                .build()
+                .inject(this);
+
+    }
+
+	//1.实现V层定义的接口
+    @Override
+    protected View initView() {
+        return LayoutInflater.from(this).inflate(R.layout.activity_user, null, false);
+    }
+
+    @Override
+    protected void initData() {
+       }
+}
 	  
+(3)Model层只是实现接口
+public class UserModel extends BaseModel<ServiceManager,CacheManager> implements UserContract.Model{
+    private CommonService mCommonService;
+    private CommonCache mCommonCache;
+
+    public UserModel(ServiceManager serviceManager, CacheManager cacheManager) {
+        super(serviceManager, cacheManager);
+        this.mCommonService = mServiceManager.getCommonService();
+        this.mCommonCache = mCacheManager.getCommonCache();
+    }
+
+    @Override
+    public Observable<List<User>> getUsers(int lastIdQueried, boolean update) {
+
+    }
+
+}
+
+(4)Presenter层
+也提供了工程类给注射器
+@ActivityScope
+public class UserPresenter extends BasePresenter<UserContract.Model, UserContract.View> {
+
+	//初始化提供工厂类
+    @Inject
+    public UserPresenter(UserContract.Model model, UserContract.View rootView) {
+        super(model, rootView);
+    }
+    //这里定义业务方法,相应用户的交互
+    public void requestUsers(final boolean pullToRefresh) {
+    ｝
+}
+
+(5)module工厂类
+构建UserModule时,将View的实现类传进来,这样就可以提供View的实现类给presenter
+@Module
+public class UserModule {
+    private UserContract.View view;
+
+    //构建UserModule时,将View的实现类传进来,这样就可以提供View的实现类给presenter
+    public UserModule(UserContract.View view) {
+        this.view = view;
+    }
+
+	//view在Activity里面已经实例化了，所以在这里直接调用即可
+    @ActivityScope
+    @Provides
+    UserContract.View provideUserView(){
+        return this.view;
+    }
+
+	//Model需要实例化一次
+    @ActivityScope
+    @Provides
+    UserContract.Model provideUserModel(ServiceManager serviceManager, CacheManager cacheManager){
+        return new UserModel(serviceManager,cacheManager);
+    }
+}
+
+(6)UserComponent注入器
+此Component必须依赖AppComponent,这样才能提供Model需要的ServiceManager和CacheManager,提供inject()方法就能将Module及AppComponent中提供的对象注入到对应的类中
+@ActivityScope
+@Component(modules = UserModule.class,dependencies = AppComponent.class)
+public interface UserComponent {
+    void inject(UserActivity activity);
+}
+
+(7)scope包
+ActivityScope自定义生命周期 
+
