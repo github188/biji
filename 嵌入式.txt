@@ -50340,7 +50340,8 @@ protected void onCreate(Bundle savedInstanceState)
 回调方法：onNext(T item):被观察者发送数据，参数是数据
 onError(Exception ex):被观察者抛出异常，并终止被观察者
 onComplete:	被观察者最后发送一个onNext后，再发送onComplete表示完成
-1).配置总的gradle(Module:app)
+1).针对android studio
+配置总的gradle(Module:app)
 apply plugin: 'com.android.application'
 //3.添加表达式语言的插件
 apply plugin: 'me.tatarka.retrolambda'
@@ -50396,7 +50397,7 @@ buildscript {
     }
 }
 
-3).加载jar包
+或者针对Eclipse手动加载jar包
 左边视图从Android,改为project,将rxandroid.jar放到libs里面。
 在project选中jar包点击右键"Add as library"
 需要在项目的build.gradle文件里的dependencies节加入 dependencies 
@@ -50688,10 +50689,35 @@ Observable.just("Hello, world!")
 
 	
 7.操作符
+1)just操作符
+just操作符也是把其他类型的对象和数据类型转化成Observable，它和from操作符很像，只是方法的参数有所差别，其流程图例如下：
+Observable.just(1, 2, 3)
+          .subscribe(new Subscriber<integer>() {
+        @Override
+        public void onNext(Integer item) {
+            System.out.println("Next: " + item);
+        }
+ 
+        @Override
+        public void onError(Throwable error) {
+            System.err.println("Error: " + error.getMessage());
+        }
+ 
+        @Override
+        public void onCompleted() {
+            System.out.println("Sequence complete.");
+        }
+    });
+	
+Next: 1
+Next: 2
+Next: 3	
+
+2)map操作符，就是用来把把一个事件转换为另一个事件的
 比如我想在hello world中加上我的签名，你可能会想到去修改Observable对象：如果你能够改变Observable对象，这当然是可以的，但是如果你不能修改Observable对象呢？比如Observable对象是第三方库提供的？比如我的Observable对象被多个Subscriber订阅，但是我只想在对某个订阅者做修改呢？
 那么在Subscriber中对事件进行修改怎么样呢？
 操作符就是为了解决对Observable对象的变换的问题，操作符用于在Observable和最终的Subscriber之间修改Observable发出的事件。
-1)map操作符，就是用来把把一个事件转换为另一个事件的
+map操作符:
 map(new Func1<String, String>()...)第一个String是输入参数，第二个String是输出参数
 
 例子：
@@ -51354,7 +51380,11 @@ void rx(){
          事件加工：默认跟事件产生的线程保持一致, 可以由 observeOn() 自定义线程
 
        事件消费：默认运行在当前线程，可以有observeOn() 自定义
-	   
+	 
+	注意点：
+    subscribeOn的调用切换之前的线程。
+	observeOn的调用切换之后的线程。
+	observeOn之后，不可再调用subscribeOn 切换线程	
 例3
 
 Observable
