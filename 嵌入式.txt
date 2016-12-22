@@ -23501,6 +23501,39 @@ public class test
 抽象类可以包含构造方法 
 抽象类可以没有抽象方法，但是还是不能直接实例化
 
+13.1单例模式:多个类调用同一个对象
+单例模式有一下特点：
+1、单例类只能有一个实例。
+2、单例类必须自己自己创建自己的唯一实例。
+3、单例类必须给所有其他对象提供这一实例。
+饿汉式单例类
+//饿汉式单例类.在类初始化时，已经自行实例化 
+ 2 public class Singleton1 {
+ 3     //私有的默认构造子
+ 4     private Singleton1() {}
+ 5     //已经自行实例化 
+ 6     private static final Singleton1 single = new Singleton1();
+ 7     //静态工厂方法 
+ 8     public static Singleton1 getInstance() {
+ 9         return single;
+10     }
+11 }
+
+懒汉式单例类
+ 1 //懒汉式单例类.在第一次调用的时候实例化 
+ 2 public class Singleton2 {
+ 3     //私有的默认构造子
+ 4     private Singleton2() {}
+ 5     //注意，这里没有final    
+ 6     private static Singleton2 single=null;
+ 7     //静态工厂方法 
+ 8     public synchronized  static Singleton2 getInstance() {
+ 9          if (single == null) {  
+10              single = new Singleton2();
+11          }  
+12         return single;
+13     }
+14 }
 
 14.接口
 接口是一种特殊的类，如果一个类定义时全部由抽象方法和全局常量所组成，那这个类就是
@@ -50822,7 +50855,9 @@ query("Hello, world!")
         }  
     })  
     .subscribe(url -> System.out.println(url)); 
-现在Subscriber不再收到List<String>，而是收到一些列单个的字符串，就像Observable.from()的输出一样。 	
+现在Subscriber不再收到List<String>，而是收到一些列单个的字符串，就像Observable.from()的输出一样。
+flagMap他的输出是Observable的，也就是说可以一直的输出多个Observable对象，给subscribe用。这个与map
+不一样，map只是简单处理了一下数据，全部一次性给subscribe用 	
 使用lambda可以大大简化代码长度：
 query("Hello, world!")  
     .flatMap(urls -> Observable.from(urls))  
@@ -50967,7 +51002,7 @@ Activity/Fragment需继承RxAppCompatActivity/RxFragment，目前支持的有RxAppCompatAc
 Observable.interval(1, TimeUnit.SECONDS)? ? ? ? ? ? ? ?
 
 
-.compose(this.bindToLifecycle())
+.compose(this.<类型>bindToLifecycle())
 
 .
 subscribe(new Action1() 
@@ -50985,6 +51020,22 @@ Log.i(TAG, "? " + num);
 
 
 });
+this.bindToLifecycle()前面需要加类型，现在要和下面observer的参数类型保持一致
+如果使用MVP，在P中，取消要强制转换
+例如：
+。。。
+.compose(((BaseActivity) mRootView).<List<User>>bindToLifecycle())//使用RXlifecycle,使subscription和activity一起销毁
+                .subscribe(new ErrorHandleSubscriber<List<User>>(mErrorHandler) {
+                    @Override
+                    public void onNext(List<User> users) {
+                        lastUserId = users.get(users.size() - 1).getId();//记录最后一个id,用于下一次请求
+                        if (pullToRefresh) mUsers.clear();//如果是上拉刷新则晴空列表
+                        for (User user : users) {
+                            mUsers.add(user);
+                        }
+                        mAdapter.notifyDataSetChanged();//通知更新数据
+                    }
+                });
 
 二、bindUntilEvent()方法
 
@@ -50992,7 +51043,7 @@ Log.i(TAG, "? " + num);
 
 Observable.interval(1,TimeUnit.SECONDS)  
 
-.compose(this.bindUntilEvent(ActivityEvent.PAUSE))
+.compose(this.<类型>bindUntilEvent(ActivityEvent.PAUSE))
 
 .subscribe(mSub);
 
@@ -51083,7 +51134,8 @@ protected void onResume() {
             });
 }
 
-注意：写成.compose(this.<String>bindUntilEvent(ActivityEvent.PAUSE))用String不行，要用Long
+注意：写成.compose(this.<String>bindUntilEvent(ActivityEvent.PAUSE))用String不行，要用Long。
+因为要与下面Observable的参数类型保持一致
 
 
 示例：
@@ -53066,7 +53118,7 @@ application中有一个curIndex和setter getter方法。
 
 第一个acitivty中对application进行的操作：
 
-Java代码：
+Java代码：注意，不用每个MainActivity extends TestApplication(){}写成这样的，因为在manifest.xml已经写了
 
 TestApplication application = (TestApplication) this.getApplication();
 
@@ -54238,6 +54290,7 @@ androidManifest添加基础application
 步骤二：上层框架
 
 //定义上层类的生命周期
+(注意：这步一定要做，因为底层的是@sington单例生命周期，所有上层需要定义自己的生命周期范围)
 @Scope
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PerActivity {
@@ -56184,3 +56237,729 @@ public interface UserComponent {
 (7)scope包
 ActivityScope自定义生命周期 
 
+
+
+3)自己做的一个例子
+(1)基础架构
+common
+	Model包
+		ImpLogDAOModel
+		LogDAOModel
+	module包
+		BaseDAOModule
+	component包
+		BaseComponent
+	Presenter包
+	View包
+	EVApplication	
+
+public interface ImpLogDAOModel {
+    List<Tb_vmc_log> getLoggrid(String start, String end);
+    boolean delLoggrid(String start, String end);
+}
+
+public class LogDAOModel implements ImpLogDAOModel{
+    vmc_logDAO logDAO;
+    List<Tb_vmc_log> listinfos;
+
+    public LogDAOModel() {
+        logDAO= new vmc_logDAO(ToolClass.getContext());
+    }
+
+    @Override
+    public List<Tb_vmc_log> getLoggrid(String start,String end)
+    {
+        return listinfos=logDAO.getScrollPay(start,end);
+    }
+
+    @Override
+    public boolean delLoggrid(String start, String end) {
+        logDAO.detele(start,end);
+        return true;
+    }
+}
+
+@Module
+public class BaseDAOModule {
+    @Singleton
+    @Provides
+    public ImpLogDAOModel providerLogDAOModel()
+    {
+       return new LogDAOModel();
+    }
+}
+
+@Singleton
+@Component(modules = BaseDAOModule.class)
+public interface BaseComponent {
+    ImpLogDAOModel providerLogDAOModel();
+}
+
+public class EVApplication extends Application {
+    private BaseComponent baseComponent;
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        baseComponent= DaggerBaseComponent.builder().baseDAOModule(new BaseDAOModule()).build();
+    }
+
+    public BaseComponent getBaseComponent() {
+        return baseComponent;
+    }
+}
+
+<application
+        android:name="com.easivend.common.EVApplication"
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme" >
+        <activity
+          ......
+</application>
+
+(2)上层架构
+activity	
+	Model包
+		ImpLoggridModel
+		ImpLogOptModel
+		LoggridModel
+		LogOptModel
+	module包
+		LogOptModule
+	component包
+		LogOptComponent
+	Presenter包
+		LogOptPresenter
+	View包
+		ImpLogOptView
+		LogOptView
+	Scope包	
+		LogOptActivity
+		
+public interface ImpLoggridModel {
+    Observable<Map<String,String>> loggridquery(int mYear, int mMon, int mDay, int eYear, int eMon, int eDay);
+}
+
+public class LoggridModel implements ImpLoggridModel {
+    @Override
+    public Observable<Map<String,String>> loggridquery(int mYear, int mMon, int mDay, int eYear, int eMon, int eDay) {
+        Observable<Map<String,String>> observable=Observable.create(new Observable.OnSubscribe<Map<String,String>>() {
+            @Override
+            public void call(Subscriber<? super Map<String,String>> subscriber) {
+                if(!subscriber.isUnsubscribed())
+                {
+                    String mYearStr=null,mMonthStr=null,mDayStr=null;
+                    String eYearStr=null,eMonthStr=null,eDayStr=null;
+
+                    mYearStr=((mYear<10)?("0"+String.valueOf(mYear)):String.valueOf(mYear));
+                    mMonthStr=((mMon<10)?("0"+String.valueOf(mMon)):String.valueOf(mMon));
+                    mDayStr=((mDay<10)?("0"+String.valueOf(mDay)):String.valueOf(mDay));
+                    eYearStr=((eYear<10)?("0"+String.valueOf(eYear)):String.valueOf(eYear));
+                    eMonthStr=((eMon<10)?("0"+String.valueOf(eMon)):String.valueOf(eMon));
+                    eDayStr=((eDay<10)?("0"+String.valueOf(eDay)):String.valueOf(eDay));
+                    // 创建InaccountDAO对象
+                    String start=mYearStr+"-"+mMonthStr+"-"+mDayStr;
+                    String end=eYearStr+"-"+eMonthStr+"-"+eDayStr;
+                    Map<String,String> map =new HashMap<String, String>();
+                    map.put("start",start);
+                    map.put("end",end);
+                    subscriber.onNext(map);
+                }
+            }
+        });
+        return observable;
+    }
+}
+
+public interface ImpLogOptModel {
+    public int getmYear();
+
+    public void setmYear(int mYear);
+
+    public int getmMon();
+
+    public void setmMon(int mMon);
+
+    public int getmDay();
+
+    public void setmDay(int mDay);
+
+    public int geteYear();
+
+    public void seteYear(int eYear);
+
+    public int geteMon();
+
+    public void seteMon(int eMon);
+
+    public int geteDay();
+
+    public void seteDay(int eDay);
+}
+
+public class LogOptModel implements ImpLogOptModel{
+    private int mYear=0,mMon=0,mDay=0;
+    private int eYear=0,eMon=0,eDay=0;
+    private SimpleDateFormat df;
+    private String date=null;
+    public LogOptModel()
+    {
+        df = new SimpleDateFormat("yyyy");//设置日期格式
+        date=df.format(new Date());
+        mYear=Integer.parseInt(date);
+        eYear=Integer.parseInt(date);
+        df = new SimpleDateFormat("MM");//设置日期格式
+        date=df.format(new Date());
+        mMon=Integer.parseInt(date);
+        eMon=Integer.parseInt(date);
+        df = new SimpleDateFormat("dd");//设置日期格式
+        date=df.format(new Date());
+        mDay=Integer.parseInt(date);
+        eDay=Integer.parseInt(date);
+    }
+
+    public int getmYear() {
+        return mYear;
+    }
+
+    public void setmYear(int mYear) {
+        this.mYear = mYear;
+    }
+
+    public int getmMon() {
+        return mMon;
+    }
+
+    public void setmMon(int mMon) {
+        this.mMon = mMon;
+    }
+
+    public int getmDay() {
+        return mDay;
+    }
+
+    public void setmDay(int mDay) {
+        this.mDay = mDay;
+    }
+
+    public int geteYear() {
+        return eYear;
+    }
+
+    public void seteYear(int eYear) {
+        this.eYear = eYear;
+    }
+
+    public int geteMon() {
+        return eMon;
+    }
+
+    public void seteMon(int eMon) {
+        this.eMon = eMon;
+    }
+
+    public int geteDay() {
+        return eDay;
+    }
+
+    public void seteDay(int eDay) {
+        this.eDay = eDay;
+    }
+
+    
+}
+
+@Module
+public class LogOptModule
+{
+    ImpLogOptView logoptview;
+    //构建LogOptModule时,将View的实现类传进来,这样就可以提供View的实现类给presenter
+    public LogOptModule(ImpLogOptView logoptview)
+    {
+        this.logoptview=logoptview;
+    }
+
+    //view层注入，利用接口来实例化，以后外部只能用接口来调用
+    @LogOptActivity
+    @Provides
+    public ImpLogOptView providerImpLogOpt()
+    {
+        return logoptview;
+    }
+
+    //model层注入，利用接口来实例化，以后外部只能用接口来调用
+    @LogOptActivity
+    @Provides
+    public ImpLogOptModel providerLogOptModel()
+    {
+        return new LogOptModel();
+    }
+
+    @LogOptActivity
+    @Provides
+    public ImpLoggridModel providerLoggrid()
+    {return new LoggridModel();}
+}
+
+@LogOptActivity
+@Component(modules = LogOptModule.class,dependencies = BaseComponent.class)
+public interface LogOptComponent {
+    void inject(LogOptView logOpt);
+}
+
+@Scope
+@Retention(RetentionPolicy.RUNTIME)
+public @interface LogOptActivity {
+}
+
+public interface ImpLogOptView {
+    void loggrid(List<Map<String,String>> listMap);//查询报表
+    void delloggrid(List<Map<String,String>> listMap);//删除报表
+}
+
+public class LogOptView extends Activity implements ImpLogOptView {
+	private EditText edtloggridstart=null,edtloggridend=null;
+	private Button btnloggridquery=null,btnloggriddel=null,btnloggridexit=null;
+	private ListView lvlog=null;
+	private int datetype=0;//1开始时间,2结束时间
+	private static final int DATE_DIALOG_IDSTART = 1;// 创建开始时间对话框常量	
+	private static final int DATE_DIALOG_IDEND = 2;// 创建结束时间对话框常量
+	private SimpleAdapter simpleada = null;//进行数据的转换操作
+	@Inject
+	LogOptPresenter logOptPresenter;
+    @Inject
+	ImpLogOptModel logOptModel;
+	@Inject
+	ImpLoggridModel loggrid;
+	@Inject
+	ImpLogDAOModel impLogDAOModel;
+
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.log);
+		//设置横屏还是竖屏的布局策略
+		this.setRequestedOrientation(ToolClass.getOrientation());
+//		DaggerLogOptComponent
+//				.builder()
+//				.logOptModule(new LogOptModule(this)).build().inject(this);
+		DaggerLogOptComponent.builder()
+				.baseComponent(((EVApplication)getApplication()).getBaseComponent())
+				.logOptModule(new LogOptModule(this))
+				.build().inject(this);
+
+    	lvlog = (ListView) findViewById(R.id.lvlog);
+    	edtloggridstart = (EditText) findViewById(R.id.edtloggridstart);// 获取时间文本框
+    	edtloggridstart.setFocusable(false);//不让该edittext获得焦点
+    	edtloggridstart.setOnTouchListener(new View.OnTouchListener() {
+
+					@Override
+					public boolean onTouch(View v, MotionEvent event) {
+						// TODO Auto-generated method stub
+						// 关闭软键盘，这样当点击该edittext的时候，不会弹出系统自带的输入法
+						edtloggridstart.setInputType(InputType.TYPE_NULL);
+						return false;
+					}
+				});
+    	edtloggridstart.setOnClickListener(new OnClickListener() {// 为时间文本框设置单击监听事件
+            @Override
+            public void onClick(View arg0) {
+            	datetype=DATE_DIALOG_IDSTART;
+                showDialog(DATE_DIALOG_IDSTART);// 显示日期选择对话框
+            }
+        });
+    	edtloggridend = (EditText) findViewById(R.id.edtloggridend);// 获取时间文本框
+    	edtloggridend.setFocusable(false);//不让该edittext获得焦点
+    	edtloggridend.setOnTouchListener(new View.OnTouchListener() {
+
+					@Override
+					public boolean onTouch(View v, MotionEvent event) {
+						// TODO Auto-generated method stub
+						// 关闭软键盘，这样当点击该edittext的时候，不会弹出系统自带的输入法
+						edtloggridend.setInputType(InputType.TYPE_NULL);
+						return false;
+					}
+				});
+    	edtloggridend.setOnClickListener(new OnClickListener() {// 为时间文本框设置单击监听事件
+            @Override
+            public void onClick(View arg0) {
+            	datetype=DATE_DIALOG_IDEND;
+                showDialog(DATE_DIALOG_IDEND);// 显示日期选择对话框
+            }
+        });
+		logOptPresenter.createSubscriber();
+    	//查询
+    	btnloggridquery = (Button) findViewById(R.id.btnloggridquery);
+    	btnloggridquery.setOnClickListener(new OnClickListener() {
+		    @Override
+		    public void onClick(View arg0) {
+				logOptPresenter.loggrid(edtloggridstart.getText().toString(),edtloggridend.getText().toString(), logOptModel.getmYear(), logOptModel.getmMon(),  logOptModel.getmDay(), logOptModel.geteYear(),  logOptModel.geteMon(),  logOptModel.geteDay());
+		    }
+		});
+    	//删除查询
+    	btnloggriddel = (Button) findViewById(R.id.btnloggriddel);
+    	btnloggriddel.setOnClickListener(new OnClickListener() {
+		    @Override
+		    public void onClick(View arg0) {
+				logOptPresenter.delloggrid(edtloggridstart.getText().toString(),edtloggridend.getText().toString(), logOptModel.getmYear(), logOptModel.getmMon(),  logOptModel.getmDay(), logOptModel.geteYear(),  logOptModel.geteMon(),  logOptModel.geteDay(),LogOptView.this);
+			}
+		});
+    	//退出
+    	btnloggridexit = (Button) findViewById(R.id.btnloggridexit);
+    	btnloggridexit.setOnClickListener(new OnClickListener() {
+		    @Override
+		    public void onClick(View arg0) {
+		    	finish();
+		    }
+		});
+    	//动态设置控件高度
+    	//
+    	DisplayMetrics  dm = new DisplayMetrics();
+        //取得窗口属性
+        getWindowManager().getDefaultDisplay().getMetrics(dm);
+        //窗口的宽度
+        int screenWidth = dm.widthPixels;
+        //窗口高度
+        int screenHeight = dm.heightPixels;
+        ToolClass.Log(ToolClass.INFO,"EV_JNI","APP<<屏幕"+screenWidth
+				+"],["+screenHeight+"]","log.txt");
+	  //横屏
+	  if(ToolClass.getOrientation()==ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE)
+	  {
+		  LinearLayout.LayoutParams linearParams = (LinearLayout.LayoutParams) lvlog.getLayoutParams(); // 取控件mGrid当前的布局参数
+	      linearParams.height =  screenHeight-252;// 当控件的高强制设成75象素
+	      lvlog.setLayoutParams(linearParams); // 使设置好的布局参数应用到控件mGrid2
+	  }
+	  //竖屏
+	  else
+	  {
+		  LinearLayout.LayoutParams linearParams = (LinearLayout.LayoutParams) lvlog.getLayoutParams(); // 取控件mGrid当前的布局参数
+	      linearParams.height =  screenHeight-700;// 当控件的高强制设成75象素
+	      lvlog.setLayoutParams(linearParams); // 使设置好的布局参数应用到控件mGrid2
+	  }
+
+	}
+	@Override
+    protected Dialog onCreateDialog(int id) {// 重写onCreateDialog方法
+        switch (id)
+        {
+	        case DATE_DIALOG_IDSTART:// 弹出日期选择对话框
+	            return new DatePickerDialog(this, mDateSetListener, logOptModel.getmYear(), logOptModel.getmMon()-1, logOptModel.getmDay());
+	        case DATE_DIALOG_IDEND:// 弹出日期选择对话框
+	            return new DatePickerDialog(this, mDateSetListener, logOptModel.geteYear(), logOptModel.geteMon()-1, logOptModel.geteDay());
+        }
+        return null;
+    }
+
+	private DatePickerDialog.OnDateSetListener mDateSetListener= new DatePickerDialog.OnDateSetListener()
+	{
+
+		@Override
+		public void onDateSet(DatePicker view, int year, int monthOfYear,
+				int dayOfMonth) {
+			// TODO Auto-generated method stub
+			switch (datetype)
+	        {
+		        case DATE_DIALOG_IDSTART:// 弹出日期选择对话框
+					logOptModel.setmYear(year);
+					logOptModel.setmMon(monthOfYear+1);
+					logOptModel.setmDay(dayOfMonth);
+					edtloggridstart.setText(logOptModel.getmYear()+"-"+logOptModel.getmMon()+"-"+logOptModel.getmDay());
+					break;
+	            //edtloggridstart.setText(logOptModel.getmYear()+"-"+logOptModel.getmMon()+"-"+logOptModel.getmDay());
+		        case DATE_DIALOG_IDEND:// 弹出日期选择对话框
+					logOptModel.seteYear(year);
+					logOptModel.seteMon(monthOfYear+1);
+					logOptModel.seteDay(dayOfMonth);
+					edtloggridend.setText(logOptModel.geteYear()+"-"+logOptModel.geteMon()+"-"+logOptModel.geteDay());
+					break;
+	        }
+
+
+		}
+
+	};
+
+
+	/**
+	 * 查询报表
+	 */
+	@Override
+	public void loggrid(List<Map<String,String>> listMap)
+	{
+		//将这个构架加载到data_list中
+		simpleada = new SimpleAdapter(LogOptView.this,listMap,R.layout.loglist,
+				new String[]{"logID","logType","logDesc","logTime"},//Map中的key名称
+				new int[]{R.id.txtlogID,R.id.txtlogType,R.id.txtlogDesc,R.id.txtlogTime});
+		LogOptView.this.lvlog.setAdapter(simpleada);
+		if(listMap.size()==0)
+		{
+			// 弹出信息提示
+			ToolClass.failToast("没有查到相应数据!");
+		}
+	}
+
+
+	//删除查询报表
+	@Override
+	public void delloggrid(List<Map<String,String>> listMap)
+	{
+		//将这个构架加载到data_list中
+		simpleada = new SimpleAdapter(LogOptView.this,listMap,R.layout.loglist,
+				new String[]{"logID","logType","logDesc","logTime"},//Map中的key名称
+				new int[]{R.id.txtlogID,R.id.txtlogType,R.id.txtlogDesc,R.id.txtlogTime});
+		LogOptView.this.lvlog.setAdapter(simpleada);
+		// 弹出信息提示
+		Toast.makeText(LogOptView.this, "记录删除成功！", Toast.LENGTH_SHORT).show();
+	}
+
+
+	@Override
+	protected void onDestroy() {
+		logOptPresenter.deleteSubscriber();
+    	//退出时，返回intent
+        Intent intent=new Intent();
+        setResult(MaintainActivity.RESULT_CANCELED,intent);
+		super.onDestroy();
+	}
+}
+
+@LogOptActivity
+public class LogOptPresenter {
+    //view层
+    ImpLogOptView impLogOptView;
+    //model层
+    ImpLoggridModel loggrid;
+    //common层
+    ImpLogDAOModel logDAOModel;
+    Subscriber<List<Map<String,String>>> loggridshowsub;
+    Subscriber<List<Map<String,String>>> delloggridshowsub;
+    //presenter层注入，利用接口来实例化，以后外部只能用接口来调用
+    @Inject
+    public LogOptPresenter(ImpLogOptView impLogOptView, ImpLoggridModel loggrid,ImpLogDAOModel logDAOModel)
+    {
+        super();
+        this.impLogOptView = impLogOptView;
+        this.loggrid=loggrid;
+        this.logDAOModel=logDAOModel;
+    }
+
+    public void createSubscriber()
+    {
+        //查询
+        loggridshowsub = new Subscriber<List<Map<String, String>>>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(List<Map<String, String>> listMap) {
+                impLogOptView.loggrid(listMap);
+            }
+        };
+
+
+        //删除查询
+        delloggridshowsub = new Subscriber<List<Map<String, String>>>() {
+            @Override
+            public void onCompleted() {
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+
+            }
+
+            @Override
+            public void onNext(List<Map<String, String>> listMap) {
+                impLogOptView.delloggrid(listMap);
+            }
+        };
+
+    }
+
+    public void deleteSubscriber()
+    {
+        loggridshowsub.unsubscribe();
+        delloggridshowsub.unsubscribe();
+    }
+
+    /**
+     * 查询报表
+     * @param edtloggridstart 开始日期
+     * @param edtloggridend   结束日期
+     * @param mYear            开始年
+     * @param mMon             开始月
+     * @param mDay             开始日
+     * @param eYear            结束年
+     * @param eMon             结束月
+     * @param eDay             结束日
+     */
+    public void loggrid(String edtloggridstart, String edtloggridend,int mYear, int mMon, int mDay,int eYear, int eMon, int eDay)
+    {
+        ToolClass.Log(ToolClass.INFO,"EV_JNI","APP<<start:"+ToolClass.getDayOfMonth(mYear, mMon, mDay)+"end:"+ToolClass.getDayOfMonth(eYear, eMon, eDay)+"时间大小="+ToolClass.dateCompare(ToolClass.getDayOfMonth(mYear, mMon, mDay),ToolClass.getDayOfMonth(eYear, eMon, eDay)),"log.txt");
+        if(
+                (!ToolClass.isEmptynull(edtloggridstart))
+                        &&(!ToolClass.isEmptynull(edtloggridend))
+                        &&(ToolClass.dateCompare(ToolClass.getDayOfMonth(mYear, mMon, mDay),ToolClass.getDayOfMonth(eYear, eMon, eDay))<0)
+                )
+        {
+            loggrid.loggridquery(mYear, mMon, mDay, eYear, eMon, eDay)
+                    .map(new Func1<Map<String,String>, List<Tb_vmc_log>>() {
+                        @Override
+                        public List<Tb_vmc_log> call(Map<String, String> stringStringMap) {
+                            List<Tb_vmc_log> listinfos=logDAOModel.getLoggrid(stringStringMap.get("start"),stringStringMap.get("end"));
+                            return listinfos;
+                        }
+                    })
+                    .map(new Func1<List<Tb_vmc_log>, List<Map<String,String>>>() {
+                        @Override
+                        public List<Map<String,String>> call(List<Tb_vmc_log> listinfos)
+                        {
+                            String[] strInfos = new String[listinfos.size()];
+                            String[] logID = new String[listinfos.size()];// 操作ID[pk]
+                            String[] logType = new String[listinfos.size()];// 操作类型0添加,1修改,2删除
+                            String[] logDesc = new String[listinfos.size()];// 操作描述
+                            String[] logTime = new String[listinfos.size()];//操作时间
+                            int m=0;
+                            // 遍历List泛型集合
+                            for (Tb_vmc_log tb_inaccount : listinfos)
+                            {
+                                //总支付订单
+                                logID[m]= tb_inaccount.getLogID();
+                                logType[m] = ToolClass.typestr(3,tb_inaccount.getLogType());
+                                logDesc[m] = tb_inaccount.getLogDesc();
+                                logTime[m] = tb_inaccount.getLogTime();
+                                m++;// 标识加1
+                            }
+
+                            int x=0;
+                            //定义显示的内容包装
+                            List<Map<String,String>> listMap = new ArrayList<Map<String,String>>();
+                            for(x=0;x<listinfos.size();x++)
+                            {
+                                Map<String,String> map = new HashMap<String,String>();//定义Map集合，保存每一行数据
+                                map.put("logID", logID[x]);
+                                map.put("logType", logType[x]);
+                                map.put("logDesc", logDesc[x]);
+                                map.put("logTime", logTime[x]);
+                                listMap.add(map);//保存数据行
+                            }
+                            return listMap;
+                        }
+                    })
+                    .compose(RxAdapter.<List<Map<String,String>>>applySchedulers())
+                    .subscribe(loggridshowsub);
+        }
+        else
+        {
+            ToolClass.failToast("请输入正确查询时间！");
+        }
+    }
+
+    /**
+     * 删除查询报表
+     * @param edtloggridstart 开始日期
+     * @param edtloggridend   结束日期
+     * @param mYear            开始年
+     * @param mMon             开始月
+     * @param mDay             开始日
+     * @param eYear            结束年
+     * @param eMon             结束月
+     * @param eDay             结束日
+     */
+    public void delloggrid(String edtloggridstart, String edtloggridend, int mYear, int mMon, int mDay, int eYear, int eMon, int eDay, Context context) {
+        ToolClass.Log(ToolClass.INFO, "EV_JNI", "APP<<start:" + ToolClass.getDayOfMonth(mYear, mMon, mDay) + "end:" + ToolClass.getDayOfMonth(eYear, eMon, eDay) + "时间大小=" + ToolClass.dateCompare(ToolClass.getDayOfMonth(mYear, mMon, mDay), ToolClass.getDayOfMonth(eYear, eMon, eDay)), "log.txt");
+        if (
+                (!ToolClass.isEmptynull(edtloggridstart))
+                        && (!ToolClass.isEmptynull(edtloggridend))
+                        && (ToolClass.dateCompare(ToolClass.getDayOfMonth(mYear, mMon, mDay), ToolClass.getDayOfMonth(eYear, eMon, eDay)) < 0)
+                ) {
+            //创建警告对话框
+            Dialog alert = new AlertDialog.Builder(context)
+                    .setTitle("对话框")//标题
+                    .setMessage("您确定要删除该记录吗？")//表示对话框中得内容
+                    .setIcon(R.drawable.ic_launcher)//设置logo
+                    .setPositiveButton("删除", new DialogInterface.OnClickListener()//退出按钮，点击后调用监听事件
+                            {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // TODO Auto-generated method stub
+//                                    impLogOptView.delloggrid();
+                                    loggrid.loggridquery(mYear, mMon, mDay, eYear, eMon, eDay)
+                                            .map(new Func1<Map<String,String>, List<Tb_vmc_log>>() {
+                                                @Override
+                                                public List<Tb_vmc_log> call(Map<String, String> stringStringMap) {
+                                                    logDAOModel.delLoggrid(stringStringMap.get("start"),stringStringMap.get("end"));
+                                                    List<Tb_vmc_log> listinfos=logDAOModel.getLoggrid(stringStringMap.get("start"),stringStringMap.get("end"));
+                                                    return listinfos;
+                                                }
+                                            })
+                                            .map(new Func1<List<Tb_vmc_log>, List<Map<String,String>>>() {
+                                                @Override
+                                                public List<Map<String,String>> call(List<Tb_vmc_log> listinfos)
+                                                {
+                                                    String[] strInfos = new String[listinfos.size()];
+                                                    String[] logID = new String[listinfos.size()];// 操作ID[pk]
+                                                    String[] logType = new String[listinfos.size()];// 操作类型0添加,1修改,2删除
+                                                    String[] logDesc = new String[listinfos.size()];// 操作描述
+                                                    String[] logTime = new String[listinfos.size()];//操作时间
+                                                    int m=0;
+                                                    // 遍历List泛型集合
+                                                    for (Tb_vmc_log tb_inaccount : listinfos)
+                                                    {
+                                                        //总支付订单
+                                                        logID[m]= tb_inaccount.getLogID();
+                                                        logType[m] = ToolClass.typestr(3,tb_inaccount.getLogType());
+                                                        logDesc[m] = tb_inaccount.getLogDesc();
+                                                        logTime[m] = tb_inaccount.getLogTime();
+                                                        m++;// 标识加1
+                                                    }
+
+                                                    int x=0;
+                                                    //定义显示的内容包装
+                                                    List<Map<String,String>> listMap = new ArrayList<Map<String,String>>();
+                                                    for(x=0;x<listinfos.size();x++)
+                                                    {
+                                                        Map<String,String> map = new HashMap<String,String>();//定义Map集合，保存每一行数据
+                                                        map.put("logID", logID[x]);
+                                                        map.put("logType", logType[x]);
+                                                        map.put("logDesc", logDesc[x]);
+                                                        map.put("logTime", logTime[x]);
+                                                        listMap.add(map);//保存数据行
+                                                    }
+                                                    return listMap;
+                                                }
+                                            })
+                                            .compose(RxAdapter.<List<Map<String,String>>>applySchedulers())
+                                            .subscribe(delloggridshowsub);
+                                }
+                            }
+                    )
+                    .setNegativeButton("取消", new DialogInterface.OnClickListener()//取消按钮，点击后调用监听事件
+                            {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // TODO Auto-generated method stub
+                                }
+                            }
+                    )
+                    .create();//创建一个对话框
+            alert.show();//显示对话框
+
+        } else {
+            ToolClass.failToast("请输入正确查询时间！");
+        }
+    }
+}
+
+		
