@@ -49827,6 +49827,8 @@ PackageManager packageManager = DogService.this.getPackageManager();
 intent = packageManager.getLaunchIntentForPackage(MY_PKG_NAME);
 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED | Intent.FLAG_ACTIVITY_CLEAR_TOP) ;
 DogService.this.startActivity(intent);
+//方法三、在manifest中设置不显示主题 
+<activity android:name="xxx" android:theme="@android:style/Theme.NoDisplay"> </activity>
 
 *html规则表达式
 //获取一个字符串中图片链接地址列表传入一个字符串获取其中全部图片链接地址add到Vector<String>中返回
@@ -52037,25 +52039,21 @@ dependencies {
 <meta-data android:name="design_height" android:value="1280"></meta-data>
 
 
-在你的Activity的onCreate里面写入
-@Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+第二步：
 
-        AutoLayout.getInstance().auto(this, true);
-    }
+让你的Activity继承自AutoLayoutActivity.
 
-在布局文件中编写时，将：
+非常简单的两个步骤，你就可以开始愉快的编写布局了，详细可以参考sample。
 
-目前支持属性
-layout_width
-layout_height
-layout_margin(left,top,right,bottom)
-pading(left,top,right,bottom)
-textSize
-maxWidth, minWidth, maxHeight, minHeight
+其他用法
+
+如果你不希望继承AutoLayoutActivity，可以在编写布局文件时，将
+
+LinearLayout -> AutoLinearLayout
+RelativeLayout -> AutoRelativeLayout
+FrameLayout -> AutoFrameLayout
+这样也可以完成适配。
+
 
 默认使用的高度是设备的可用高度，也就是不包括状态栏和底部的操作栏的，如果你希望拿设备的物理高度进行百分比化：
 
@@ -52115,164 +52113,6 @@ public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
 }
 一定要记得LayoutInflater.from(mContext).inflate使用三个参数的方法！
 
-
-
-*RecyclerView控件
-RecyclerView 是Android L版本中新添加的一个用来取代ListView的SDK，它的灵活性与可替代性比listview更好。
-使用LayoutManager来确定每一个item的排列方式。
-
-Adapter：使用RecyclerView之前，你需要一个继承自RecyclerView.Adapter的适配器，作用是将数据与每一个item的界面进行绑定。
-
-LayoutManager：用来确定每一个item如何进行排列摆放，何时展示和隐藏。回收或重用一个View的时候，LayoutManager会向适配器请求新的数据来替换旧的数据，这种机制避免了创建过多的View和频繁的调用findViewById方法（与ListView原理类似）。
-目前SDK中提供了三种自带的LayoutManager:
-
-LinearLayoutManager
-GridLayoutManager
-StaggeredGridLayoutManager
-
-1.RecyclerView使用方法
-1)、添加依赖
-在AS的build.gradle中添加依赖，然后同步一下就可以引入依赖包：
-
-dependencies {
-...
-compile 'com.android.support:recyclerview-v7:21.0.+'
-}
-2)、编写代码
-添加完依赖之后，就开始写代码了，与ListView用法类似，也是先在xml布局文件中创建一个RecyclerView的布局：
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/my_recycler_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:scrollbars="vertical"/>
-</RelativeLayout>
-创建完布局之后在MainActivity中获取这个RecyclerView，并声明LayoutManager与Adapter，代码如下：
-
-mRecyclerView = (RecyclerView)findViewById(R.id.my_recycler_view);
-//创建默认的线性LayoutManager
-mLayoutManager = new LinearLayoutManager(this);
-mRecyclerView.setLayoutManager(mLayoutManager);
-//如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
-mRecyclerView.setHasFixedSize(true);
-//创建并设置Adapter
-mAdapter = newMyAdapter(getDummyDatas());
-mRecyclerView.setAdapter(mAdapter);
-接下来的问题就是Adapter的创建：
-
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
-    public String[] datas = null;
-    public MyAdapter(String[] datas) {
-        this.datas = datas;
-    }
-    //创建新View，被LayoutManager所调用
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item,viewGroup,false);
-        ViewHolder vh = new ViewHolder(view);
-        return vh;
-    }
-    //将数据与界面进行绑定的操作
-    @Override
-    public void onBindViewHolder(ViewHolder viewHolder, int position) {
-        viewHolder.mTextView.setText(datas[position]);
-    }
-    //获取数据的数量
-    @Override
-    public int getItemCount() {
-        return datas.length;
-    }
-    //自定义的ViewHolder，持有每个Item的的所有界面元素
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        public TextView mTextView;
-        public ViewHolder(View view){
-        super(view);
-            mTextView = (TextView) view.findViewById(R.id.text);
-        }
-    }
-}
-3)、运行
-写完这些代码这个例子既可以跑起来了。从例子也可以看出来，RecyclerView的用法并不比ListView复杂，反而更灵活好用，它将数据、排列方式、数据的展示方式都分割开来，因此可定制型，自定义的形式也非常多，非常灵活。
-
-横向布局
-如果想要一个横向的List只要设置LinearLayoutManager如下就行，注意要声明mLayoutManager的类型是LinearLayoutManager而不是父类LayoutManager：
-
-mLayoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
-Grid布局
-如果想要一个Grid布局的列表，只要声明LayoutManager为GridLayoutManager即可：
-
-mLayoutManager = new GridLayoutManager(context,columNum);
-mRecyclerView.setLayoutManager(mLayoutManager);
-注意，在Grid布局中也可以设置列表的Orientation属性，来实现横向和纵向的Grid布局。
-
-瀑布流布局
-瀑布流就使用StaggeredGridLayoutManager吧，具体方法与上面类似，就不做介绍啦。
-
-
-
-2.RecyclerView的高级方法
-RecyclerView的高级方法
-
-
-当使用了一段时间的RecyclerView，发现为其每一项添加点击事件并没有ListView那么轻松，像ListView直接加个OnItemClickListener就行了。实际上我们不要把RecyclerView当做ListView的一个升级版，希望大家把他看做一个容器，同时里面包含了很多不同的Item，它们可以以不同方式排列组合，非常灵活，点击方式你可以按照你自己的意愿进行实现。
-
-本节主要讲解如何为RecyclerView添加点击事件, 并简单介绍如何进行Item增加删除。
-
-添加点击事件
-上一节中我们讲了如何使用RecyclerView的Adpater，其实我们会发现，Adapter是添加点击事件一个很好的地方，里面是构造布局等View的主要场所，也是数据和布局进行绑定的地方。首先我们在Adapter中创建一个实现点击接口，其中view是点击的Item，data是我们的数据，因为我们想知道我点击的区域部分的数据是什么，以便我下一步进行操作：
-
-public static interface OnRecyclerViewItemClickListener {
-    void onItemClick(View view , DataModel data);
-}
-定义完接口，添加接口和设置Adapter接口的方法：
-
-private OnRecyclerViewItemClickListener mOnItemClickListener = null;
-    public void setOnItemClickListener(OnRecyclerViewItemClickListener listener) {
-    this.mOnItemClickListener = listener;
-}
-那么这个接口用在什么地方呢？如下代码所示，我们为Adapter实现OnClickListener方法：
-
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> implements View.OnClickListener{
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
-        View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item, viewGroup, false);
-        ViewHolder vh = new ViewHolder(view);
-        //将创建的View注册点击事件
-        view.setOnClickListener(this);
-        return vh;
-    }
-    @Override
-    public void onBindViewHolder(ViewHolder viewHolder, final int i) {
-        viewHolder.mTextView.setText(datas.get(i).title);
-        //将数据保存在itemView的Tag中，以便点击时进行获取
-        viewHolder.itemView.setTag(datas.get(i));
-    }
-    ...
-    @Override
-    public void onClick(View v) {
-        if (mOnItemClickListener != null) {
-            //注意这里使用getTag方法获取数据
-            mOnItemClickListener.onItemClick(v,(DataModel)v.getTag());
-        }
-    }
-    ...
-}
-做完这些事情，我们就可以在Activity或其他地方为RecyclerView添加项目点击事件了，如在MainActivity中：
-
-mAdapter = new MyAdapter(getDummyDatas());
-mRecyclerView.setAdapter(mAdapter);
-mAdapter.setOnItemClickListener(new MyAdapter.OnRecyclerViewItemClickListener() {
-    @Override
-    public void onItemClick(View view, DataModel data) {
-        //DO your fucking bussiness here!
-    }
-});
-完成了以上代码就可以为RecyclerView添加项目点击事件了，下面我们来看看RecyclerView如何添加和删除数据并在界面上显示。
 
 
 3.添加删除数据
@@ -53224,6 +53064,287 @@ public class MyActivity extends Activity {
             </intent-filter> 
         </activity> 
 </application> 
+
+*BaseActivity
+如果是只有一个Activity的App就没有必要写BaseActivity，但一旦大于一个我还是建议写一个BaseActivity，准没错。
+
+每个Activity通常都是绑定视图，绑定控件，监听控件，获取Bundle，跳转Activity还有一些很有些烦人的小功能如：Toast，findViewById，我们都可以封装一层简化他们的使用
+BaseActivity的代码如下：
+public abstract class BaseActivity extends Activity implements View.OnClickListener {
+    /** 是否沉浸状态栏 **/
+    private boolean isSetStatusBar = true;
+    /** 是否允许全屏 **/
+    private boolean mAllowFullScreen = true;
+    /** 是否禁止旋转屏幕 **/
+    private boolean isAllowScreenRoate = false;
+    /** 当前Activity渲染的视图View **/
+    private View mContextView = null;
+    /** 日志输出标志 **/
+    protected final String TAG = this.getClass().getSimpleName();
+
+    /** View点击 **/
+    public abstract void widgetClick(View v);
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        Log.d(TAG, "BaseActivity-->onCreate()");
+        Bundle bundle = getIntent().getExtras();
+        initParms(bundle);
+        View mView = bindView();
+        if (null == mView) {
+            mContextView = LayoutInflater.from(this)
+                    .inflate(bindLayout(), null);
+        } else
+            mContextView = mView;
+        if (mAllowFullScreen) {
+            requestWindowFeature(Window.FEATURE_NO_TITLE);
+        }
+        if (isSetStatusBar) {
+            steepStatusBar();
+        }
+        setContentView(mContextView);
+        if (!isAllowScreenRoate) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        }
+        initView(mContextView);
+        setListener();
+        doBusiness(this);
+    }
+
+    /**
+     * [沉浸状态栏]
+     */
+    private void steepStatusBar() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            // 透明状态栏
+            getWindow().addFlags(
+                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            // 透明导航栏
+            getWindow().addFlags(
+                    WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+        }
+    }
+
+    /**
+     * [初始化参数]
+     *
+     * @param parms
+     */
+    public abstract void initParms(Bundle parms);
+
+    /**
+     * [绑定视图]
+     *
+     * @return
+     */
+    public abstract View bindView();
+
+    /**
+     * [绑定布局]
+     *
+     * @return
+     */
+    public abstract int bindLayout();
+
+    /**
+     * [初始化控件]
+     *
+     * @param view
+     */
+    public abstract void initView(final View view);
+
+    /**
+     * [绑定控件]
+     *
+     * @param resId
+     *
+     * @return
+     */
+    protected    <T extends View> T $(int resId) {
+        return (T) super.findViewById(resId);
+    }
+
+    /**
+     * [设置监听]
+     */
+    public abstract void setListener();
+
+    @Override
+    public void onClick(View v) {
+        widgetClick(v);
+    }
+
+    /**
+     * [业务操作]
+     *
+     * @param mContext
+     */
+    public abstract void doBusiness(Context mContext);
+
+
+
+    /**
+     * [页面跳转]
+     *
+     * @param clz
+     */
+    public void startActivity(Class<?> clz) {
+        startActivity(new Intent(BaseActivity.this,clz));
+    }
+
+    /**
+     * [携带数据的页面跳转]
+     *
+     * @param clz
+     * @param bundle
+     */
+    public void startActivity(Class<?> clz, Bundle bundle) {
+        Intent intent = new Intent();
+        intent.setClass(this, clz);
+        if (bundle != null) {
+            intent.putExtras(bundle);
+        }
+        startActivity(intent);
+    }
+
+    /**
+     * [含有Bundle通过Class打开编辑界面]
+     *
+     * @param cls
+     * @param bundle
+     * @param requestCode
+     */
+    public void startActivityForResult(Class<?> cls, Bundle bundle,
+                                       int requestCode) {
+        Intent intent = new Intent();
+        intent.setClass(this, cls);
+        if (bundle != null) {
+            intent.putExtras(bundle);
+        }
+        startActivityForResult(intent, requestCode);
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart()");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart()");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume()");
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d(TAG, "onPause()");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop()");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy()");
+    }
+
+    /**
+     * [简化Toast]
+     * @param msg
+     */
+    protected void showToast(String msg){
+        Toast.makeText(this,msg,Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * [是否允许全屏]
+     *
+     * @param allowFullScreen
+     */
+    public void setAllowFullScreen(boolean allowFullScreen) {
+        this.mAllowFullScreen = allowFullScreen;
+    }
+
+    /**
+     * [是否设置沉浸状态栏]
+     *
+     * @param isSetStatusBar
+     */
+    public void setSteepStatusBar(boolean isSetStatusBar) {
+        this.isSetStatusBar = isSetStatusBar;
+    }
+
+    /**
+     * [是否允许屏幕旋转]
+     *
+     * @param isAllowScreenRoate
+     */
+    public void setScreenRoate(boolean isAllowScreenRoate) {
+        this.isAllowScreenRoate = isAllowScreenRoate;
+    }
+
+}
+
+可以看到还是很多重复代码的，所以说搞一个BaseActivity是多么有必要
+继承自BaseActivity的Activity使用如下：
+public class MainActivity extends BaseActivity {
+    private Button btn1;
+    @Override
+    public void widgetClick(View v) {
+        switch (v.getId()){
+            case R.id.button:
+                //用简化了的toast和startActivity
+                showToast("toast");
+                startActivity(Main2Activity.class);
+                break;
+        }
+    }
+
+    @Override
+    public void initParms(Bundle parms) {
+        //解析bundle内容或者设置是否旋转，沉浸，全屏
+    }
+
+    @Override
+    public View bindView() {
+        return null;
+    }
+
+    @Override
+    public int bindLayout() {
+        return R.layout.activity_main;
+    }
+
+    @Override
+    public void initView(View view) {
+        btn1=$(R.id.button);
+    }
+
+    @Override
+    public void setListener() {
+        btn1.setOnClickListener(this);
+    }
+
+    @Override
+    public void doBusiness(Context mContext) {
+
+    }
+
+
+}
 
 *Dagger框架
 好处就是模块间解耦！ 就拿当前Android非常流行的开发模式MVP来说，使用Dagger2可以将MVP中的V 层与P层进一步解耦，这样便可以提高代码的健壮性和可维护性。
@@ -54882,8 +55003,9 @@ refWatcher.watch(schrodingerCat);
 在 build.gradle 中加入引用，不同的编译使用不同的引用：
 
  dependencies {
-   debugCompile 'com.squareup.leakcanary:leakcanary-android:1.3'
-   releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.3'
+   debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
+   releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+   testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
  }
  
 
@@ -54892,7 +55014,9 @@ refWatcher.watch(schrodingerCat);
 
 public class ExampleApplication extends Application {
 
-  ......
+  //在自己的Application中添加如下代码
+private RefWatcher refWatcher;
+
   //在自己的Application中添加如下代码
 public static RefWatcher getRefWatcher(Context context) {
     ExampleApplication application = (ExampleApplication) context
@@ -54900,13 +55024,15 @@ public static RefWatcher getRefWatcher(Context context) {
     return application.refWatcher;
 }
 
-  //在自己的Application中添加如下代码
-private RefWatcher refWatcher;
-
 @Override
 public void onCreate() {
     super.onCreate();
     ......
+	if (LeakCanary.isInAnalyzerProcess(this)) {
+      // This process is dedicated to LeakCanary for heap analysis.
+      // You should not init your app in this process.
+      return;
+    }
         //在自己的Application中添加如下代码
     refWatcher = LeakCanary.install(this);
     ......
@@ -54914,41 +55040,12 @@ public void onCreate() {
 
 .....
 }
-这样，就万事俱备了！ 在 debug build 中，如果检测到某个 activity 有内存泄露，LeakCanary 就是自动地显示一个通知。	
+这样，就万事俱备了！ LeakCanary.install() 返回一个配置好了的 RefWatcher 实例。它同时安装了 ActivityRefWatcher 来监控 Activity 泄漏。即在 debug build 中，当 Activity.onDestroy() 被调用之后，如果检测到某个 activity 有内存泄露，LeakCanary 就是自动地显示一个通知。	
 
 
 3)在Activity中进行配置
 在 API 14 之后，即当 Activity.onDestroy() 被调用之后，如果这个 Activity 没有被销毁，logcat 就会打印出如下信息告诉你内存泄漏发生了。
 在API 14 之前监测 Activity 泄漏，可以重载 Activity.onDestroy() 方法，然后在这个方法里调用 RefWatcher.watch(this) 来实现。
-public class MainActivity extends AppCompatActivity {
-
-    ......
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-            //在自己的应用初始Activity中加入如下两行代码
-        RefWatcher refWatcher = ExampleApplication.getRefWatcher(this);
-        refWatcher.watch(this);
-
-        textView = (TextView) findViewById(R.id.tv);
-        textView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startAsyncTask();
-            }
-        });
-
-    }
-    
-
-
-}
-
-4)在AndroidMainfest.xml 中进行配置,添加如下代码
-<service
-	android:name="com.squareup.leakcanary.DisplayLeakService"
-	android:enabled="false" />
 
 
 3.监控 Fragment 泄漏
@@ -57140,7 +57237,207 @@ public class MainActivity extends BaseActivity {
 添加引用即可：
 compile 'com.android.support:design:24.+' //可修改版本号为自己匹配
 
-1.TextInputLayout控件
+1.Android主题（Theme）和风格（Style）
+1)自定义主题（Theme）和风格（Style）
+风格Style是一个包含一种或多种格式化属性的集合，你可以把它应用在UI组件上。主题Theme也是一个包含一种或多种格式化属性的集合，你可以把它应用在整个应用程序（Application）中或者某个窗口（Activity）中。
+总的来说，Theme是批量设置属性，可实现程序换肤功能
+定义一个style或者theme的方法是一样的。在res/values/目录下建立style.xml或者theme.xml文件，在xml中建立形如这样的代码
+(1)style使用
+在res/values目录下定义style.xml文件
+<?xml version="1.0" encoding="utf-8"?>  
+<resources>  
+<style name="BasicButtonStyle" parent="@android:style/Widget.Button">  
+                <item name="android:gravity">center_vertical|center_horizontal</item>  
+                <item name="android:textColor">#ffffffff</item>  
+                <item name="android:shadowColor">#ff000000</item>  
+                <item name="android:shadowDx">0</item>  
+                <item name="android:shadowDy">-1</item>  
+                <item name="android:shadowRadius">0.2</item>  
+                <item name="android:textSize">16dip</item>  
+                <item name="android:textStyle">bold</item>  
+                <item name="android:background">@drawable/btn_custom</item>  
+                <item name="android:focusable">true</item>  
+                <item name="android:clickable">true</item>  
+        </style>  
+<style name="BigTextStyle">  
+    <item name="android:layout_margin">5dp</item>  
+                <item name="android:textColor">#ff9900</item>  
+                <item name="android:textSize">25sp</item>  
+  </style>  
+<style name="BasicButtonStyle.BigTextStyle">  
+    <item name="android:textSize">25sp</item>  
+  </style>  
+  
+</resources> 
+
+（2）theme使用
+在res/values目录下定义theme.xml文件
+<?xml version="1.0" encoding="utf-8"?>  
+<resources>           
+<style name="BasicButtonTheme">  
+                <item name="android:buttonStyle">@style/basicbuttonstyle</item>  
+                <item name="android:windowBackground">@android:color/transparent</item>     
+                <item name="android:windowIsTranslucent">true</item>     
+  </style>  
+  
+</resources>  
+
+
+
+(3)在AndroidManifest.xml中给整个应用程序设置主题：运用到整个application或者具体的activity中都可以
+<?xml version="1.0" encoding="utf-8"?>  
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="android.basic.lesson32" android:versioncode="1" android:versionname="1.0">  
+    <application android:theme="@style/BasicButtonTheme" android:label="@string/app_name" android:icon="@drawable/icon">  
+        <activity android:label="@string/app_name" android:name=".MainStyleAndTheme">  
+            <intent -filter="">  
+                <action android:name="android.intent.action.MAIN">  
+                <category android:name="android.intent.category.LAUNCHER">  
+            </category></action></intent>  
+        </activity>  
+  
+    </application>  
+    <uses -sdk="" android:minsdkversion="8">  
+  
+</uses></manifest> 
+
+
+方法二：如果通过程序来调用这样写
+setTheme(R.style.theme);   
+
+
+2)调用系统默认的theme
+Android:theme="@android:style/Theme.Dialog" :Activity显示为对话框模式
+
+android:theme="@android:style/Theme.NoTitleBar" :不显示应用程序标题栏
+
+android:theme="@android:style/Theme.NoTitleBar.Fullscreen" :不显示应用程序标题栏，并全屏
+
+android:theme="Theme.Light ": 背景为白色
+
+android:theme="Theme.Light.NoTitleBar" :白色背景并无标题栏
+
+android:theme="Theme.Light.NoTitleBar.Fullscreen" :白色背景，无标题栏，全屏
+
+android:theme="Theme.Black" : 背景黑色
+
+android:theme="Theme.Black.NoTitleBar" :黑色背景并无标题栏
+
+android:theme="Theme.Black.NoTitleBar.Fullscreen" :黑色背景，无标题栏，全屏
+
+android:theme="Theme.Wallpaper" : 用系统桌面为应用程序背景
+
+android:theme="Theme.Wallpaper.NoTitleBar" :用系统桌面为应用程序背景，且无标题栏
+
+android:theme="Theme.Wallpaper.NoTitleBar.Fullscreen" :用系统桌面为应用程序背景，无标题栏，全屏
+
+android:theme="Theme.Translucent : 透明背景
+
+android:theme="Theme.Translucent.NoTitleBar" :透明背景并无标题
+
+android:theme="Theme.Translucent.NoTitleBar.Fullscreen" :透明背景并无标题，全屏
+
+android:theme="Theme.Panel ": 面板风格显示
+
+android:theme="Theme.Light.Panel" : 平板风格显示
+
+
+3)自定义样式，并且继承主题
+<style name="***" parent="android:Theme">
+前一个是引用系统自带的主题
+后一个是引用你自己在style里定义的Theme
+
+4)因为你虽然在Activtiy里写上了extends AppCompatActivity 
+但却在AndroidManifest.xml里的主题还是默认的主题.AppTheme或者其他不相符合的主题。这就有就挂羊头卖狗肉的问题。 
+所以我们只要在该activity里面的或者application（会对该应用里面的activity都起作用）里面的主题改为 
+Android:theme=”@style/Theme.AppCompat”就可以完美的解决你的问题。
+
+顺便提一个这个问题
+
+This Activity already has an action bar supplied by the window decor. Do not request Window.FEATURE_ACTION_BAR and set windowActionBar to false in your theme to use a Toolbar instead.
+
+根据提示，你可以很快知道是你定义的activity里面定义了一个类似actionbar的导航条，而默认也应用也拥有actionbar，造成两者的冲突。 
+这样你可以在主题中修改成以下，就可以完美解决你的问题 
+android:theme=”@style/Theme.Xxx.NoActionBar”
+
+回到上面的问题：
+首先，旧的程序要使用Material Design，在他的AndroidManifest.xml文件要设置这条
+<activity
+            android:name="com.easivend.app.maintain.activity.ParamManager.View.ParamManagerView"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="stateUnspecified|adjustPan"
+            android:screenOrientation="sensor"
+            android:configChanges="keyboardHidden|orientation"
+			//添加这一条
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+或者在整个应用程序中统一设置
+<application
+        android:name="com.easivend.common.EVApplication"
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+		//添加这一条
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">			
+			
+5)android5.0以上与以下的兼容
+当我的MainActivity继承自v7包中的ActionBarActivity或者AppCompatActivity时，如果在style.xml文件中指定MainActivity所使用的样式如下：
+
+    <style name="AppTheme" parent="android:Theme.Material.NoActionBar">  
+            <!-- 5.0开始，可以在Style.xml文件中统一配置App的样式 -->  
+            <!-- 状态栏的颜色 -->  
+            <item name="colorPrimary">@color/colorPrimary</item>  
+            <!-- 一级文本的颜色 -->  
+            <item name="colorPrimaryDark">@color/colorPrimaryDark</item>  
+            <!-- 二级文本的颜色 -->  
+            <item name="colorAccent">@color/colorAccent</item>  
+        </style>  
+
+
+会报如下错误：
+
+Java.lang.IllegalStateException:You need to use a Theme.AppCompat theme(or descendatn) with this activity
+
+那么如何解决这个问题呢？网上很多人生说将MainActivity改为继承自Activity即可，但是这样的话就无法兼容老版本的样式，或者说是无法再5.0之前的版本实现MaterialDesign的效果，那么该如何正确的修改呢？ 
+
+解决步骤如下：
+
+(1)、res/styles.xml文件中重新添加一个style样式AppTheme.Base，然后将AppTheme继承自AppTheme.Base，代码如下：
+
+    <resources>  
+      
+        <!-- Base application theme. -->  
+        <style name="AppTheme" parent="AppTheme.Base">  
+            <!-- Customize your theme here. -->  
+      
+        </style>  
+        <style name="AppTheme.Base" parent="Theme.AppCompat.Light.NoActionBar">  
+            <item name="colorPrimary">@color/colorPrimary</item>  
+            <item name="colorPrimaryDark">@color/colorPrimaryDark</item>  
+            <item name="colorAccent">@color/colorAccent</item>  
+            <item name="android:windowBackground">@android:color/white</item>  
+        </style>  
+    </resources>  
+
+
+(2)、在res文件中创建values-v21文件夹，然后在此文件夹下创建styles.xml文件，代码如下：
+
+    <?xml version="1.0" encoding="utf-8"?>  
+    <resources>  
+      
+        <style name="AppTheme" parent="AppTheme.Base">  
+            <item name="android:colorPrimary">@color/colorPrimary</item>  
+            <item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>  
+            <item name="android:colorAccent">@color/colorAccent</item>  
+        </style>  
+    </resources>  
+
+说明：values-v21文件夹中的内容是专门针对API21以上的版本所使用的配置文件，也就是说如果是API21之前的文件就是使用res/values中的styles.xml，否则使用values-v21文件夹下的styles.xml
+
+
+通过以上两步，就可以轻松实现MainActivity还是继承自AppCompatActivity，也就是说可以将Material Design的效果运行在API21之前版本的手机上，并且API21之前的样式和API21以后的样式可以由我们自己决定
+
+			
+
+2.TextInputLayout控件
 使用TextInputLayout将EditText进行了封装，提示信息会变成一个显示在EditText之上的floating label，这样用户就始终知道他们现在输入的是什么，而且过度动画是平滑的。还可以在下方通过setError设置Error提示
 注意项：TextInputLayout中至少嵌套一个EditText。
 getEditText() 得到控件中包含的 EditText 控件
@@ -57148,6 +57445,22 @@ setError(CharSequence error) 设置错误信息并显示在 EditText 下方 应用场景：比如用
 setHint(CharSequence hint) 设置提示信息
 
 setErrorEnabled(boolean enabled) 设置 setError(CharSequence error) 这个函数是否可用 记住哦：这个函数一定要在 setError(CharSequence error) 这个函数之后执行哦！具体原因 大家可以去看源码哦！
+
+<android.support.design.widget.TextInputLayout
+	android:id="@+id/txtlayoutdevCode"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content">
+	 <EditText
+		android:id="@+id/edtdevhCode"
+		android:minWidth="160px"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:textSize="40sp"
+		android:textStyle="bold"
+		android:background="@drawable/editsharp3"
+		android:hint="签到码"
+		android:text="" />
+</android.support.design.widget.TextInputLayout>
 
 final TextInputLayout textInputLayout = (TextInputLayout) findViewById(R.id.til_pwd);
 
@@ -57173,6 +57486,9 @@ final TextInputLayout textInputLayout = (TextInputLayout) findViewById(R.id.til_
             public void afterTextChanged(Editable s) {
             }
         });
+
+		
+
 
 
 2.FloatingActionButton控件
@@ -57521,6 +57837,7 @@ mRecyclerView.setLayoutManager(mLayoutManager);
 
 5.Toolbar:Toolbar是应用的内容的标准工具栏，
 Toolbar 是在 Android 5.0 开始推出的一个 Material Design 风格的导航控件
+Toolbar一般与Palette联用
 设置导航栏图标；
 设置App的logo；
 支持设置标题和子标题；
@@ -57672,6 +57989,7 @@ public class ToolBarActivity extends BaseActivity {
 (1)想修改标题和子标题的字体大小、颜色等，可以调用setTitleTextColor、setTitleTextAppearance、setSubtitleTextColor、setSubtitleTextAppearance 这些API
 (2)很多属性设置方法既支持代码设置，也支持在xml中设置,不过有一些需要在根布局中加入自定义属性的命名空间
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    //添加这一行
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -57694,6 +58012,22 @@ public class ToolBarActivity extends BaseActivity {
             android:text="Clock" />
     </android.support.v7.widget.Toolbar>
 </LinearLayout>
+(3)还可以在里面自定义组件来使用
+<android.support.v7.widget.Toolbar
+		android:id="@+id/toolbar"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:background="@color/blue">
+
+		<!--自定义控件-->
+		<TextView
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:text="欢迎使用骏鹏易丰自助售货机"
+			android:textSize="40sp"
+			android:textStyle="bold"
+			android:textColor="#FF0000"  />
+	</android.support.v7.widget.Toolbar>
 
 
 
@@ -57974,150 +58308,152 @@ public class MainActivity extends AppCompatActivity {
 
 
 3)其他例子不用fragment
+activity_five
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_five"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context="com.easivend.app.maintain.activity.ParamManager.View.FiveActivity">
     <android.support.design.widget.TabLayout
         android:id="@+id/tabs"
-        android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        app:tabIndicatorColor="@android:color/holo_red_dark"       //游标的颜色
-        app:tabSelectedTextColor="@android:color/holo_red_light"   //选中的标签的颜色
-        app:tabTextColor="@android:color/black"/>                  //普通状态下的标签颜色
+        android:layout_height="wrap_content"
+        app:tabIndicatorColor="@color/red"
+        app:tabSelectedTextColor="@color/red"
+        app:tabTextColor="@color/black"/>
 
+    <!--可滑动的布局内容-->
     <android.support.v4.view.ViewPager
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
         android:id="@+id/vp_view"
-        />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 </LinearLayout>
 
-//页卡适配器类
-public class CustomPagerAdapter extends PagerAdapter {
-    private ArrayList<View>mViewList;
-    private ArrayList<String>mTabList;
-    public CustomPagerAdapter(ArrayList<View>viewList,ArrayList<String>tabList)
-    {
-        this.mTabList = tabList;
-        this.mViewList = viewList;
-    }
-    @Override
-    public Object instantiateItem(ViewGroup container, int position) {
-        container.addView(mViewList.get(position));
-        return mViewList.get(position);
-    }
-
-    @Override
-    public void destroyItem(ViewGroup container, int position, Object object) {
-        container.removeView(mViewList.remove(position));
-    }
 
 
-    @Override
-    public int getCount() {
-        return mViewList.size();
-    }
-
-    @Override
-    public boolean isViewFromObject(View view, Object object) {
-
-        return view == object;
-    }
-
-    @Override
-    public CharSequence getPageTitle(int position) {
-        return mTabList.get(position);
-    }
-}
 
 
-以下是主界面的代码，主要通过TabLayout和ViewPager来实现滑动页卡的效果,比较简单
-package com.hcc.customviewpager;
+package com.easivend.app.maintain.activity.ParamManager.View;
 
+import android.os.Bundle;
 import android.support.design.widget.TabLayout;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+
+import com.example.evconsole.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
-public class NewsHomePage extends AppCompatActivity {
-    ArrayList<View>mViewList;//Save each of the Page View
-    ArrayList<String>mTabList;//Save each of the Tabs'Title
-    ViewPager mViewPager;
-    TabLayout mTabLayout;
-    LayoutInflater mLayoutInflater;
-    View view_home;
-    View view_intro;
-    View view_info;
+public class FiveActivity extends AppCompatActivity {
+    private TabLayout mTabLayout;
+    private ViewPager mViewPager;
+
+    private LayoutInflater mInflater;
+    private List<String> mTitleList = new ArrayList<>();//页卡标题集合
+    private View view1, view2, view3, view4, view5;//页卡视图
+    private List<View> mViewList = new ArrayList<>();//页卡视图集合
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        findViews();
-        initList();
+        setContentView(R.layout.activity_five);
 
-        //Add ViewList
-       
-        view_home = mLayoutInflater.inflate(R.layout.pager_home,null);
-        view_info = mLayoutInflater.inflate(R.layout.page_information,null);
-        view_intro = mLayoutInflater.inflate(R.layout.page_introduce,null);
-        mViewList.add(view_home);
-        mViewList.add(view_info);
-        mViewList.add(view_intro);
+        mViewPager = (ViewPager) findViewById(R.id.vp_view);
+        mTabLayout = (TabLayout) findViewById(R.id.tabs);
 
-        //Add TabList
-       
-        mTabList.add("个人信息");
-        mTabList.add("网易新闻");
-        mTabList.add("娱乐资讯");
+        mInflater = LayoutInflater.from(this);
+        view1 = mInflater.inflate(R.layout.cashlesstest, null);
+        view2 = mInflater.inflate(R.layout.zhifubaotest, null);
+        view3 = mInflater.inflate(R.layout.printtest, null);
+        view4 = mInflater.inflate(R.layout.weixingtest, null);
+        view5 = mInflater.inflate(R.layout.opendoortest, null);
 
-        mTabLayout.setTabMode(TabLayout.MODE_FIXED);//设置标签的模式,默认系统模式
+        //添加页卡视图
+        mViewList.add(view1);
+        mViewList.add(view2);
+        mViewList.add(view3);
+        mViewList.add(view4);
+        mViewList.add(view5);
 
-        //set the click event of Tag and change current page into the seleceted one
-          
-        mTabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+        //添加页卡标题
+        mTitleList.add("No:1");
+        mTitleList.add("No:2");
+        mTitleList.add("No:3");
+        mTitleList.add("No:4");
+        mTitleList.add("No:5");
+
+
+        mTabLayout.setTabMode(TabLayout.MODE_FIXED);//设置tab模式，当前为系统默认模式
+        mTabLayout.addTab(mTabLayout.newTab().setText(mTitleList.get(0)));//添加tab选项卡
+        mTabLayout.addTab(mTabLayout.newTab().setText(mTitleList.get(1)));
+        mTabLayout.addTab(mTabLayout.newTab().setText(mTitleList.get(2)));
+        mTabLayout.addTab(mTabLayout.newTab().setText(mTitleList.get(3)));
+        mTabLayout.addTab(mTabLayout.newTab().setText(mTitleList.get(4)));
+
+
+        MyPagerAdapter mAdapter = new MyPagerAdapter(mViewList);
+        mViewPager.setAdapter(mAdapter);//给ViewPager设置适配器
+        mTabLayout.setupWithViewPager(mViewPager);//将TabLayout和ViewPager关联起来。
+        mTabLayout.setTabsFromPagerAdapter(mAdapter);//给Tabs设置适配器
+		
+		//触发里面的控件事件
+		Button btnmachineexit=(Button)view1.findViewById(R.id.btnmachineexit);
+        btnmachineexit.setOnClickListener(new View.OnClickListener() {// 为退出按钮设置监听事件
             @Override
-            public void onTabSelected(TabLayout.Tab tab) {
-                mViewPager.setCurrentItem(tab.getPosition());//点击哪个就跳转哪个界面
-            }
-            @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-            }
-            @Override
-            public void onTabReselected(TabLayout.Tab tab) {
+            public void onClick(View arg0) {
+                finish();
             }
         });
-
-        //Add the tag elements
-        mTabLayout.addTab(mTabLayout.newTab().setText(mTabList.get(0)));
-        mTabLayout.addTab(mTabLayout.newTab().setText(mTabList.get(1)));
-        mTabLayout.addTab(mTabLayout.newTab().setText(mTabList.get(2)));
-
-        //Bind the adapter with the mViewPager as well as mTablayout
-
-        CustomPagerAdapter myAdapter = new CustomPagerAdapter(mViewList, mTabList);
-        mViewPager.setAdapter(myAdapter);
-        mTabLayout.setupWithViewPager(mViewPager);
-        mTabLayout.setTabsFromPagerAdapter(myAdapter);
     }
+    //ViewPager适配器
+    class MyPagerAdapter extends PagerAdapter {
+        private List<View> mViewList;
 
-    private void initList(){
-        mTabList = new ArrayList<String>();
-        mViewList = new ArrayList<View>();
-    }
-    private void findViews() {
-        mLayoutInflater = LayoutInflater.from(this);
-        mTabLayout = (TabLayout)findViewById(R.id.tabs);
-        mViewPager = (ViewPager)findViewById(R.id.vp_view);
+        public MyPagerAdapter(List<View> mViewList) {
+            this.mViewList = mViewList;
+        }
+
+        @Override
+        public int getCount() {
+            return mViewList.size();//页卡数
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;//官方推荐写法
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            container.addView(mViewList.get(position));//添加页卡
+            return mViewList.get(position);
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView(mViewList.get(position));//删除页卡
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mTitleList.get(position);//页卡标题
+        }
+
     }
 }
+
 
  
 7 NavigationView+DrawerLayout实现侧滑菜单栏
@@ -58253,6 +58589,7 @@ public class NewsHomePage extends AppCompatActivity {
 
 
 (3)activity_main_drawer.xml 文件在 menu 文件夹下，内容为
+<?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
@@ -58286,8 +58623,12 @@ public class NewsHomePage extends AppCompatActivity {
                 android:title="Send"/>
         </menu>
     </item>
+</menu>
 
 (4)菜单列表的点击事件
+mDrawerLayout = (DrawerLayout) findViewById(R.id.id_drawer_layout);
+navigationView = (NavigationView) findViewById(R.id.id_nv_menu);
+		
 navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
@@ -58365,6 +58706,238 @@ MenuItem menuItem = navigationView.getMenu().findItem(R.id.some_menu_item);
 menuItem.setVisible(false);	// true 为显示，false 为隐藏
 这个问题也就这么解决了。??
 
+设置菜单字符：
+MenuItem nav_devID=navigationView.getMenu().findItem(R.id.nav_devID);
+MenuItem nav_devCode=navigationView.getMenu().findItem(R.id.nav_devCode);
+nav_devID.setTitle("设备号ID:"+tb_inaccount.getDevhCode());
+nav_devCode.setTitle("签到码:"+tb_inaccount.getDevID());
+
+
+(6)为了实现左边菜单的箭头的三条杠的转换，需要调用ActionBarToggle开关，它作为控制左上角的开关来实现抽屉的开合
+
+以下四步必不可少（ActionBarDrawerToggle可以监听抽屉开合事件,可以认为是DrawerListener的子类）:
+前提要确保Activity是appcompat中的ActionbarActivity或者兼容包下的其他activity类，在activity中设置setsupportactionbar（toolbar），否则你应该是只针对Android5版本的，用setActionbar()
+
+setSupportActionBar(toolbar)
+getSupportActionBar().setDisplayHomeAsUpEnabled(true);// 给左上角图标的左边加上一个返回的图标
+mDrawerToggle = new ActionBarDrawerToggle(this,mDrawerLayout,toolbar,R.string.drawer_open,R.string.drawer_close);
+//声明mDrawerToggle对象,其中R.string.open和R.string.close简单可以用"open"和"close"替代
+
+mDrawerToggle.syncState();//实现箭头和三条杠图案切换和抽屉拉合的同步
+
+mDrawerLayout.setDrawerListener(mDrawerToggle);监听实现侧边栏的拉开和闭合,即抽屉drawer的闭合和打开
+
+另外两个函数需要注意(分别是抽屉拉开和闭合的触发函数):
+这两个函数在这里没有用，如果需要在抽屉打开闭合时改变ToolBar的Title，那么可以通过这两个函数来改变
+mDrawerToggle = new ActionBarDrawerToggle(this, //
+                mDrawerLayout,//
+                R.drawable.ic_drawer,//
+                R.string.drawer_open,//
+                R.string.drawer_close) {
+            // 被打开的时候
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+                getActionBar().setTitle(请选择); // 设置actionBar的文字
+                invalidateOptionsMenu(); // Call onPrepareOptionsMenu()
+            }
+
+            // 被关闭的时候
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+                getActionBar().setTitle(mTitle);
+                invalidateOptionsMenu();// 重新绘制actionBar上边的菜单项
+            }
+};
+
+示例：
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/parampageview"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <include layout="@layout/evtoolbar"/>
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabIndicatorColor="@color/red"
+            app:tabSelectedTextColor="@color/red"
+            app:tabTextColor="@color/black"/>
+
+        <!--可滑动的布局内容-->
+        <android.support.v4.view.ViewPager
+            android:id="@+id/vp_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+    <android.support.design.widget.NavigationView
+        android:id="@+id/navigation"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/activity_main_drawer"/>
+</android.support.v4.widget.DrawerLayout>
+
+package com.easivend.app.maintain.activity.ParamManager.View;
+
+import android.os.Bundle;
+import android.support.design.widget.NavigationView;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import com.easivend.adapter.ToolClass;
+import com.example.evconsole.R;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ParamPageView extends AppCompatActivity {
+    private TabLayout mTabLayout;
+    private ViewPager mViewPager;
+
+    private LayoutInflater mInflater;
+    private List<String> mTitleList = new ArrayList<>();//页卡标题集合
+    private View view1, view2;//页卡视图
+    private List<View> mViewList = new ArrayList<>();//页卡视图集合
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.parampageview);
+
+        mViewPager = (ViewPager) findViewById(R.id.vp_view);
+        mTabLayout = (TabLayout) findViewById(R.id.tabs);
+
+        mInflater = LayoutInflater.from(this);
+        view1 = mInflater.inflate(R.layout.parammanage, null);
+        view2 = mInflater.inflate(R.layout.zhifubaotest, null);
+
+        //添加页卡视图
+        mViewList.add(view1);
+        mViewList.add(view2);
+
+        //添加页卡标题
+        mTitleList.add("机器参数配置");
+        mTitleList.add("交易参数配置");
+
+
+        mTabLayout.setTabMode(TabLayout.MODE_FIXED);//设置tab模式，当前为系统默认模式
+        mTabLayout.addTab(mTabLayout.newTab().setText(mTitleList.get(0)));//添加tab选项卡
+        mTabLayout.addTab(mTabLayout.newTab().setText(mTitleList.get(1)));
+
+
+        MyPagerAdapter mAdapter = new MyPagerAdapter(mViewList);
+        mViewPager.setAdapter(mAdapter);//给ViewPager设置适配器
+        mTabLayout.setupWithViewPager(mViewPager);//将TabLayout和ViewPager关联起来。
+        mTabLayout.setTabsFromPagerAdapter(mAdapter);//给Tabs设置适配器
+
+        //设置工具栏
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        //设置侧边栏
+        NavigationView navigationView=(NavigationView)findViewById(R.id.navigation);
+        View headview=navigationView.getHeaderView(0);
+        TextView txtversion=(TextView)headview.findViewById(R.id.txtversion);
+        txtversion.setText("本机版本号:"+ ToolClass.getVersion());
+        MenuItem nav_devID=navigationView.getMenu().findItem(R.id.nav_devID);
+        MenuItem nav_devCode=navigationView.getMenu().findItem(R.id.nav_devCode);
+        //两个组合起来
+        DrawerLayout mDrawerLayout=(DrawerLayout)findViewById(R.id.parampageview);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);// 给左上角图标的左边加上一个返回的图标
+        //声明mDrawerToggle对象,其中R.string.open和R.string.close简单可以用"open"和"close"替代
+        ActionBarDrawerToggle mDrawerToggle = new ActionBarDrawerToggle(this,mDrawerLayout,toolbar,R.string.Open,R.string.Close);
+        mDrawerToggle.syncState();//实现箭头和三条杠图案切换和抽屉拉合的同步
+//        mDrawerLayout.setDrawerListener(mDrawerToggle);//监听实现侧边栏的拉开和闭合,即抽屉drawer的闭合和打开
+//        //另外两个函数需要注意(分别是抽屉拉开和闭合的触发函数):
+//        //这两个函数在这里没有用，如果需要在抽屉打开闭合时改变ToolBar的Title，那么可以通过这两个函数来改变
+//        mDrawerToggle = new ActionBarDrawerToggle(this, //
+//                mDrawerLayout,//
+//                R.drawable.ic_drawer,//
+//                R.string.drawer_open,//
+//                R.string.drawer_close) {
+//            // 被打开的时候
+//            @Override
+//            public void onDrawerOpened(View drawerView) {
+//                super.onDrawerOpened(drawerView);
+//                getActionBar().setTitle("请选择"); // 设置actionBar的文字
+//                invalidateOptionsMenu(); // Call onPrepareOptionsMenu()
+//            }
+//
+//            // 被关闭的时候
+//            @Override
+//            public void onDrawerClosed(View drawerView) {
+//                super.onDrawerClosed(drawerView);
+//                getActionBar().setTitle(mTitle);
+//                invalidateOptionsMenu();// 重新绘制actionBar上边的菜单项
+//            }
+//        };
+
+
+		//触发里面的控件事件
+		Button btnmachineexit=(Button)view1.findViewById(R.id.btnmachineexit);
+        btnmachineexit.setOnClickListener(new View.OnClickListener() {// 为退出按钮设置监听事件
+            @Override
+            public void onClick(View arg0) {
+                finish();
+            }
+        });
+    }
+    //ViewPager适配器
+    class MyPagerAdapter extends PagerAdapter {
+        private List<View> mViewList;
+
+        public MyPagerAdapter(List<View> mViewList) {
+            this.mViewList = mViewList;
+        }
+
+        @Override
+        public int getCount() {
+            return mViewList.size();//页卡数
+        }
+
+        @Override
+        public boolean isViewFromObject(View view, Object object) {
+            return view == object;//官方推荐写法
+        }
+
+        @Override
+        public Object instantiateItem(ViewGroup container, int position) {
+            container.addView(mViewList.get(position));//添加页卡
+            return mViewList.get(position);
+        }
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            container.removeView(mViewList.get(position));//删除页卡
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return mTitleList.get(position);//页卡标题
+        }
+
+    }
+}
 
 
 
@@ -58521,7 +59094,7 @@ OK，现在我们为Button类指定了Dependency，并且定义好了跟随Dependency一直变化的动作
      </android.support.design.widget.AppBarLayout>
 </android.support.design.widget.CoordinatorLayout>
 
-其中，一个可以滚动的组件，例如RecyclerView、ListView（这里需要注意的是，貌似只支持RecyclerView、ListView，如果你用一个ScrollView，是没有效果的）。如果： 
+其中，一个可以滚动的组件，例如RecyclerView代替了ListView，而NestedScrollView代替了ScrollView，。如果： 
 1、给这个可滚动组件设置了layout_behavior 
 2、给另一个控件设置了layout_scrollFlags 
 那么，当设置了layout_behavior的控件滑动时，就会触发设置了layout_scrollFlags的控件发生状态的改变。
@@ -58536,9 +59109,37 @@ exitUntilCollapsed: this flag causes the view to scroll off until it is ‘collap
 例如我们前面例子中的，也就是这种模式：
 
 app:layout_scrollFlags="scroll|enterAlways"
-1
-1
 PS : 所有使用scroll flag的view都必须定义在没有使用scroll flag的view的前面，这样才能确保所有的view从顶部退出，留下固定的元素。
+
+
+
+9.CardView一个增强型的FrameLayout
+如果FrameLayout特殊点需要有rounded corner（圆角）和shadow（阴影），等特效，回首往日，我们需要自定义shape文件进行实现圆角和阴影的设计，现在google的大牛已经把它设计为CardView的属性供我们设置进行使用。下面我们看看CardView新增了哪些属性：
+
+CardView_cardBackgroundColor 设置背景色
+CardView_cardCornerRadius 设置圆角大小
+CardView_cardElevation 设置z轴阴影
+CardView_cardMaxElevation 设置z轴最大高度值
+CardView_cardUseCompatPadding 是否使用CompadPadding
+CardView_cardPreventCornerOverlap 是否使用PreventCornerOverlap
+CardView_contentPadding 内容的padding
+CardView_contentPaddingLeft 内容的左padding
+CardView_contentPaddingTop 内容的上padding
+CardView_contentPaddingRight 内容的右padding
+CardView_contentPaddingBottom 内容的底padding
+card_view:cardUseCompatPadding 设置内边距，V21+的版本和之前的版本仍旧具有一样的计算方式
+
+card_view:cardPreventConrerOverlap 在V20和之前的版本中添加内边距，这个属性为了防止内容和边角的重叠
+下面开始简单的进行使用：
+例如设置z轴阴影
+<android.support.v7.widget.CardView
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="#669900"
+    app:cardElevation="20dp"
+    app:cardCornerRadius="10dp">
+    ...
+</android.support.v7.widget.CardView>
 
 
 
@@ -58563,6 +59164,12 @@ AppBarLayout继承自LinearLayout，布局方向为垂直方向。所以你可以把它当成垂直布局的
 (2)enterAlways:值设为enterAlways的View,让任意向下的滚动都会导致该view变为可见，启用快速“返回模式”。
 (3)exitUntilCollapsed：滚动退出屏幕，最后折叠在顶端。
 (4)enterAlwaysCollapsed：当你的视图已经设置minHeight属性又使用此标志时，你的视图只能已最小高度进入，只有当滚动视图到达顶部时才扩大到完整高度。 
+需要注意的是，后面两种模式基本只有在CollapsingToolbarLayout才有用，而前面两种模式基本是需要一起使用的，也就是说，这些flag的使用场景，基本已经固定了。 
+例如我们前面例子中的，也就是这种模式：
+
+app:layout_scrollFlags="scroll|enterAlways"
+PS : 所有使用scroll flag的view都必须定义在没有使用scroll flag的view的前面，这样才能确保所有的view从顶部退出，留下固定的元素。
+
 
 2）NestedScrollView
 在MD中，RecyclerView代替了ListView，而NestedScrollView代替了ScrollView，他们两个都可以用来跟ToolBar交互，实现上拉下滑中ToolBar的变化。
@@ -58868,6 +59475,79 @@ compile 'com.android.support:recyclerview-v7:24.+'
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 </LinearLayout>
+
+示例4：组合示例
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:title="欢迎使用骏鹏易丰自助售货管理终端"
+        app:layout_scrollFlags="scroll|enterAlways"
+        android:background="@color/blue">
+
+    </android.support.v7.widget.Toolbar>
+</LinearLayout>
+
+
+
+
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	>
+	<android.support.v4.widget.DrawerLayout
+		android:id="@+id/parampageview"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		>
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:orientation="vertical">
+			<!--第一部分：伸缩工具栏-->
+			<android.support.design.widget.AppBarLayout
+				android:id="@+id/appbar"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:fitsSystemWindows="true"
+				<!--使用标题栏风格-->
+				android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+				<include layout="@layout/evtoolbar"/>
+				<android.support.design.widget.TabLayout
+					android:id="@+id/tabs"
+					android:layout_width="match_parent"
+					android:layout_height="wrap_content"
+					app:tabIndicatorColor="@color/blue"
+					app:tabSelectedTextColor="@color/blue"
+					app:tabTextColor="@color/black"/>
+			</android.support.design.widget.AppBarLayout>
+
+			<!--可滑动的布局内容-->
+			<!--第二部分：主要内容，NestedScrollView和ScrollView基本功能一致，只不过NestedScrollView可以兼容新的控件-->
+			<android.support.v4.view.ViewPager
+				android:id="@+id/vp_view"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"/>
+		</LinearLayout>
+		<android.support.design.widget.NavigationView
+			android:id="@+id/navigation"
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+			android:layout_gravity="start"
+			android:fitsSystemWindows="true"
+			app:headerLayout="@layout/nav_header"
+			app:menu="@menu/activity_main_drawer"/>
+	</android.support.v4.widget.DrawerLayout>
+</android.support.design.widget.CoordinatorLayout>
+
 
 
 10 CollapsingToolbarLayout控件
