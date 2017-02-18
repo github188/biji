@@ -45733,7 +45733,7 @@ public static String unicodeToString(String hex)
     return str.toString();    
 }   
 
-*图表控件achartengine
+*图表控件achartengine(废弃)
 将插件achartengine-1.0.0.jar放到工程的libs目录下
 调用
 Button pie=(Button) findViewById(R.id.pie); 
@@ -46056,7 +46056,154 @@ public class Line extends Activity {
 
 ③设置数据和渲染器。
 
-大概就只做了这些工作，至于具体的实现方法你可以自己阅读一下。	
+大概就只做了这些工作，至于具体的实现方法你可以自己阅读一下。
+
+*图表控件
+dependencies {
+    compile 'com.github.blackfizz:eazegraph:1.2.2@aar'
+    compile 'com.nineoldandroids:library:2.4.0'
+}
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context="com.example.administrator.myapplication.MainActivity">
+
+    <org.eazegraph.lib.charts.BarChart
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/barchart"
+        android:layout_width="match_parent"
+        android:layout_height="256dp"
+        android:padding="10dp"
+        app:egFixedBarWidth="true"
+        app:egBarWidth="20dp"
+        app:egLegendHeight="40dp"/>
+    <org.eazegraph.lib.charts.StackedBarChart
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/stackedbarchart"
+        android:layout_width="match_parent"
+        android:layout_height="256dp"
+        android:padding="10dp"
+        app:egFixedBarWidth="true"
+        app:egBarWidth="20dp"
+        app:egLegendHeight="40dp"/>
+    <org.eazegraph.lib.charts.PieChart
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/piechart"
+        android:layout_width="match_parent"
+        android:layout_height="300dp"
+        android:padding="8dp"
+        app:egLegendTextSize="18sp"
+        app:egUsePieRotation="true"
+        app:egValueTextSize="36sp"/>
+    <org.eazegraph.lib.charts.ValueLineChart
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/cubiclinechart"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        app:egUseCubic="true"
+        app:egUseOverlapFill="true"
+        app:egCurveSmoothness="0.4"
+        app:egIndicatorLineColor="#FE6DA8"
+        app:egLegendHeight="40dp"
+        app:egShowStandardValue="true"/>
+</LinearLayout>
+
+
+public class MainActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        //Bar Chart柱状图
+        BarChart mBarChart = (BarChart) findViewById(R.id.barchart);
+
+        mBarChart.addBar(new BarModel(2.3f, 0xFF123456));//2.3f数据大小，0xFF123456颜色
+        mBarChart.addBar(new BarModel(2.f,  0xFF343456));
+        mBarChart.addBar(new BarModel(3.3f, 0xFF563456));
+        mBarChart.addBar(new BarModel(1.1f, 0xFF873F56));
+        mBarChart.addBar(new BarModel(2.7f, 0xFF56B7F1));
+        mBarChart.addBar(new BarModel(2.f,  0xFF343456));
+        mBarChart.addBar(new BarModel(0.4f, 0xFF1FF4AC));
+        mBarChart.addBar(new BarModel(4.f,  0xFF1BA4E6));
+
+        mBarChart.startAnimation();
+
+
+        //Stacked Bar Chart分段柱状图
+        StackedBarChart mStackedBarChart = (StackedBarChart) findViewById(R.id.stackedbarchart);
+
+		//12.4总数据大小
+        StackedBarModel s1 = new StackedBarModel("12.4");
+
+		//三条数据段加起来，可以不用等于12.4
+        s1.addBar(new BarModel(2.3f, 0xFF63CBB0));//这条数据条中，2.3f这一小段分给他
+        s1.addBar(new BarModel(2.3f, 0xFF56B7F1));
+        s1.addBar(new BarModel(2.3f, 0xFFCDA67F));
+
+        StackedBarModel s2 = new StackedBarModel("13.4");
+        s2.addBar(new BarModel(1.1f, 0xFF63CBB0));
+        s2.addBar(new BarModel(2.7f, 0xFF56B7F1));
+        s2.addBar(new BarModel(0.7f, 0xFFCDA67F));
+
+        StackedBarModel s3 = new StackedBarModel("14.4");
+
+        s3.addBar(new BarModel(2.3f, 0xFF63CBB0));
+        s3.addBar(new BarModel(2.f, 0xFF56B7F1));
+        s3.addBar(new BarModel(3.3f, 0xFFCDA67F));
+
+        StackedBarModel s4 = new StackedBarModel("15.4");
+        s4.addBar(new BarModel(1.f, 0xFF63CBB0));
+        s4.addBar(new BarModel(4.2f, 0xFF56B7F1));
+        s4.addBar(new BarModel(2.1f, 0xFFCDA67F));
+
+        mStackedBarChart.addBar(s1);
+        mStackedBarChart.addBar(s2);
+        mStackedBarChart.addBar(s3);
+        mStackedBarChart.addBar(s4);
+
+        mStackedBarChart.startAnimation();
+
+        //PieChart饼状图
+        PieChart mPieChart = (PieChart) findViewById(R.id.piechart);
+        //总加起来，不需要等于100
+		//分块的饼名称Freetime，大小15，颜色#FE6DA8
+        mPieChart.addPieSlice(new PieModel("Freetime", 15, Color.parseColor("#FE6DA8")));
+        mPieChart.addPieSlice(new PieModel("Sleep", 25, Color.parseColor("#56B7F1")));
+        mPieChart.addPieSlice(new PieModel("Work", 35, Color.parseColor("#CDA67F")));
+        mPieChart.addPieSlice(new PieModel("Eating", 9, Color.parseColor("#FED70E")));
+
+        mPieChart.startAnimation();
+
+        //Line Chart线状图
+        ValueLineChart mCubicValueLineChart = (ValueLineChart) findViewById(R.id.cubiclinechart);
+
+        ValueLineSeries series = new ValueLineSeries();
+        series.setColor(0xFF56B7F1);//线状图颜色
+
+        series.addPoint(new ValueLinePoint("Jan", 2.4f));//数据点名称Jan，大小2.4f
+        series.addPoint(new ValueLinePoint("Feb", 3.4f));
+        series.addPoint(new ValueLinePoint("Mar", .4f));
+        series.addPoint(new ValueLinePoint("Apr", 1.2f));
+        series.addPoint(new ValueLinePoint("Mai", 2.6f));
+        series.addPoint(new ValueLinePoint("Jun", 1.0f));
+        series.addPoint(new ValueLinePoint("Jul", 3.5f));
+        series.addPoint(new ValueLinePoint("Aug", 2.4f));
+        series.addPoint(new ValueLinePoint("Sep", 2.4f));
+        series.addPoint(new ValueLinePoint("Oct", 3.4f));
+        series.addPoint(new ValueLinePoint("Nov", .4f));
+        series.addPoint(new ValueLinePoint("Dec", 1.3f));
+
+        mCubicValueLineChart.addSeries(series);
+        mCubicValueLineChart.startAnimation();
+    }
+
+}
+	
 
 *数据库
 具体的请看书
@@ -53346,6 +53493,429 @@ public class MainActivity extends BaseActivity {
 
 }
 
+*ButterKnife 
+ButterKnife是一个专注于Android系统的View注入框架,可以减少大量的findViewById以及setOnClickListener代码，可视化一键生成。
+1、强大的View绑定和Click事件处理功能，简化代码，提升开发效率
+2、方便的处理Adapter里的ViewHolder绑定问题
+3、运行时不会影响APP效率，使用配置方便
+4、代码清晰，可读性强
+首先说一下不论是哪个版本的ButterKnife 都需要注意的几个点：
+
+ButterKnife.bind(this); 的使用一定是在setContentView()之后的；
+不管注解的是对象还是函数方法都不能用private 或者 static 修饰，否则会报错
+
+
+如何添加依赖
+在项目的project 的build.gredle 文件中的dependencies标签下添加。
+
+classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+
+例如：
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.2'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+在module的build.gredle 文件中添加
+
+apply plugin: 'android-apt'
+
+在module的build.gredle 文件中的dependencies标签中添加
+
+compile 'com.jakewharton:butterknife:8.4.0'
+apt 'com.jakewharton:butterknife-compiler:8.4.0'
+
+例如
+
+apply plugin: 'com.android.application'
+apply plugin: 'android-apt'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.3"
+
+    defaultConfig {
+        applicationId "com.zyj.wifi"
+        minSdkVersion 14
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    
+    compile 'com.jakewharton:butterknife:8.4.0'
+    apt 'com.jakewharton:butterknife-compiler:8.4.0'
+}
+
+如何使用
+1)控件id 注解： @BindView（）
+package com.zyj.wifi;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.widget.Button;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class ButterknifeActivity extends AppCompatActivity {
+
+    @BindView( R.id.button1 )
+    public Button button1 ;
+    
+    // 注意：button 的修饰类型不能是：private 或者 static 。 否则会报错：错误: @BindView fields must not be private or static. (com.zyj.wifi.ButterknifeActivity.button1)
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_butterknife);
+        //绑定activity
+        ButterKnife.bind( this ) ;
+
+        button1.setText( "I am a button ");
+    }
+}
+2)多个控件id 注解： @BindViews（）
+package com.zyj.wifi;
+
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.widget.Button;
+import java.util.List;
+import butterknife.BindViews;
+import butterknife.ButterKnife;
+
+public class Main2Activity extends AppCompatActivity {
+
+    @BindViews({ R.id.button1  , R.id.button2 ,  R.id.button3 })
+    public List<Button> buttonList ;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main2);
+
+        ButterKnife.bind(this);
+
+        buttonList.get( 0 ).setText( "hello 1 ");
+        buttonList.get( 1 ).setText( "hello 2 ");
+        buttonList.get( 2 ).setText( "hello 3 ");
+    }
+}
+
+3)fragment 使用
+package com.zyj.wifi;
+
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class ButterknifeFragment extends Fragment {
+
+    @BindView( R.id.button1 )
+    public Button button1 ;
+	private Unbinder unbinder;
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_butterknife, container, false);
+
+        //绑定fragment
+        unbinder = ButterKnife.bind( this , view ) ;
+        button1.setText( "I am a button ");
+        return view ;
+    }
+	
+	@Override public void onDestroyView() {
+	 super.onDestroyView();
+	 unbinder.unbind();
+	}
+}
+
+4)@BindString() ：绑定string 字符串
+package com.zyj.wifi;
+
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.widget.Button;
+
+import butterknife.BindString;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class ButterknifeActivity extends AppCompatActivity {
+
+    @BindView( R.id.button1 ) //绑定button 控件
+    public Button button1 ;
+
+    @BindString( R.string.app_name )  //绑定string 字符串
+    String meg;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_butterknife);
+
+        //绑定activity
+        ButterKnife.bind( this ) ;
+
+        button1.setText( meg );
+    }
+}
+
+5)@BindArray() : 绑定string里面array数组
+<resources>
+    <string name="app_name">WiFi管家</string>
+    
+    <string-array name="city">
+        <item>厦门市</item>
+        <item>福州市</item>
+        <item>泉州市</item>
+        <item>漳州市</item>
+        <item>龙岩市</item>
+    </string-array>
+    
+</resources>
+
+
+
+package com.zyj.wifi;
+
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.widget.Button;
+
+import butterknife.BindArray;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class ButterknifeActivity extends AppCompatActivity {
+
+    @BindView( R.id.button1 ) //绑定button 控件
+    public Button button1 ;
+
+    @BindArray(R.array.city )  //绑定string里面array数组
+    String [] citys ;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_butterknife);
+
+        //绑定activity
+        ButterKnife.bind( this ) ;
+
+        button1.setText( citys[0] );
+    }
+}
+
+6)@BindBitmap( ) : 绑定Bitmap 资源
+package com.zyj.wifi;
+
+import android.graphics.Bitmap;
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.widget.ImageView;
+
+import butterknife.BindBitmap;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class ButterknifeActivity extends AppCompatActivity {
+
+    @BindView( R.id.imageView ) //绑定ImageView 控件
+    public ImageView imageView ;
+
+    @BindBitmap( R.mipmap.wifi )  //绑定Bitmap 资源
+    public Bitmap wifi_bitmap ;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_butterknife);
+
+        //绑定activity
+        ButterKnife.bind( this ) ;
+
+        imageView.setImageBitmap( wifi_bitmap );
+    }
+}
+
+7)@BindColor( ) : 绑定一个颜色值
+package com.zyj.wifi;
+
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.widget.Button;
+
+import butterknife.BindColor;
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
+public class ButterknifeActivity extends AppCompatActivity {
+
+    @BindView( R.id.button1 )  //绑定一个控件
+    public Button button1 ;
+
+    @BindColor( R.color.colorAccent ) int black ;  //绑定一个颜色值
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_butterknife);
+
+        //绑定activity
+        ButterKnife.bind( this ) ;
+
+        button1.setTextColor(  black );
+
+    }
+}
+
+使用@BindBool，@BindColor，@BindDimen，@BindDrawable，@BindInt，@BindString绑定预定义的资源，通过以下形式绑定到其相应的字段。
+
+class ExampleActivity extends Activity {
+@BindString(R.string.title) String title;
+@BindDrawable(R.drawable.graphic) Drawable graphic;
+@BindColor(R.color.red) int red; // int or ColorStateList field
+@BindDimen(R.dimen.spacer) Float spacer; // int (for pixel size) or float (for exact value) field
+// ...
+}
+
+8)@OnClick( ) : 绑定控件点击事件
+@OnLongClick( ) ： 绑定控件长按事件
+package com.zyj.wifi;
+
+import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.widget.Toast;
+
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import butterknife.OnLongClick;
+
+public class ButterknifeActivity extends AppCompatActivity {
+
+    @OnClick(R.id.button1 )   //给 button1 设置一个点击事件
+    public void showToast(){
+        Toast.makeText(this, "is a click", Toast.LENGTH_SHORT).show();
+    }
+
+    @OnLongClick( R.id.button1 )    //给 button1 设置一个长按事件
+    public boolean showToast2(){
+        Toast.makeText(this, "is a long click", Toast.LENGTH_SHORT).show();
+        return true  ;
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_butterknife);
+
+        //绑定activity
+        ButterKnife.bind( this ) ;
+
+    }
+}
+
+9)绑定多个控件点击事件
+@OnClick({R.id.btn1,R.id.btn2,R.id.btn3})
+public void viewsOnclick(View view)
+{
+	switch(view.getId())
+	{
+		case R.id.btn1:
+		   xxx;
+		   break;
+		case R.id.btn2:
+		   xxx;
+		   break;
+		case R.id.btn3:
+		   xxx;
+		   break;	
+	}
+}
+
+10)同样这种形式也可以应用在Adapter 中，简化视图的持有形式。
+public class MyAdapter extends BaseAdapter {
+@Override public View getView(int position, View view, ViewGroup parent) {
+ ViewHolder holder;
+ if (view != null) {
+   holder = (ViewHolder) view.getTag();
+ } else {
+   view = inflater.inflate(R.layout.whatever, parent, false);
+   holder = new ViewHolder(view);
+   view.setTag(holder);
+ }
+
+ holder.name.setText("John Doe");
+ // etc...
+
+ return view;
+}
+
+static class ViewHolder {
+ @BindView(R.id.title) TextView name;
+ @BindView(R.id.job_title) TextView jobTitle;
+
+ public ViewHolder(View view) {
+   ButterKnife.bind(this, view);
+ }
+}
+}
+
+11)可选性绑定
+
+在使用过程中，ButterKnife 还考虑到了 绑定时出现绑定目标未找到的情况。默认情况下，未找到会直接抛出异常，如果需要避免抛出异常，ButterKnife也提供了结果方案，只需要 用 @Nullable 来注解 属性，或者使用 @Optional来注解方法即可，使用如下。
+
+@Nullable @BindView(R.id.might_not_be_there) TextView mightNotBeThere;
+@Optional @OnClick(R.id.maybe_missing) void onMaybeMissingClicked() {
+// TODO ...
+}
+
+12)zelezny : Butterknife插件的使用
+
+插件的安装
+
+
+插件的使用
+
+安装完成插件后，会提示重启AS，重启完后，可以写一个布局并且新建一个代码类测试下。测试的过程中要注意的是，需要将光标移到setContentView(R.layout.acty_login)，将光标放到R.layout.acty_login，然后右键Generate就有了。要注意一定要将光标放在R.layout.acty_login上面。
+这里需要注意的是在勾选控件的界面上，有一个CreateViewHolder , 很明显这个是专门为ListView或者RecyclerView的适配器专门提供的。
+
+
 *Dagger框架
 好处就是模块间解耦！ 就拿当前Android非常流行的开发模式MVP来说，使用Dagger2可以将MVP中的V 层与P层进一步解耦，这样便可以提高代码的健壮性和可维护性。
 而且非常好的一个是，他不管A类和B类是上层的类，还是下层的类，统一Inject注解后，就相当于放入
@@ -59661,3 +60231,301 @@ app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
 
 *banner图片轮播插件
+https://github.com/youth5201314/banner
+
+常量
+
+常量名称	描述	所属方法
+BannerConfig.NOT_INDICATOR	不显示指示器和标题	setBannerStyle
+BannerConfig.CIRCLE_INDICATOR	显示圆形指示器	setBannerStyle
+BannerConfig.NUM_INDICATOR	显示数字指示器	setBannerStyle
+BannerConfig.NUM_INDICATOR_TITLE	显示数字指示器和标题	setBannerStyle
+BannerConfig.CIRCLE_INDICATOR_TITLE	显示圆形指示器和标题（垂直显示）	setBannerStyle
+BannerConfig.CIRCLE_INDICATOR_TITLE_INSIDE	显示圆形指示器和标题（水平显示）	setBannerStyle
+BannerConfig.LEFT	指示器居左	setIndicatorGravity
+BannerConfig.CENTER	指示器居中	setIndicatorGravity
+BannerConfig.RIGHT	指示器居右	setIndicatorGravity
+动画常量类（setBannerAnimation方法调用）
+
+常量类名
+Transformer.Default
+Transformer.Accordion
+Transformer.BackgroundToForeground
+Transformer.ForegroundToBackground
+Transformer.CubeIn
+Transformer.CubeOut
+Transformer.DepthPage
+Transformer.FlipHorizontal
+Transformer.FlipVertical
+Transformer.RotateDown
+Transformer.RotateUp
+Transformer.ScaleInOut
+Transformer.Stack
+Transformer.Tablet
+Transformer.ZoomIn
+Transformer.ZoomOut
+Transformer.ZoomOutSlide
+方法
+
+方法名	描述	版本限制
+setBannerStyle(int bannerStyle)	设置轮播样式（默认为CIRCLE_INDICATOR）	无
+setIndicatorGravity(int type)	设置指示器位置（没有标题默认为右边,有标题时默认左边）	无
+isAutoPlay(boolean isAutoPlay)	设置是否自动轮播（默认自动）	无
+setViewPagerIsScroll(boolean isScroll)	设置是否允许手动滑动轮播图（默认true）	1.4.5开始
+update(List<?> imageUrls,List titles)	更新图片和标题	1.4.5开始
+update(List<?> imageUrls)	更新图片	1.4.5开始
+startAutoPlay()	开始轮播	1.4开始，此方法只作用于banner加载完毕-->需要在start()后执行
+stopAutoPlay()	结束轮播	1.4开始，此方法只作用于banner加载完毕-->需要在start()后执行
+start()	开始进行banner渲染	1.4开始
+setOffscreenPageLimit(int limit)	同viewpager的方法作用一样	1.4.2开始
+setBannerTitle(String[] titles)	设置轮播要显示的标题和图片对应（如果不传默认不显示标题）	1.3.3结束
+setBannerTitleList(List titles)	设置轮播要显示的标题和图片对应（如果不传默认不显示标题）	1.3.3结束
+setBannerTitles(List titles)	设置轮播要显示的标题和图片对应（如果不传默认不显示标题）	1.4开始
+setDelayTime(int time)	设置轮播图片间隔时间（单位毫秒，默认为2000）	无
+setImages(Object[]/List<?> imagesUrl)	设置轮播图片(所有设置参数方法都放在此方法之前执行)	1.4后去掉数组传参
+setImages(Object[]/List<?> imagesUrl,OnLoadImageListener listener)	设置轮播图片，并且自定义图片加载方式	1.3.3结束
+setOnBannerClickListener(this)	设置点击事件，下标是从1开始	无
+setOnLoadImageListener(this)	设置图片加载事件，可以自定义图片加载方式	1.3.3结束
+setImageLoader(Object implements ImageLoader)	设置图片加载器	1.4开始
+setOnPageChangeListener(this)	设置viewpager的滑动监听	无
+setBannerAnimation(Class<? extends PageTransformer> transformer)	设置viewpager的默认动画,传值见动画表	无
+setPageTransformer(boolean reverseDrawingOrder, ViewPager.PageTransformer transformer)	设置viewpager的自定义动画	无
+Attributes属性（banner布局文件中调用）
+
+Attributes	forma	describe
+delay_time	integer	轮播间隔时间，默认2000
+scroll_time	integer	轮播滑动执行时间，默认800
+is_auto_play	boolean	是否自动轮播，默认true
+title_background	color	reference
+title_textcolor	color	标题字体颜色
+title_textsize	dimension	标题字体大小
+title_height	dimension	标题栏高度
+indicator_width	dimension	指示器圆形按钮的宽度
+indicator_height	dimension	指示器圆形按钮的高度
+indicator_margin	dimension	指示器之间的间距
+indicator_drawable_selected	reference	指示器选中效果
+indicator_drawable_unselected	reference	指示器未选中效果
+image_scale_type	enum	和imageview的ScaleType作用一样
+
+Step 1.依赖banner
+
+Gradle
+
+dependencies{
+    compile 'com.youth.banner:banner:1.4.8'  //最新版本
+
+
+Step 2.添加权限到你的 AndroidManifest.xml
+
+<!-- if you want to load images from the internet -->
+<uses-permission android:name="android.permission.INTERNET" /> 
+
+<!-- if you want to load images from a file OR from the internet -->
+<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+Step 3.在布局文件中添加Banner，可以设置自定义属性
+
+！！！此步骤可以省略，直接在Activity或者Fragment中new Banner();
+
+<com.youth.banner.Banner
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/banner"
+    android:layout_width="match_parent"
+    android:layout_height="高度自己设置" />
+Step 4.重写图片加载器
+
+public class GlideImageLoader extends ImageLoader {
+    @Override
+    public void displayImage(Context context, Object path, ImageView imageView) {
+        /**
+          注意：
+          1.图片加载器由自己选择，这里不限制，只是提供几种使用方法
+          2.返回的图片路径为Object类型，由于不能确定你到底使用的那种图片加载器，
+          传输的到的是什么格式，那么这种就使用Object接收和返回，你只需要强转成你传输的类型就行，
+          切记不要胡乱强转！
+         */
+        eg：
+
+        //Glide 加载图片简单用法
+        Glide.with(context).load(path).into(imageView);
+
+        //Picasso 加载图片简单用法
+        Picasso.with(context).load(path).into(imageView)
+
+        //用fresco加载图片简单用法，记得要写下面的createImageView方法
+        Uri uri = Uri.parse((String) path);
+        imageView.setImageURI(uri);
+    }
+
+    //提供createImageView 方法，如果不用可以不重写这个方法，主要是方便自定义ImageView的创建
+    @Override
+    public ImageView createImageView(Context context) {
+        //使用fresco，需要创建它提供的ImageView，当然你也可以用自己自定义的具有图片加载功能的ImageView
+        SimpleDraweeView simpleDraweeView=new SimpleDraweeView(context);
+        return simpleDraweeView;
+    }
+}
+Step 5.在Activity或者Fragment中配置Banner
+
+--------------------------简单使用-------------------------------
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    Banner banner = (Banner) findViewById(R.id.banner);
+    //设置图片加载器
+    banner.setImageLoader(new GlideImageLoader());
+    //设置图片集合
+    banner.setImages(images);
+    //banner设置方法全部调用完毕时最后调用
+    banner.start();
+}
+--------------------------详细使用-------------------------------
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    Banner banner = (Banner) findViewById(R.id.banner);
+    //设置banner样式
+    banner.setBannerStyle(BannerConfig.CIRCLE_INDICATOR_TITLE);
+    //设置图片加载器
+    banner.setImageLoader(new GlideImageLoader());
+    //设置图片集合
+    banner.setImages(images);
+    //设置banner动画效果
+    banner.setBannerAnimation(Transformer.DepthPage);
+    //设置标题集合（当banner样式有显示title时）
+    banner.setBannerTitles(titles);
+    //设置自动轮播，默认为true
+    banner.isAutoPlay(true);
+    //设置轮播时间
+    banner.setDelayTime(1500);
+    //设置指示器位置（当banner模式中有指示器时）
+    banner.setIndicatorGravity(BannerConfig.CENTER);
+    //banner设置方法全部调用完毕时最后调用
+    banner.start();
+}
+-----------------当然如果你想偷下懒也可以这么用--------------------
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.activity_main);
+    Banner banner = (Banner) findViewById(R.id.banner);
+    banner.setImages(images).setImageLoader(new GlideImageLoader()).start();
+}
+Step 6.（可选）增加体验
+
+//如果你需要考虑更好的体验，可以这么操作
+@Override
+protected void onStart() {
+    super.onStart();
+    //开始轮播
+    banner.startAutoPlay();
+}
+
+@Override
+protected void onStop() {
+    super.onStop();
+    //结束轮播
+    banner.stopAutoPlay();
+}   
+
+*日志控件android-logging-log4j
+加载两个包
+android-logging-log4j-1.0.3.jar
+log4j-1.2.17.jar
+
+/**
+ * 日志设置
+ */
+public class ConfigureLog4J {
+//日志级别优先度从高到低:OFF(关闭),FATAL(致命),ERROR(错误),WARN(警告),INFO(信息),DEBUG(调试),ALL(打开所有的日志，我的理解与DEBUG级别好像没有什么区别得)
+//Log4j建议只使用FATAL ,ERROR ,WARN ,INFO ,DEBUG这五个级别。
+    // "yyyy-MM-dd");// 日志的输出格式
+
+    /**
+     * @param logfile
+     */
+    public static void configure(String logfile) {
+        final LogConfigurator logConfigurator = new LogConfigurator();
+//        Date nowtime = new Date();
+        // String needWriteMessage = myLogSdf.format(nowtime);
+        //日志文件路径地址:SD卡下myc文件夹log文件夹的test文件
+        String fileName = Environment.getExternalStorageDirectory()
+                + File.separator + "ev" + File.separator + "logs"
+                + File.separator + logfile;
+        //设置文件名
+        logConfigurator.setFileName(fileName);
+        //以下设置是按指定大小来生成新的文件
+        //设置总文件大小
+        logConfigurator.setMaxFileSize(1024 * 1024 * 20);
+        //设置最大产生的文件个数
+        logConfigurator.setMaxBackupSize(1);
+        //以下为通用配置
+        //设置root日志输出级别 默认为DEBUG
+        logConfigurator.setRootLevel(Level.DEBUG);
+        // 设置日志输出级别
+        logConfigurator.setLevel("org.apache", Level.INFO);
+        //设置 输出到日志文件的文字格式 默认 %d %-5p [%c{2}]-[%L] %m%n
+        logConfigurator.setFilePattern("%d %-5p [%c{2}]-[%L] %m%n");
+        //设置输出到控制台的文字格式 默认%m%n
+        logConfigurator.setLogCatPattern("%m%n");
+
+        //设置所有消息是否被立刻输出 默认为true,false 不输出
+        logConfigurator.setImmediateFlush(true);
+        //是否本地控制台打印输出 默认为true ，false不输出
+        logConfigurator.setUseLogCatAppender(true);
+        //设置是否启用文件附加,默认为true。false为覆盖文件
+        logConfigurator.setUseFileAppender(true);
+        //设置是否重置配置文件，默认为true
+        logConfigurator.setResetConfiguration(true);
+        //是否显示内部初始化日志,默认为false
+        logConfigurator.setInternalDebugging(false);
+
+
+        logConfigurator.configure();
+
+    }
+
+
+}
+
+
+public class MainActivity extends AppCompatActivity {
+    int i=1;
+    Logger log;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        //加载配置
+        ConfigureLog4J.configure("log.txt");
+        //初始化 log
+        log=Logger.getLogger("EV_JNI");
+        log.info("不知道呀就是测试一下啊log");
+
+        //加载配置
+        ConfigureLog4J.configure("com.txt");
+        //初始化 log
+        log=Logger.getLogger("EV_COM");
+        log.info("串口测试一下啊com");
+
+        Button btn=(Button)findViewById(R.id.btn);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //加载配置
+                ConfigureLog4J.configure("log.txt");
+                //初始化 log
+                log=Logger.getLogger("EV_JNI");
+                log.info("不知道呀就是测试一下啊log"+i);
+
+                //加载配置
+                ConfigureLog4J.configure("com.txt");
+                //初始化 log
+                log=Logger.getLogger("EV_COM");
+                log.info("串口测试一下啊com"+i);
+                i++;
+            }
+        });
+    }
+}
