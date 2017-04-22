@@ -26672,7 +26672,7 @@ List<String> allSub = allList.subList(2,3) ;	// 字符串截取
 
 
 2.Quere:队列接口，Collection接口的子接口
-他使用LinkeList类，用来实现链表
+他使用LinkeList类，用来实现链表(不大可靠)
 1)
 LinkedList<String> link = new LinkedList<String>() ;
 link.add("A") ;	// 增加元素
@@ -26696,9 +26696,14 @@ System.out.print("以FIFO的方式输出：") ;
 for(int i=0;i<=link.size()+1;i++){
 	System.out.print(link.poll() + "、") ;
 
-4)BlockingQueue 继承了Queue接口
-Java提供的线程安全的Queue可以分为阻塞队列和非阻塞队列，其中阻塞队列的典型例子是BlockingQueue，非阻塞队列的典型例子是ConcurrentLinkedQueue
+4)BlockingQueue 继承了Queue接口（建议用阻塞模式）
+Java提供的线程安全的Queue可以分为阻塞队列和非阻塞队列，其中阻塞队列的典型例子是BlockingQueue(通过锁机制)，非阻塞队列的典型例子是ConcurrentLinkedQueue(无锁的并发线程安全的队列)
 线程安全的类 ，指的是类内共享的全局变量的访问必须保证是不受多线程形式影响的。如果由于多线程的访问（比如修改、遍历、查看）而使这些变量结构被破坏或者针对这些变量操作的原子性被破坏，则这个类就不是线程安全的。
+非阻塞无锁机制：无锁机制对比锁机制的实现，使用无锁机制的难点在于要充分考虑线程间的协调。简单的说就是多个线程对内部数据结构进行访问时，如果其中一个线程执行的中途因为一些原因出现故障，其他的线程能够检测并帮助完成剩下的操作。这就需要把对数据结构的操作过程精细的划分成多个状态或阶段，考虑每个阶段或状态多线程访问会出现的情况。
+在使用ConcurrentLinkedQueue时要注意，如果直接使用它提供的函数，比如add或者poll方法，这样我们自己不需要做任何同步。
+我们很难保证，在调用了isEmpty()之后，poll()之前，这个queue没有被其他线程修改。所以对于这种情况，我们还是需要自己同步
+非阻塞算法的设计和实现都很困难，要通过低级的原子性来支持并发。同步是阻塞模式，异步是非阻塞模式 
+
 (1)这个会抛出异常
 add        增加一个元索                     如果队列已满，则抛出一个IIIegaISlabEepeplian异常
 remove   移除并返回队列头部的元素    如果队列为空，则抛出一个NoSuchElementException异常
@@ -31811,6 +31816,366 @@ settings.setTextSize(WebSettings.TextSize.LARGEST);
 webproductDesc.getSettings().setDefaultTextEncodingName("UTF -8");//设置默认为utf-8
 webproductDesc.loadData(tb_vmc_product.getProductDesc().toString(), "text/html; charset=UTF-8", null);//这种写法可以正确中文解码
 
+WebView可以使得网页轻松的内嵌到app里，还可以直接跟js相互调用。
+
+webview有两个方法：setWebChromeClient 和 setWebClient
+
+setWebClient：主要处理解析，渲染网页等浏览器做的事情
+
+setWebChromeClient：辅助WebView处理Javascript的对话框，网站图标，网站title，加载进度等 
+
+WebViewClient就是帮助WebView处理各种通知、请求事件的。
+
+ 
+
+在AndroidManifest.xml设置访问网络权限：
+
+<uses-permission android:name="android.permission.INTERNET"/>
+控件：
+
+<WebView 
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/webView"
+    />
+ 
+
+ 2）
+用途一：加载本地/Web资源
+
+
+
+example.html 存放在assets文件夹内
+
+调用WebView的loadUrl()方法，
+
+加载本地资源
+
+webView = (WebView) findViewById(R.id.webView);
+webView.loadUrl("file:///android_asset/example.html");
+webView.loadUrl("file:///sdcard/example.html");
+加载web资源：
+
+webView = (WebView) findViewById(R.id.webView);
+webView.loadUrl("http://baidu.com");
+ 
+
+用途二：在程序内打开网页
+
+
+
+ 
+
+创建一个自己的WebViewClient，通过setWebViewClient关联
+
+复制代码
+package com.example.testopen;
+
+import android.app.Activity;
+import android.os.Bundle;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
+public class MainActivity extends Activity {
+private WebView webView;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.test);             
+        init();
+
+    }
+    
+
+    private void init(){
+        webView = (WebView) findViewById(R.id.webView);
+        //WebView加载web资源
+       webView.loadUrl("http://baidu.com");
+        //覆盖WebView默认使用第三方或系统默认浏览器打开网页的行为，使网页用WebView打开
+       webView.setWebViewClient(new WebViewClient(){
+           @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            // TODO Auto-generated method stub
+               //返回值是true的时候控制去WebView打开，为false调用系统浏览器或第三方浏览器
+             view.loadUrl(url);
+            return true;
+        }
+       });
+    }
+    
+}
+复制代码
+ 
+
+用途三：
+
+如果访问的页面中有Javascript，则webview必须设置支持Javascript
+
+//启用支持javascript
+WebSettings settings = webView.getSettings();
+settings.setJavaScriptEnabled(true);
+ 
+
+用途四：
+
+如果希望浏览的网页后退而不是退出浏览器，需要WebView覆盖URL加载，让它自动生成历史访问记录，那样就可以通过前进或后退访问已访问过的站点。
+
+复制代码
+//改写物理按键——返回的逻辑
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        // TODO Auto-generated method stub
+        if(keyCode==KeyEvent.KEYCODE_BACK)
+        {
+            if(webView.canGoBack())
+            {
+                webView.goBack();//返回上一页面
+                return true;
+            }
+            else
+            {
+                System.exit(0);//退出程序
+            }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+复制代码
+用途五：判断页面加载过程
+
+复制代码
+    webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onProgressChanged(WebView view, int newProgress) {
+                // TODO Auto-generated method stub
+                if (newProgress == 100) {
+                    // 网页加载完成
+
+                } else {
+                    // 加载中
+
+                }
+
+            }
+        });
+复制代码
+用途六：缓存的使用
+
+优先使用缓存
+
+webView.getSettings().setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+不使用缓存：
+
+webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+
+
+
+3）
+现在的手机高度定制，多多少少都会对系统原生的代码进行了修改和添加的，不同的手机的WebView呈现出来的效果也是不同的，可以说是五彩缤纷了，所以我懂Android开发者的痛苦。接下来我就具体去讲解我在项目中使用WebView的经验，不喜勿喷哈。
+
+使用
+
+一开始相信大家都是直接在布局文件中添加WebView控件，当然我一开始也是这样做的，就是为了简单，而且也不知道这样会出现什么问题。
+
+
+<WebView    
+    android:id="@+id/web_view"    
+    android:layout_width="match_parent"    
+    android:layout_height="match_parent"/>
+
+直接就这样添加了一个WebView，发现也没什么问题啊，一样可以显示，什么都是正常的啊。在重复打开有WebView的页面时，你会发现，应用的内存会不断升高，销毁了之后也不会降下来，点击GC也降不下来，这样就出现了内存泄漏了，这时你就会发现，这样使用WebView是不正确的，那么最好方式是如何使用呢？
+
+那就是在代码中动态添加。
+
+首先在布局文件中声明一个parent布局
+
+<LinearLayout    
+    android:id="@+id/web_view"   
+    android:layout_width="match_parent"    
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"   
+    android:scrollbars="none" />
+
+然后在代码中，把WebView当做其子View添加进去
+context=this.getActivity();//获取activity的context	
+LinearLayout webViewLayout= (LinearLayout) view.findViewById(R.id.web_view); 
+WebView webView = new WebView(context);
+webViewLayout.addView(webView);
+
+网上很多人说这个context应该用application的，我觉得是不对的，如果你的WebView需要弹出一个dialog呢？还有其他的不可预估的问题的，最好还是用当前的activity的Context是最合适的。
+
+上面说的是如何把WebView添加进来进行使用，然后到底它有哪些属性是我们在开发中需要使用到的呢？
+
+webView.loadUrl("www.baidu.com");//WebView加载的网页使用loadUrl
+WebSettings webSettings = webView.getSettings();//获得WebView的设置
+webSettings.setUseWideViewPort(true);// 设置此属性，可任意比例缩放
+webSettings.setLoadWithOverviewMode(true);//适配
+webSettings.setJavaScriptEnabled(true);  //支持js
+webSettings.setCacheMode(WebSettings.LOAD_DEFAULT);  //设置 缓存模式
+webSettings.setDomStorageEnabled(true);// 开启 DOM storage API 功能
+webSettings.setDatabaseEnabled(true);//开启 database storage API 功能
+webSettings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);//HTTPS，注意这个是在LOLLIPOP以上才调用的
+webSettings.setAppCacheEnabled(true);//开启 Application Caches 功能
+webSettings.setBlockNetworkImage(true);//关闭加载网络图片，在一开始加载的时候可以设置为true，当加载完网页的时候再设置为false
+
+(2)硬件加速：
+Android从3.0（API Level 11）开始，在绘制View的时候支持硬件加速，充分利用GPU的特性，使得绘制更加平滑，但是会多消耗一些内存。
+开启或关闭硬件加速：      由于硬件加速自身并非完美无缺，所以Android提供选项来打开或者关闭硬件加速，默认是关闭。可以在4个级别上打开或者关闭硬件加速：
+Application级别：<applicationandroid:hardwareAccelerated="true" ...>
+Activity级别：<activity android:hardwareAccelerated="false" ...>
+
+检测当前是否启用了硬件加速：
+// 方法一
+// 此方法返回true，如果myView挂在一个开启了硬件加速的Window之下，
+// 也就是说，它在绘制的时候不一定使用了硬件加速，getDrawingCache
+myView.isHardwareAccelerated();
+                        
+// 方法二
+// 返回true，如果canvas在绘制的时候启用了硬件加速
+// 尽量采用此方法来判断是否开启了硬件加速
+canvas.isHardwareAccelerated();
+
+理解View的绘制模型：
+
+  1.没有硬件加速：invalidate the view hierarchy ------> draw the view hierarchy
+
+  2.有硬件加速：invalidate the view hierarchy ------> record and update the display list ------> draw the display list
+
+  硬件加速的限制：
+
+  目前，Android对硬件加速的支持并非完美，有些绘制操作在开启硬件加速的情况下不能正常工作（具体的列表可以参考Android开发者文档）。
+
+  不过Android可以保证内置的组件和应用支持硬件加速。因此，如果应用中只使用了标准UI组件，可以放心开启硬件加速。
+
+  随着Android的版本升级，相信一段时间之后，硬件加速可以得到完美的支持。
+
+  开启硬件加速之后的异常反应：
+
+  1.某些UI元素没有显示：可能是没有调用invalidate
+
+  2.某些UI元素没有更新：可能是没有调用invalidate
+
+  3.绘制不正确：可能使用了不支持硬件加速的操作， 需要关闭硬件加速或者绕过该操作
+
+  4.抛出异常：可能使用了不支持硬件加速的操作， 需要关闭硬件加速或者绕过该操作
+	  
+	  
+
+上面是使用WebView中最基础的设置，相信在开发过程中都会进行如上的设置的。
+
+webView.setWebChromeClient(new WebChromeClient() {    
+     @Override   
+     public void onProgressChanged(WebView view, int newProgress) {
+         //加载的进度
+     }
+     @Override
+     public void onReceivedTitle(WebView view, String title) {   
+         //获取WebView的标题
+     }
+    @Override
+    public boolean onJsAlert(WebView view, String url, String message, final JsResult result) {    
+        return super.onJsAlert(view, url, message, result);
+        //Js 弹框
+    }
+    @Override
+    public boolean onJsConfirm(WebView view, String url, String message, final JsResult result) {   
+        AlertDialog.Builder b = new AlertDialog.Builder(IllegalQueryActivity.this);    
+        b.setTitle("删除");    
+        b.setMessage(message);    
+        b.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {        
+            @Override        
+            public void onClick(DialogInterface dialog, int which) {            
+                result.confirm();        
+            }    
+        });    
+        b.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {        
+            @Override        
+            public void onClick(DialogInterface dialog, int which) {            
+                result.cancel();        
+            }    
+        });    
+        b.create().show();    
+        return true;
+    }
+});
+webView.setWebViewClient(new WebViewClient() {    
+    @Override    
+    public boolean shouldOverrideUrlLoading(WebView view, String url) {        
+       //需要设置在当前WebView中显示网页，才不会跳到默认的浏览器进行显示
+       return true;   
+    }    
+    @Override    
+    public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+        super.onReceivedError(view, request, error);
+        //加载出错了
+    }   
+    @Override    
+    public void onPageFinished(WebView view, String url) {        
+        super.onPageFinished(view, url);
+        //加载完成
+    }
+});
+webView.setDownloadListener(new DownLoadListener());//下载监听
+private class DownLoadListener implements DownloadListener {   
+    @Override   
+    public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {      
+    }
+}
+
+然后就是WebView跟JS的交互了
+
+webView.addJavascriptInterface(new WebAppInterface(this), "WebJs");
+public class WebAppInterface { 
+    Context mContext;    
+    public WebAppInterface(Context c) {        
+        mContext = c;    
+    }    
+    @JavascriptInterface    
+    public void method() {
+    }
+}
+webView.loadUrl("javascript:jsMethod()");//这是WebView最简单的调用JS的方法
+
+当activity执行生命周期的时候，这里需要注意的是在onDestroy的时候，需要销毁WebView，不然也会出现内存泄漏的。
+
+@Overrideprotected void onPause() {    
+    super.onPause();    
+    if (webView != null) {        
+        webView.onPause();    
+    }
+}
+@Override
+protected void onResume() {    
+    super.onResume();    
+    if (webView != null) {        
+        webView.onResume();    
+    }
+}
+@Override
+protected void onDestroy() {  
+    super.onDestroy();      
+    if (webView != null) {        
+        webView.clearCache(true); //清空缓存   
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {            
+            if (webViewLayout != null) {                
+                webViewLayout.removeView(webView);            
+            }            
+        webView.removeAllViews();            
+        webView.destroy();        
+    }else {            
+        webView.removeAllViews();            
+        webView.destroy();            
+        if (webViewLayout != null) {                
+            webViewLayout.removeView(webView);           
+        }        
+     }  
+     webView = null;    
+  }   
+}
+
+可以看到上面的onDestroy方法中对系统的版本进行了判断，那是因为我在不同的版本中进行了测试，如果低于5.0版本的WebView中，如果先在parent中remove了WebView，那WebView将无法进行destroy了，这样就会造成内存的泄漏，下来你们可以自己去尝试一下这个说法是不是正确的。
+
+现在还遇到的一个问题就是，当WebView嵌套在ScrollView中时，某些机型会出现闪屏的问题，单独WebView的时候是不会出现的，把硬件加速关闭了之后，对用户的体验又不好，所以暂时还未想到比较好的解决方案，所以还是建议不要在ScrollView中嵌套WebView这样的控件。
+
 *提示框Toast
 二、五种效果实现
 1、默认的Toast特效样式
@@ -35678,94 +36043,163 @@ private class OnChronometerTickListenerImg implements OnChronometerTickListener
 	    android:name="android.permission.VIBRATE"
 	/>
 
-*标签:android.widget.TabHost;
-1.继承类，为TabActivity
-1).更改继承类，为TabActivity
-public class MainActivity extends TabActivity {
-}
-2).添加一个布局文件tab.xml,他里面包含多个标签的显示组件
-定义三个标签页
+*自定义对话框
+dialog.xml
+
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical" >
-    <LinearLayout 
-        android:id="@+id/tab_edit"
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"		
-	    android:orientation="vertical" >
-	    <EditText 
-	        android:id="@+id/edit"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="请输入检索"
-	    />
-	     <Button 
-	        android:id="@+id/btn"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:text="检索"
-	    />
-	</LinearLayout>
-	<LinearLayout 
-        android:id="@+id/tab_clk"
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"		
-	    android:orientation="vertical" >
-	    <AnalogClock 
-	        android:id="@+id/clkan"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	   />
-	    <DigitalClock 
-	        android:id="@+id/clkdig"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	   />
-	</LinearLayout>
-	<LinearLayout 
-        android:id="@+id/tab_rgp"
-	    android:layout_width="fill_parent"
-	    android:layout_height="fill_parent"		
-	    android:orientation="vertical" >
-	    <RadioGroup 
-	        android:id="@+id/myrgp"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:orientation="vertical">
-	   	    <RadioButton 
-	   	        android:id = "@+id/utf8"
-	   	        android:text="UTF编码"
-	   	    />
-	   	    <RadioButton 
-	   	        android:id = "@+id/gbk"
-	   	        android:text="GBK编码"
-	   	    />
-	   </RadioGroup>    
-	</LinearLayout>
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical|center_horizontal">
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="30dip"
+        android:paddingTop="10dip">
+        <ImageView
+            android:id="@+id/dialog_title_image"
+            android:layout_alignParentLeft="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="10dip"
+            android:layout_centerInParent="true"
+            android:text="Title"
+            android:layout_toRightOf="@id/dialog_title_image"
+            android:textColor="#000000"
+            android:textSize="30sp"/>
+
+    </RelativeLayout>
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="1dip"
+        android:layout_marginTop="5dip"/>
+    <TextView
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="This is a custom dialog"
+        android:textColor="#000000"
+        android:layout_marginTop="10dip"
+        android:layout_marginLeft="30dip"/>
+    <EditText
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/edit"
+        android:text="This is a custom edit"
+        android:textColor="#000000"
+        android:layout_marginTop="10dip"
+        android:layout_marginLeft="30dip"/>
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="10dip"
+        android:gravity="bottom|center_horizontal"
+        android:paddingBottom="10dip">
+        <Button
+            android:id="@+id/dialog_button_ok"
+            android:layout_alignParentLeft="true"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:text="确定"/>
+        <Button
+            android:id="@+id/dialog_button_cancel"
+            android:layout_width="100dip"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/dialog_button_ok"
+            android:layout_marginLeft="35dip"
+            android:text="取消"/>
+    </RelativeLayout>
+
 </LinearLayout>
 
-3).
-public class MainActivity extends TabActivity {
-	private TabHost mytabhost = null;
-	private int[] layres=new int[]{R.id.tab_edit,R.id.tab_clk,R.id.tab_rgp};//内嵌布局文件的id
+
+MyDialog.java
+
+package com.example.administrator.myapplication;
+
+/**
+ * 描述:
+ * input parameter:
+ * output parameter:
+ * Created by Administrator on 2017/3/22.
+ */
+
+import android.app.Dialog;
+import android.content.Context;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+/**
+ * 自定义dialog
+ * @author Mr.Xu
+ *
+ */
+public class MyDialog extends Dialog {
+    //定义回调事件，用于dialog的点击事件
+    public interface OnCustomDialogListener{
+        public void back(String name);
+    }
+
+    private String name;
+    private OnCustomDialogListener customDialogListener;
+    EditText etName;
+
+    public MyDialog(Context context,String name,OnCustomDialogListener customDialogListener) {
+        super(context);
+        this.name = name;
+        this.customDialogListener = customDialogListener;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //super.setContentView(R.layout.activity_main);
-        this.mytabhost = super.getTabHost();//取得TabHost对象
-        LayoutInflater.from(this).inflate(R.layout.tab, this.mytabhost.getTabContentView(),true);
-        //增加Tab的组件
-        for(int x=0;x<this.layres.length;x++)
-        {
-        	TabSpec myTab=this.mytabhost.newTabSpec("tab"+x);
-        	myTab.setIndicator("标签"+x);
-        	myTab.setContent(this.layres[x]);
-        	this.mytabhost.addTab(myTab);        	
-        }
+        setContentView(R.layout.dialog);
+        //设置标题
+        setTitle(name);
+        etName = (EditText)findViewById(R.id.edit);
+        Button dialog_button_ok = (Button) findViewById(R.id.dialog_button_ok);
+        dialog_button_ok.setOnClickListener(clickListenerok);
+        Button dialog_button_cancel = (Button) findViewById(R.id.dialog_button_cancel);
+        dialog_button_cancel.setOnClickListener(clickListenercancel);
     }
+
+    private View.OnClickListener clickListenerok = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            customDialogListener.back(String.valueOf(etName.getText()));
+            MyDialog.this.dismiss();
+        }
+    };
+    private View.OnClickListener clickListenercancel = new View.OnClickListener() {
+
+        @Override
+        public void onClick(View v) {
+            MyDialog.this.dismiss();
+        }
+    };
+
 }
+
+MainActivity.java
+调用
+btn.setOnClickListener(new View.OnClickListener() {
+	@Override
+	public void onClick(View v) {
+		MyDialog myDialog=new MyDialog(MainActivity.this,"hello",new MyDialog.OnCustomDialogListener(){
+			@Override
+			public void back(String name) {
+				specialEd.setText("hello:"+name);
+			}
+		});
+		myDialog.show();
+	}
+});
+
 
 *Activity生命周期
 有三种生命周期
@@ -62069,6 +62503,11 @@ qb.where
 );
 List youngJoes = qb.list();
 
+查询时间在start,end之间，并且upload=0的所有数据
+QueryBuilder<Tb_vmc_order_pay> qb=tb_vmc_order_payDao.queryBuilder()
+					.where(Tb_vmc_order_payDao.Properties.PayTime.between(start,end),
+							Tb_vmc_order_payDao.Properties.Isupload.eq(0));
+
 (3)查找一条记录
 QueryBuilder<Tb_vmc_system_parameter> qb = tb_vmc_system_parameterDao.queryBuilder()
 			.where(Tb_vmc_system_parameterDao.Properties.DevID.like("%90%"));
@@ -62116,4 +62555,118 @@ QueryBuilder<Age> qb = ageDao.queryBuilder().where
 Query query = userDao.queryRawCreate(
   ", GROUP G WHERE G.NAME=? AND T.GROUP_ID=G._ID", "admin");
 
-  
+*软键盘
+compile 'com.ziyeyouhu:customizekeyboard:1.0.0'
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/root_view"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:id="@+id/sv_main"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/all_ed"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/special_ed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="特殊键盘" />
+            <Button
+                android:id="@+id/btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="对话框" />
+        </LinearLayout>
+
+    </ScrollView>
+</LinearLayout>
+
+public class MainActivity extends AppCompatActivity {
+    private LinearLayout rootView;
+    private ScrollView scrollView;
+    private EditText specialEd;
+    private KeyboardUtil keyboardUtil;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        rootView = (LinearLayout) findViewById(R.id.root_view);
+        scrollView = (ScrollView) findViewById(R.id.sv_main);
+
+        specialEd = (EditText) findViewById(R.id.special_ed);
+        Button btn=(Button)findViewById(R.id.btn);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                MyDialog myDialog=new MyDialog(MainActivity.this,"hello",new MyDialog.OnCustomDialogListener(){
+                    @Override
+                    public void back(String name) {
+                        specialEd.setText("hello:"+name);
+                    }
+                });
+                myDialog.show();
+            }
+        });
+
+        initMoveKeyBoard();
+
+
+    }
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0 ) {
+            if(keyboardUtil.isShow){
+                keyboardUtil.hideSystemKeyBoard();
+                keyboardUtil.hideAllKeyBoard();
+                keyboardUtil.hideKeyboardLayout();
+            }else {
+                return super.onKeyDown(keyCode, event);
+            }
+
+            return false;
+        } else
+            return super.onKeyDown(keyCode, event);
+    }
+
+    private void initMoveKeyBoard() {
+        keyboardUtil = new KeyboardUtil(this, rootView, scrollView);
+        // monitor the KeyBarod state
+        keyboardUtil.setKeyBoardStateChangeListener(new KeyBoardStateListener());
+        // monitor the finish or next Key
+        keyboardUtil.setInputOverListener(new inputOverListener());
+        specialEd.setOnTouchListener(new KeyboardTouchListener(keyboardUtil, KeyboardUtil.INPUTTYPE_NUM_FINISH, -1));
+        keyboardUtil.showKeyBoardLayout(specialEd,KeyboardUtil.INPUTTYPE_NUM_FINISH, -1);
+    }
+
+    class KeyBoardStateListener implements KeyboardUtil.KeyBoardStateChangeListener {
+
+        @Override
+        public void KeyBoardStateChange(int state, EditText editText) {
+//            System.out.println("state" + state);
+//            System.out.println("editText" + editText.getText().toString());
+        }
+    }
+
+    class inputOverListener implements KeyboardUtil.InputFinishListener {
+
+        @Override
+        public void inputHasOver(int onclickType, EditText editText) {
+//            System.out.println("onclickType" + onclickType);
+//            System.out.println("editText" + editText.getText().toString());
+        }
+    }
+
+} 
